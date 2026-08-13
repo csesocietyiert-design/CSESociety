@@ -1,0 +1,6 @@
+$kind: collection
+name: CSE Society API
+variables:
+  - key: baseUrl
+    value: 'http://localhost:3000'
+    description: Base URL for the CSE Society API

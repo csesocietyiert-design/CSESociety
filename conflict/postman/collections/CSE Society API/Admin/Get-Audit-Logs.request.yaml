@@ -1,0 +1,17 @@
+$kind: http-request
+name: Get Audit Logs
+method: GET
+url: '{{baseUrl}}/api/admin/audit-logs'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function() {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has logs array", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("logs");
+        pm.expect(json.logs).to.be.an("array");
+      });

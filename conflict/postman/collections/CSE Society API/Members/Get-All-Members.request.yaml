@@ -1,0 +1,18 @@
+$kind: http-request
+name: Get All Members
+method: GET
+url: '{{baseUrl}}/api/members'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function() {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has members array", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("members");
+        pm.expect(json.members).to.be.an("array");
+        if (json.members?.length > 0) pm.environment.set("memberId", json.members[0].id);
+      });

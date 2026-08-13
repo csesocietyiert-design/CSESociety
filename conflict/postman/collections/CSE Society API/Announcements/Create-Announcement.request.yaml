@@ -1,0 +1,29 @@
+$kind: http-request
+name: Create Announcement
+method: POST
+url: '{{baseUrl}}/api/announcements'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Test Announcement",
+      "content": "This is a test announcement",
+      "author_id": "{{memberId}}",
+      "target_role": "all"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function() {
+        pm.response.to.have.status(201);
+      });
+      pm.test("Response has announcement", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("announcement");
+        pm.environment.set("announcementId", json.announcement?.id);
+      });

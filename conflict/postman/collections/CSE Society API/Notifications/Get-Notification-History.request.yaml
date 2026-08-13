@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Notification History
+method: GET
+url: '{{baseUrl}}/api/notifications/history'
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function() {
+        pm.response.to.have.status(200);
+      });

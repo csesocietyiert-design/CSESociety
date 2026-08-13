@@ -1,0 +1,29 @@
+name: CSE Society
+values:
+  - key: baseUrl
+    value: 'http://localhost:3000'
+    enabled: true
+  - key: email
+    value: 'admin@example.com'
+    enabled: true
+  - key: password
+    value: 'password123'
+    enabled: true
+  - key: memberId
+    value: ''
+    enabled: true
+  - key: eventId
+    value: ''
+    enabled: true
+  - key: announcementId
+    value: ''
+    enabled: true
+  - key: expenseId
+    value: ''
+    enabled: true
+  - key: incomeId
+    value: ''
+    enabled: true
+  - key: societyIdCode
+    value: '23F2601'
+    enabled: true

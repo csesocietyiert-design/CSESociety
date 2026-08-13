@@ -1,0 +1,32 @@
+$kind: http-request
+name: Create Member
+method: POST
+url: '{{baseUrl}}/api/members'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "test@example.com",
+      "password": "Test@1234",
+      "full_name": "Test User",
+      "roll_number": "CS001",
+      "year": 2,
+      "department": "CSE",
+      "phone": "9999999999",
+      "society_id_code": "{{societyIdCode}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function() {
+        pm.response.to.have.status(201);
+      });
+      pm.test("Response has member", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("member");
+      });

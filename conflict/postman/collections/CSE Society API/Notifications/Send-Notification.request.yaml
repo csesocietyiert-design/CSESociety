@@ -1,0 +1,29 @@
+$kind: http-request
+name: Send Notification
+method: POST
+url: '{{baseUrl}}/api/notifications'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Test Notification",
+      "message": "This is a test",
+      "sender_id": "{{memberId}}",
+      "sender_role": "admin",
+      "recipient_type": "all"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function() {
+        pm.response.to.have.status(201);
+      });
+      pm.test("Response has notification", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("notification");
+      });

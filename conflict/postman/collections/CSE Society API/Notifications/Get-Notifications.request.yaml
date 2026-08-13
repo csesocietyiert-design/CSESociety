@@ -1,0 +1,21 @@
+$kind: http-request
+name: Get Notifications
+method: GET
+url: '{{baseUrl}}/api/notifications'
+order: 1000
+queryParams:
+  - key: member_id
+    value: '{{memberId}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function() {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has notifications array and unread_count", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("notifications");
+        pm.expect(json.notifications).to.be.an("array");
+        pm.expect(json).to.have.property("unread_count");
+      });

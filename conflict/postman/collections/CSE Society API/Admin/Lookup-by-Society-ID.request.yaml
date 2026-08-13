@@ -1,0 +1,21 @@
+$kind: http-request
+name: Lookup by Society ID
+method: GET
+url: '{{baseUrl}}/api/admin/society-id'
+order: 2000
+queryParams:
+  - key: code
+    value: '{{societyIdCode}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200 or 404", function() {
+        pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+      pm.test("Response has member or error field", function() {
+        const json = pm.response.json();
+        const hasMember = json.hasOwnProperty("member");
+        const hasError = json.hasOwnProperty("error");
+        pm.expect(hasMember || hasError).to.be.true;
+      });

@@ -1,0 +1,17 @@
+$kind: http-request
+name: Get All Expenses
+method: GET
+url: '{{baseUrl}}/api/finance/expenses'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function() {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has expenses array", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("expenses");
+        pm.expect(json.expenses).to.be.an("array");
+      });

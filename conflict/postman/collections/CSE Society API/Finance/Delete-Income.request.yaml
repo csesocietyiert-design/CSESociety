@@ -1,0 +1,19 @@
+$kind: http-request
+name: Delete Income
+method: DELETE
+url: '{{baseUrl}}/api/finance/income'
+order: 6000
+queryParams:
+  - key: id
+    value: '{{incomeId}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function() {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has message", function() {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("message");
+      });
