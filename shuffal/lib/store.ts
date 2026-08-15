@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { supabase, isSupabaseConfigured } from './supabase';
-import { hashPassword, verifyPassword, generateCSEId } from './auth-utils';
 
 export type UserRole = 
   | 'admin' 
@@ -75,49 +73,25 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (cseId: string, password: string) => {
     try {
-      if (isSupabaseConfigured && supabase) {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('cse_id', cseId)
-          .single();
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cseId, password }),
+      });
 
-        if (error || !data) {
-          throw new Error('Invalid CSE ID or password');
-        }
-
-        const passwordMatch = await verifyPassword(password, data.password_hash);
-        if (!passwordMatch) {
-          throw new Error('Invalid CSE ID or password');
-        }
-
-        const user: User = {
-          id: data.id,
-          cseId: data.cse_id,
-          name: data.name,
-          email: data.email,
-          role: data.role as UserRole,
-          year: data.year,
-          department: data.department,
-        };
-
-        set({
-          user,
-          isAuthenticated: true,
-        });
-        localStorage.setItem('authUser', JSON.stringify(user));
-      } else {
-        const demoUser = demoUsers[cseId];
-        if (!demoUser || demoUser.password !== password) {
-          throw new Error('Invalid CSE ID or password');
-        }
-
-        set({
-          user: demoUser.user,
-          isAuthenticated: true,
-        });
-        localStorage.setItem('authUser', JSON.stringify(demoUser.user));
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Login failed');
       }
+
+      const data = await response.json();
+      const user: User = data.user;
+
+      set({
+        user,
+        isAuthenticated: true,
+      });
+      localStorage.setItem('authUser', JSON.stringify(user));
     } catch (err) {
       throw err instanceof Error ? err : new Error('Login failed');
     }
@@ -129,65 +103,25 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw new Error('Name, email, and password are required');
       }
 
-      if (isSupabaseConfigured && supabase) {
-        const admissionYear = parseInt(String(data.year).split('')[0]) || 2023;
-        const cseId = await generateCSEId(admissionYear);
-        const passwordHash = await hashPassword(data.password);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-        const { data: newUserData, error } = await supabase
-          .from('users')
-          .insert([
-            {
-              cse_id: cseId,
-              name: data.name,
-              email: data.email,
-              year: data.year || 1,
-              password_hash: passwordHash,
-              role: 'member',
-              department: 'CSE',
-            },
-          ])
-          .select()
-          .single();
-
-        if (error) {
-          throw new Error(error.message || 'Registration failed');
-        }
-
-        const user: User = {
-          id: newUserData.id,
-          cseId: newUserData.cse_id,
-          name: newUserData.name,
-          email: newUserData.email,
-          role: newUserData.role as UserRole,
-          year: newUserData.year,
-          department: newUserData.department,
-        };
-
-        set({
-          user,
-          isAuthenticated: true,
-        });
-        localStorage.setItem('authUser', JSON.stringify(user));
-      } else {
-        const newUser: User = {
-          id: Date.now().toString(),
-          cseId: `23F${Math.floor(Math.random() * 10000)
-            .toString()
-            .padStart(4, '0')}`,
-          name: data.name,
-          email: data.email,
-          role: 'member',
-          year: data.year || 1,
-          department: 'CSE',
-        };
-
-        set({
-          user: newUser,
-          isAuthenticated: true,
-        });
-        localStorage.setItem('authUser', JSON.stringify(newUser));
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || 'Registration failed');
       }
+
+      const result = await response.json();
+      const user: User = result.user;
+
+      set({
+        user,
+        isAuthenticated: true,
+      });
+      localStorage.setItem('authUser', JSON.stringify(user));
     } catch (err) {
       throw err instanceof Error ? err : new Error('Registration failed');
     }

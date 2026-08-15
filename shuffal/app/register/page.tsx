@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import Link from 'next/link';
@@ -11,12 +11,18 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    year: '1',
+    currentYear: '1',
     password: '',
     confirmPassword: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Auto-calculate admission year based on current year
+  const admissionYear = useMemo(() => {
+    const currentYearNum = parseInt(formData.currentYear, 10);
+    return (2026 - currentYearNum + 1).toString();
+  }, [formData.currentYear]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -47,7 +53,11 @@ export default function RegisterPage() {
     }
 
     try {
-      await register(formData);
+      await register({
+        ...formData,
+        admissionYear,
+        currentYear: formData.currentYear,
+      });
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -121,13 +131,14 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">
-                Academic Year
+                Current Academic Year
               </label>
               <select
-                name="year"
-                value={formData.year}
+                name="currentYear"
+                value={formData.currentYear}
                 onChange={handleChange}
                 className="w-full px-4 py-3 input-dark rounded-lg transition bg-slate-900"
+                required
                 disabled={loading}
               >
                 <option value="1">1st Year</option>
@@ -135,7 +146,22 @@ export default function RegisterPage() {
                 <option value="3">3rd Year</option>
                 <option value="4">4th Year</option>
               </select>
-              <p className="text-xs text-slate-400 mt-1">Your CSE ID will be auto-generated</p>
+              <p className="text-xs text-slate-400 mt-1">Your current academic year</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-2">
+                Admission Year
+              </label>
+              <input
+                type="text"
+                value={admissionYear}
+                placeholder="Auto-calculated"
+                className="w-full px-4 py-3 input-dark rounded-lg transition bg-slate-800 text-slate-300 cursor-not-allowed"
+                disabled
+                readOnly
+              />
+              <p className="text-xs text-slate-400 mt-1">Automatically calculated based on your academic year</p>
             </div>
 
             <div>
