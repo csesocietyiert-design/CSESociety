@@ -55,8 +55,8 @@ export default function LoginPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝘁𝗼 𝗖𝗦𝗘 𝗦𝗼𝗰𝗶𝗲𝘁𝘆</h1>
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed">𝑨𝒄𝒄𝒆𝒔𝒔 𝒚𝒐𝒖𝒓 𝒐𝒇𝒇𝒊𝒄𝒊𝒂𝒍 𝒔𝒐𝒄𝒊𝒆𝒕𝒚 𝒂𝒄𝒄𝒐𝒖𝒏𝒕</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">Login to CSE Society</h1>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">Continue to your CSE Society portal</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
