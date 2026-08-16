@@ -39,8 +39,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md px-6 z-10">
         <div className="card-gradient rounded-lg p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <div className="lock-icon">
+          <div className="text-center mb-10">
+            <div className="lock-icon mb-4">
               <svg
                 className="w-8 h-8 text-white"
                 fill="none"
@@ -55,8 +55,8 @@ export default function LoginPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝘁𝗼 𝗖𝗦𝗘 𝗦𝗼𝗰𝗶𝗲𝘁𝘆</h1>
-            <p className="text-slate-400">𝑨𝒄𝒄𝒆𝒔𝒔 𝒚𝒐𝒖𝒓 𝒐𝒇𝒇𝒊𝒄𝒊𝒂𝒍 𝒔𝒐𝒄𝒊𝒆𝒕𝒚 𝒂𝒄𝒄𝒐𝒖𝒏𝒕</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝘁𝗼 𝗖𝗦𝗘 𝗦𝗼𝗰𝗶𝗲𝘁𝘆</h1>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">𝑨𝒄𝒄𝒆𝒔𝒔 𝒚𝒐𝒖𝒓 𝒐𝒇𝒇𝒊𝒄𝒊𝒂𝒍 𝒔𝒐𝒄𝒊𝒆𝒕𝒚 𝒂𝒄𝒄𝒐𝒖𝒏𝒕</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
