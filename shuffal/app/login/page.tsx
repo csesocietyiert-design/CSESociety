@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
-  const [cseId, setCseId] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(cseId, password);
+      await login(identifier, password);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -55,20 +55,20 @@ export default function LoginPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-slate-400">Sign in to continue your journey</p>
+            <h1 className="text-3xl font-bold text-white mb-2">𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝘁𝗼 𝗖𝗦𝗘 𝗦𝗼𝗰𝗶𝗲𝘁𝘆</h1>
+            <p className="text-slate-400">𝑨𝒄𝒄𝒆𝒔𝒔 𝒚𝒐𝒖𝒓 𝒐𝒇𝒇𝒊𝒄𝒊𝒂𝒍 𝒔𝒐𝒄𝒊𝒆𝒕𝒚 𝒂𝒄𝒄𝒐𝒖𝒏𝒕</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">
-                CSE ID
+                𝑪𝑺𝑬 𝑰𝑫 | 𝑬𝒎𝒂𝒊𝒍 𝑰𝑫
               </label>
               <input
                 type="text"
-                value={cseId}
-                onChange={(e) => setCseId(e.target.value)}
-                placeholder="Enter your CSE ID (e.g., 23F2601)"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="Enter your ID"
                 className="w-full px-4 py-3 input-dark rounded-lg transition"
                 required
                 disabled={loading}
@@ -77,7 +77,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-200 mb-2">
-                Password
+                𝑷𝒂𝒔𝒔𝒘𝒐𝒓𝒅
               </label>
               <div className="relative">
                 <input
@@ -120,7 +120,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full btn-primary py-3 rounded-lg font-semibold transition disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Signing in...' : '𝐒𝐢𝐠𝐧 𝐈𝐧'}
             </button>
           </form>
 
@@ -131,13 +131,6 @@ export default function LoginPage() {
                 Register here
               </Link>
             </p>
-          </div>
-
-          <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-            <p className="text-xs text-slate-400 mb-2 font-semibold">Demo Credentials:</p>
-            <p className="text-xs text-slate-500">ID: 23F2601 | Pass: admin123</p>
-            <p className="text-xs text-slate-500">ID: 23F2602 | Pass: user123</p>
-            <p className="text-xs text-slate-500">ID: 23F2603 | Pass: exec123</p>
           </div>
         </div>
       </div>
