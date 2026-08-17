@@ -15,12 +15,35 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
   const { todayNotifications } = useNotificationsToday(user?.id);
   const [showNotifications, setShowNotifications] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
+  const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
     if (user?.profile_image_url) {
       setProfileImage(user.profile_image_url);
     }
   }, [user?.profile_image_url]);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-GB', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: false
+      });
+      const dateString = now.toLocaleDateString('en-IN', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+      setCurrentTime(`${dateString} | ${timeString}`);
+    };
+    
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const todayUnreadCount = todayNotifications.filter(n => !n.is_read).length;
 
@@ -77,11 +100,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
         <div className="flex items-center gap-3 sm:gap-6">
           <div className="hidden sm:flex items-center px-3 sm:px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700 text-xs sm:text-sm">
             <span className="text-slate-400">
-              {new Date().toLocaleDateString('en-IN', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
-              })} | MAY 2026 TERM
+              {currentTime}
             </span>
           </div>
 
