@@ -33,6 +33,9 @@ export default function AdminDashboard({ user }: any) {
           supabase.from('certificates').select('id', { count: 'exact', head: true }),
         ]);
 
+        console.log('Certificate count:', certificatesResult.count);
+        console.log('All stats:', { users: usersResult.count, events: eventsResult.count, pending: pendingResult.count, certs: certificatesResult.count });
+        
         setPendingCount(pendingResult.count || 0);
         setStats({
           totalMembers: usersResult.count || 0,
@@ -42,6 +45,7 @@ export default function AdminDashboard({ user }: any) {
         });
       } catch (err) {
         console.error('Error fetching stats:', err);
+        alert('Error loading dashboard stats: ' + (err instanceof Error ? err.message : String(err)));
       }
     };
 
