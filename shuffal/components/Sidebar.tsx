@@ -1,9 +1,9 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
 
 interface SidebarProps {
   open: boolean;

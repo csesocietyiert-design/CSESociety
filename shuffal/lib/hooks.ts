@@ -13,6 +13,7 @@ export interface User {
   admission_year?: number;
   phone?: string;
   bio?: string;
+  is_verified?: boolean;
   created_at: string;
 }
 
@@ -333,7 +334,7 @@ export function useRealtimeNotifications(userId: string) {
 
     const fetchInitial = async () => {
       try {
-        const { data, error: err } = await supabase
+        const { data, error: err } = await supabase!
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
