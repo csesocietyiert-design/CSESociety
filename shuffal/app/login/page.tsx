@@ -213,9 +213,9 @@ export default function LoginPage() {
         </div>
 
         {/* Right - Announcements (Responsive) */}
-        <div className="w-full max-w-full md:max-w-[520px] md:hidden lg:block">
+        <div className="w-full max-w-full md:max-w-[520px] hidden md:block">
           <div className="text-white">
-            <h2 className="mb-6 sm:mb-8 text-xl sm:text-2xl md:text-[2.2rem] font-medium leading-snug tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="mb-6 sm:mb-8 text-lg sm:text-xl md:text-2xl font-medium leading-snug tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Latest Updates /<br />
               Announcements
             </h2>
