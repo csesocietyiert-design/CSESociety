@@ -105,7 +105,7 @@ export default function PendingApprovalsPage({ user }: any) {
                   handleApprove(u.id);
                 }}
                 disabled={verifying === u.id}
-                className="w-full mt-4 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition"
+                className="w-full mt-4 px-3 py-2 bg-gradient-to-r from-white via-emerald-50 to-green-200 hover:from-emerald-50 hover:via-emerald-100 hover:to-green-300 disabled:opacity-50 text-emerald-800 rounded-lg text-sm font-semibold shadow-sm shadow-emerald-200/50 transition border border-emerald-200"
               >
                 {verifying === u.id ? 'Approving...' : 'Approve'}
               </button>
@@ -166,7 +166,7 @@ export default function PendingApprovalsPage({ user }: any) {
                   handleApprove(selectedUser.id);
                 }}
                 disabled={verifying === selectedUser.id}
-                className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-medium transition"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-white via-emerald-50 to-green-200 hover:from-emerald-50 hover:via-emerald-100 hover:to-green-300 disabled:opacity-50 text-emerald-800 rounded-lg font-semibold shadow-sm shadow-emerald-200/50 transition border border-emerald-200"
               >
                 {verifying === selectedUser.id ? 'Approving...' : 'Approve Registration'}
               </button>
@@ -197,7 +197,7 @@ export default function PendingApprovalsPage({ user }: any) {
               <button
                 onClick={confirmApproval}
                 disabled={verifying === approvalConfirm.id}
-                className="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-medium transition"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-white via-emerald-50 to-green-200 hover:from-emerald-50 hover:via-emerald-100 hover:to-green-300 disabled:opacity-50 text-emerald-800 rounded-lg font-semibold shadow-sm shadow-emerald-200/50 transition border border-emerald-200"
               >
                 {verifying === approvalConfirm.id ? 'Approving...' : 'Yes, Approve'}
               </button>
