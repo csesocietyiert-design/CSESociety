@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import Link from 'next/link';
 import Image from 'next/image';
-import Script from 'next/script';
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,71 +33,107 @@ export default function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || typeof window === 'undefined') return;
+
+    const googleScriptId = 'google-gsi-script';
+    const initializeGoogle = () => {
+      if (!(window as any).google?.accounts?.id) return;
+
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleSuccess,
+        ux_mode: 'popup',
+      });
+    };
+
+    if (document.getElementById(googleScriptId)) {
+      initializeGoogle();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = googleScriptId;
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeGoogle;
+    document.body.appendChild(script);
+  }, []);
+
   const handleGoogleSuccess = async (response: any) => {
     setGoogleLoading(true);
     setError('');
 
     try {
-      // Send the token to the backend for verification
+      const credential = response?.credential || response?.access_token;
+
+      if (!credential) {
+        throw new Error('Google sign-in failed. No credential was returned.');
+      }
+
       const result = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: response.access_token }),
+        body: JSON.stringify({
+          credential,
+          access_token: response?.access_token,
+          token: response?.access_token,
+        }),
       });
 
+      const data = await result.json().catch(() => ({}));
+
       if (!result.ok) {
-        const data = await result.json();
+        if (result.status === 404) {
+          setError('Account Not Found. Your Google account is not registered with the CSE Society. Please register first or contact the CSE Society administration.');
+          return;
+        }
+
         throw new Error(data.error || 'Google authentication failed');
       }
 
-      const data = await result.json();
       const { user } = data;
 
-      // Store user session
       useAuthStore.setState({
         user,
         isAuthenticated: true,
       });
       localStorage.setItem('authUser', JSON.stringify(user));
 
-      // Redirect to dashboard
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Google authentication failed');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Google authentication failed'
+      );
     } finally {
       setGoogleLoading(false);
     }
   };
 
   const handleGoogleClick = async () => {
-    setGoogleLoading(true);
     setError('');
 
-    try {
-      // Check if google oauth library is available
-      if (!(window as any).google?.accounts?.id) {
-        throw new Error('Google Sign-In not available');
-      }
-
-      // Trigger Google Sign-In
-      (window as any).google.accounts.id.renderButton(
-        document.getElementById('google-btn'),
-        {
-          type: 'standard',
-          size: 'large',
-          theme: 'dark',
-          text: 'signin_with',
-        }
-      );
-
-      // Simulate click on the rendered button
-      const googleBtn = document.querySelector('[data-google-btn]') as HTMLElement;
-      googleBtn?.click();
-    } catch (err) {
-      setError('Google Sign-In setup failed');
-    } finally {
-      setGoogleLoading(false);
+    if (!GOOGLE_CLIENT_ID) {
+      setError('Google Sign-In is not configured for this site.');
+      return;
     }
+
+    if (!(window as any).google?.accounts?.id) {
+      setError('Google Sign-In is not available right now. Please try again.');
+      return;
+    }
+
+    setGoogleLoading(true);
+
+    (window as any).google.accounts.id.prompt((notification: any) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        setError('Google sign-in was cancelled or is unavailable. Please try again.');
+        setGoogleLoading(false);
+      }
+    });
   };
 
   return (
@@ -198,6 +235,27 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          <div className="mt-5 flex items-center gap-3 text-slate-400">
+            <div className="h-px flex-1 bg-slate-600" />
+            <span className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.35em]">OR</span>
+            <div className="h-px flex-1 bg-slate-600" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleClick}
+            disabled={loading || googleLoading}
+            className="mt-4 flex w-full items-center justify-center gap-3 rounded-md border border-white/10 bg-white/5 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+              <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.8-2.7-5.8-6s2.6-6 5.8-6c1.8 0 3 .8 3.7 1.5l2.5-2.4C16.7 3.2 14.7 2.4 12 2.4 6.9 2.4 2.8 6.5 2.8 11.6s4.1 9.2 9.2 9.2c5.3 0 8.8-3.7 8.8-8.9 0-.6-.1-1.2-.2-1.7H12Z" />
+              <path fill="#34A853" d="M3.8 7.2l3.4 2.5c.9-1.7 2.8-2.9 4.8-2.9 1.8 0 3 .8 3.7 1.5l2.5-2.4C16.7 3.2 14.7 2.4 12 2.4c-3.6 0-6.7 2.1-8.2 5.1Z" />
+              <path fill="#FBBC05" d="M3.8 16.9c1.5 2.9 4.6 5.1 8.2 5.1 2.4 0 4.4-.8 5.9-2.3l-2.9-2.4c-.8.6-1.9 1-3 1-2.3 0-4.3-1.6-5-3.7l-3.2 2.3Z" />
+              <path fill="#4285F4" d="M12 21.9c2.8 0 5.2-.9 6.9-2.5l-3.2-2.5c-.9.6-2.1 1-3.7 1-3.2 0-5.4-2.2-5.4-4.9H.9v2.8c1.6 3.2 4.9 5.1 11.1 5.1Z" />
+            </svg>
+            <span>{googleLoading ? 'Connecting...' : 'Continue with Google'}</span>
+          </button>
 
           <div className="mt-4 sm:mt-6 text-center">
             <p className="text-xs sm:text-sm md:text-base text-slate-200">

@@ -8,7 +8,7 @@ export default function MembersPanel({ user }: any) {
   const { users, loading } = useUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterYear, setFilterYear] = useState('all');
-  const [filterRole, setFilterRole] = useState('all');
+  const [sortBy, setSortBy] = useState<'status' | 'name' | 'cse_id' | 'email' | 'year' | 'role'>('name');
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const filteredUsers = users.filter((u) => {
@@ -17,9 +17,37 @@ export default function MembersPanel({ user }: any) {
       u.cse_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesYear = filterYear === 'all' || u.year?.toString() === filterYear;
-    const matchesRole = filterRole === 'all' || u.role === filterRole;
 
-    return matchesSearch && matchesYear && matchesRole;
+    return matchesSearch && matchesYear;
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const compareText = (first: string | undefined, second: string | undefined) =>
+      (first ?? '').localeCompare(second ?? '', undefined, { sensitivity: 'base' });
+
+    switch (sortBy) {
+      case 'status': {
+        if (a.is_verified !== b.is_verified) {
+          return Number(b.is_verified) - Number(a.is_verified);
+        }
+        return compareText(a.name, b.name);
+      }
+      case 'name':
+        return compareText(a.name, b.name) || compareText(a.email, b.email);
+      case 'cse_id':
+        return compareText(a.cse_id, b.cse_id) || compareText(a.name, b.name);
+      case 'email':
+        return compareText(a.email, b.email) || compareText(a.name, b.name);
+      case 'year': {
+        const yearA = Number(a.year ?? 0);
+        const yearB = Number(b.year ?? 0);
+        return yearA - yearB || compareText(a.name, b.name);
+      }
+      case 'role':
+        return compareText(a.role, b.role) || compareText(a.name, b.name);
+      default:
+        return 0;
+    }
   });
 
   const stats = {
@@ -72,21 +100,22 @@ export default function MembersPanel({ user }: any) {
             <option value="4">4th Year</option>
           </select>
           <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'status' | 'name' | 'cse_id' | 'email' | 'year' | 'role')}
             className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 transition"
           >
-            <option value="all">All Roles</option>
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-            <option value="executive">Executive</option>
-            <option value="faculty">Faculty</option>
+            <option value="status">Approved</option>
+            <option value="name">Name</option>
+            <option value="cse_id">CSE ID</option>
+            <option value="email">Email</option>
+            <option value="year">Year</option>
+            <option value="role">Role</option>
           </select>
           <button
             onClick={() => {
               setSearchTerm('');
               setFilterYear('all');
-              setFilterRole('all');
+              setSortBy('name');
             }}
             className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition"
           >
@@ -99,7 +128,7 @@ export default function MembersPanel({ user }: any) {
         <div className="text-center py-10">
           <p className="text-slate-400">Loading members...</p>
         </div>
-      ) : filteredUsers.length === 0 ? (
+      ) : sortedUsers.length === 0 ? (
         <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-12 text-center">
           <p className="text-slate-400 text-lg">No members found</p>
         </div>
@@ -119,7 +148,7 @@ export default function MembersPanel({ user }: any) {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((u) => (
+                {sortedUsers.map((u) => (
                   <tr
                     key={u.id}
                     className="border-b border-slate-700/20 hover:bg-slate-800/30 transition-colors"

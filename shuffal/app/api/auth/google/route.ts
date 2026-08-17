@@ -2,8 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
 
 export async function POST(request: Request) {
   try {
@@ -14,20 +12,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const { token } = await request.json();
+    const body = await request.json();
+    const credential = body?.credential || body?.token || body?.access_token;
 
-    if (!token) {
+    if (!credential) {
       return Response.json(
-        { error: 'Google token required' },
+        { error: 'Google credential required' },
         { status: 400 }
       );
     }
 
-    // Verify the Google token
-    const tokenVerifyUrl = `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`;
-    
-    const googleResponse = await fetch(tokenVerifyUrl);
-    
+    const googleResponse = credential.includes('.')
+      ? await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`)
+      : await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${encodeURIComponent(credential)}`);
+
     if (!googleResponse.ok) {
       return Response.json(
         { error: 'Invalid Google token' },
@@ -36,7 +34,8 @@ export async function POST(request: Request) {
     }
 
     const googleUser = await googleResponse.json();
-    const { email, name, picture } = googleUser;
+    const email = String(googleUser.email || '').trim().toLowerCase();
+    const name = googleUser.name || 'Google User';
 
     if (!email) {
       return Response.json(
@@ -45,24 +44,28 @@ export async function POST(request: Request) {
       );
     }
 
-    // Use service role key for backend queries
+    if (googleUser.email_verified === false && googleUser.verified_email === false) {
+      return Response.json(
+        { error: 'Google account email is not verified' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Check if the email exists in the CSE Society database
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
-      .single();
+      .ilike('email', email)
+      .maybeSingle();
 
     if (error || !data) {
       return Response.json(
-        { error: 'Email not registered with CSE Society. Please register first.' },
+        { error: 'Account Not Found. Your Google account is not registered with the CSE Society. Please register first or contact the CSE Society administration.' },
         { status: 404 }
       );
     }
 
-    // Verify the user is active/verified
     if (!data.is_verified) {
       return Response.json(
         { error: 'Your account is pending approval. Please wait for admin verification.' },
@@ -70,7 +73,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // User exists and is verified - return their data
     return Response.json({
       user: {
         id: data.id,
