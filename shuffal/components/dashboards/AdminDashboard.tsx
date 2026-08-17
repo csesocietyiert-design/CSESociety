@@ -26,10 +26,11 @@ export default function AdminDashboard({ user }: any) {
       try {
         if (!supabase) return;
 
-        const [usersResult, eventsResult, pendingResult] = await Promise.all([
+        const [usersResult, eventsResult, pendingResult, certificatesResult] = await Promise.all([
           supabase.from('users').select('id', { count: 'exact', head: true }),
           supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'upcoming'),
           supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false),
+          supabase.from('certificates').select('id', { count: 'exact', head: true }),
         ]);
 
         setPendingCount(pendingResult.count || 0);
@@ -37,7 +38,7 @@ export default function AdminDashboard({ user }: any) {
           totalMembers: usersResult.count || 0,
           activeEvents: eventsResult.count || 0,
           pendingApprovals: pendingResult.count || 0,
-          totalCertificates: Math.floor(Math.random() * 100),
+          totalCertificates: certificatesResult.count || 0,
         });
       } catch (err) {
         console.error('Error fetching stats:', err);
