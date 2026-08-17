@@ -130,7 +130,7 @@ export default function LoginPage() {
         
         {/* Mobile Announcements - Shows on left for mobile */}
         <div className="w-[85%] md:hidden order-first md:order-none text-white text-left">
-          <h2 className="text-lg sm:text-xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+          <h2 className="text-xl sm:text-2xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             Latest Updates /<br />
             Announcements
           </h2>
@@ -212,7 +212,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-[#1c8df0] py-2 sm:py-3 text-base sm:text-xl md:text-2xl font-bold text-white transition hover:bg-[#157fe4] disabled:opacity-50 active:scale-95"
+              className="w-full rounded-md bg-[#1c8df0] py-2 sm:py-3 text-sm sm:text-base md:text-lg font-bold text-white transition hover:bg-[#157fe4] disabled:opacity-50 active:scale-95"
               style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
@@ -232,7 +232,7 @@ export default function LoginPage() {
         {/* Right - Announcements (Responsive) */}
         <div className="w-full max-w-full md:max-w-[520px] hidden md:block">
           <div className="text-white">
-            <h2 className="mb-6 sm:mb-8 text-lg sm:text-xl md:text-2xl font-medium leading-snug tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="mb-6 sm:mb-8 text-xl sm:text-2xl md:text-3xl font-medium leading-snug tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Latest Updates /<br />
               Announcements
             </h2>
