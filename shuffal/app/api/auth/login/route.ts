@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     if (error || !data) {
       return Response.json(
-        { error: 'Invalid CSE ID or password' },
+        { error: 'Invalid Credentials' },
         { status: 401 }
       );
     }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const passwordMatch = await verifyPassword(password, data.password_hash);
     if (!passwordMatch) {
       return Response.json(
-        { error: 'Invalid CSE ID or password' },
+        { error: 'Invalid Credentials' },
         { status: 401 }
       );
     }
