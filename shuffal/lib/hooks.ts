@@ -137,21 +137,30 @@ export function useNotificationsToday(userId: string) {
       try {
         if (!supabase) return;
 
+        // Fetch all notifications for user and filter in client-side
+        const { data, error: err } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (err) {
+          console.error('Error fetching notifications:', err);
+          throw err;
+        }
+
+        // Filter for today's notifications client-side
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const { data, error: err } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .gte('created_at', today.toISOString())
-          .lt('created_at', tomorrow.toISOString())
-          .order('created_at', { ascending: false });
+        const filtered = (data || []).filter(notification => {
+          const notifDate = new Date(notification.created_at);
+          return notifDate >= today && notifDate < tomorrow;
+        });
 
-        if (err) throw err;
-        setTodayNotifications(data || []);
+        setTodayNotifications(filtered);
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         const now = new Date();
