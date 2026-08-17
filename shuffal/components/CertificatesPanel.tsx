@@ -8,81 +8,107 @@ type CertificateCard = {
   eventName: string;
   date: string;
   driveLink: string;
+  createdBy?: string;
+  createdAt?: string;
 };
-
-const defaultCards: CertificateCard[] = [
-  {
-    id: '1',
-    eventName: 'CSE Society Tech Meet',
-    date: '2026-08-12',
-    driveLink: 'https://drive.google.com/',
-  },
-  {
-    id: '2',
-    eventName: 'Web Development Workshop',
-    date: '2026-07-19',
-    driveLink: 'https://drive.google.com/',
-  },
-];
 
 export default function CertificatesPanel() {
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === 'admin' || user?.role === 'faculty';
-  const [cards, setCards] = useState<CertificateCard[]>(defaultCards);
+  const [cards, setCards] = useState<CertificateCard[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [eventName, setEventName] = useState('');
   const [date, setDate] = useState('');
   const [driveLink, setDriveLink] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<CertificateCard | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch certificates from database
   useEffect(() => {
-    const stored = localStorage.getItem('cse-society-certificates');
-    if (stored) {
+    const fetchCertificates = async () => {
       try {
-        const parsed = JSON.parse(stored) as CertificateCard[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCards(parsed);
+        setIsLoading(true);
+        const response = await fetch('/api/certificates');
+        if (!response.ok) {
+          throw new Error('Failed to fetch certificates');
         }
-      } catch {
-        // Ignore malformed storage data.
+        const data = await response.json();
+        setCards(data.certificates || []);
+      } catch (err) {
+        console.error('Error fetching certificates:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load certificates');
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, []);
+    };
 
-  useEffect(() => {
-    localStorage.setItem('cse-society-certificates', JSON.stringify(cards));
-  }, [cards]);
+    fetchCertificates();
+  }, []);
 
   const totalCertificates = useMemo(() => cards.length, [cards]);
 
-  const handleDeleteCard = (cardId: string) => {
-    setCards((current) => current.filter((card) => card.id !== cardId));
-    setDeleteTarget(null);
+  const handleDeleteCard = async (cardId: string) => {
+    try {
+      const response = await fetch(`/api/certificates/${cardId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete certificate');
+      }
+
+      setCards((current) => current.filter((card) => card.id !== cardId));
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error('Error deleting certificate:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete certificate');
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!eventName.trim() || !date || !driveLink.trim()) {
+    if (!eventName.trim() || !date || !driveLink.trim() || !user?.id) {
       return;
     }
 
-    const newCard: CertificateCard = {
-      id: Date.now().toString(),
-      eventName: eventName.trim(),
-      date,
-      driveLink: driveLink.trim(),
-    };
+    try {
+      const response = await fetch('/api/certificates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: eventName.trim(),
+          date,
+          driveLink: driveLink.trim(),
+          userId: user.id,
+        }),
+      });
 
-    setCards((current) => [newCard, ...current]);
-    setEventName('');
-    setDate('');
-    setDriveLink('');
-    setShowForm(false);
+      if (!response.ok) {
+        throw new Error('Failed to create certificate');
+      }
+
+      const data = await response.json();
+      setCards((current) => [data.certificate, ...current]);
+      setEventName('');
+      setDate('');
+      setDriveLink('');
+      setShowForm(false);
+    } catch (err) {
+      console.error('Error creating certificate:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create certificate');
+    }
   };
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          {error}
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.3em] text-blue-300">CSE Society</p>
@@ -155,7 +181,12 @@ export default function CertificatesPanel() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => (
+        {isLoading ? (
+          <div className="col-span-full text-center text-slate-400 py-10">
+            Loading certificates...
+          </div>
+        ) : cards.length > 0 ? (
+          cards.map((card) => (
           <div
             key={card.id}
             className="group relative rounded-2xl border border-slate-700/70 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 p-5 text-left transition duration-200 hover:-translate-y-1 hover:border-blue-400/60 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]"
@@ -209,10 +240,15 @@ export default function CertificatesPanel() {
               </div>
             </a>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 p-10 text-center text-slate-400">
+            No certificate cards yet.
+          </div>
+        )}
       </div>
 
-      {cards.length === 0 && (
+      {!isLoading && cards.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 p-10 text-center text-slate-400">
           No certificate cards yet.
         </div>
