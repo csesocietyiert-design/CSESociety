@@ -236,18 +236,19 @@ export default function LoginPage() {
         </div>
 
         {/* Mobile Announcements Card */}
-        <div className="w-full md:hidden backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-4 sm:p-6 mt-6">
+        <div className="w-full md:hidden mt-6 text-white">
           <h2 className="text-lg sm:text-xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            📢 Latest Updates
+            Latest Updates /<br />
+            Announcements
           </h2>
           <div className="space-y-3">
             <p className="text-xs sm:text-sm font-medium text-white">
               Registration Deadline for 2026 session
             </p>
-            <div className="space-y-1 text-xs sm:text-sm text-white/80">
-              <p>✓ Form release: 14 Aug 2026</p>
-              <p>✓ Deadline: 25 Aug 2026</p>
-              <p>✓ Verification: 26 Aug 2026</p>
+            <div className="space-y-1 text-xs sm:text-sm text-white/90">
+              <p>Form release date: 14 Aug 2026</p>
+              <p>Deadline: 25 August 2026</p>
+              <p>Verification: 26 August 2026</p>
             </div>
           </div>
         </div>
