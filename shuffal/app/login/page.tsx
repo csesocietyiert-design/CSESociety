@@ -128,6 +128,23 @@ export default function LoginPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-6 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-20 sm:pt-[90px]">
         
+        {/* Mobile Announcements - Shows on left for mobile */}
+        <div className="w-[85%] md:hidden order-first md:order-none text-white text-left">
+          <h2 className="text-lg sm:text-xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            Latest Updates /<br />
+            Announcements
+          </h2>
+          <div className="space-y-3">
+            <p className="text-xs sm:text-sm font-medium text-white">
+              Registration Deadline for 2026 session
+            </p>
+            <div className="space-y-1 text-xs sm:text-sm text-white/90">
+              <p>Form release date: 14 Aug 2026</p>
+              <p>Deadline: 25 August 2026</p>
+              <p>Verification: 26 August 2026</p>
+            </div>
+          </div>
+        </div>
         {/* Left - Login Card */}
         <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
           <div className="mb-5 flex justify-center">
@@ -231,24 +248,6 @@ export default function LoginPage() {
                   <p>Verification: 26 August 2026</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Announcements Card */}
-        <div className="w-[90%] md:hidden mt-6 text-white">
-          <h2 className="text-lg sm:text-xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            Latest Updates /<br />
-            Announcements
-          </h2>
-          <div className="space-y-3">
-            <p className="text-xs sm:text-sm font-medium text-white">
-              Registration Deadline for 2026 session
-            </p>
-            <div className="space-y-1 text-xs sm:text-sm text-white/90">
-              <p>Form release date: 14 Aug 2026</p>
-              <p>Deadline: 25 August 2026</p>
-              <p>Verification: 26 August 2026</p>
             </div>
           </div>
         </div>
