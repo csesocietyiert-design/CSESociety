@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useUsers } from '@/lib/hooks';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
 
 export default function MembersPanel({ user }: any) {
   const { users, loading } = useUsers();
@@ -54,6 +56,127 @@ export default function MembersPanel({ user }: any) {
     total: users.length,
     verified: users.filter((u) => u.is_verified).length,
     pending: users.filter((u) => !u.is_verified).length,
+  };
+
+  // Export functions
+  const exportToJSON = () => {
+    const dataToExport = sortedUsers.map((u) => ({
+      name: u.name,
+      cseId: u.cse_id,
+      email: u.email,
+      year: u.year,
+      role: u.role,
+      department: u.department,
+      status: u.is_verified ? 'Verified' : 'Pending',
+      joinedDate: new Date(u.created_at).toLocaleDateString('en-IN'),
+    }));
+
+    const dataStr = JSON.stringify(dataToExport, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `members_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = sortedUsers.map((u) => ({
+      Name: u.name,
+      'CSE ID': u.cse_id,
+      Email: u.email,
+      Year: u.year,
+      Role: u.role,
+      Department: u.department,
+      Status: u.is_verified ? 'Verified' : 'Pending',
+      'Joined Date': new Date(u.created_at).toLocaleDateString('en-IN'),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
+
+    // Auto-size columns
+    const colWidths = [
+      { wch: 20 },
+      { wch: 12 },
+      { wch: 25 },
+      { wch: 8 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 15 },
+    ];
+    worksheet['!cols'] = colWidths;
+
+    XLSX.writeFile(workbook, `members_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const exportToPDF = () => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    let yPosition = 10;
+
+    // Title
+    pdf.setFontSize(16);
+    pdf.text('CSE Society - Members Directory', pageWidth / 2, yPosition, { align: 'center' } as any);
+    yPosition += 10;
+
+    // Export date
+    pdf.setFontSize(10);
+    pdf.text(`Exported on: ${new Date().toLocaleDateString('en-IN')}`, 10, yPosition);
+    yPosition += 8;
+
+    // Stats
+    pdf.setFontSize(11);
+    pdf.text(`Total Members: ${sortedUsers.length} | Verified: ${sortedUsers.filter((u) => u.is_verified).length} | Pending: ${sortedUsers.filter((u) => !u.is_verified).length}`, 10, yPosition);
+    yPosition += 10;
+
+    // Table headers
+    const headers = ['Name', 'CSE ID', 'Email', 'Year', 'Role', 'Status'];
+    const colWidths = [30, 20, 40, 10, 20, 18];
+    let xPosition = 10;
+
+    pdf.setFontSize(10);
+    pdf.setFont('', 'bold');
+    headers.forEach((header) => {
+      pdf.text(header as string, xPosition, yPosition);
+      xPosition += colWidths[headers.indexOf(header)];
+    });
+    yPosition += 7;
+    pdf.setFont('', 'normal');
+
+    // Table rows
+    pdf.setFontSize(9);
+    sortedUsers.forEach((u) => {
+      if (yPosition > pageHeight - 20) {
+        pdf.addPage();
+        yPosition = 10;
+      }
+
+      xPosition = 10;
+      const rowData = [
+        String(u.name || ''),
+        String(u.cse_id || ''),
+        String(u.email || ''),
+        String(u.year || ''),
+        String(u.role || ''),
+        u.is_verified ? 'Verified' : 'Pending',
+      ];
+
+      rowData.forEach((data, idx) => {
+        const cellText = data.length > 20 ? data.substring(0, 17) + '...' : data;
+        pdf.text(cellText as string, xPosition, yPosition);
+        xPosition += colWidths[idx];
+      });
+      yPosition += 6;
+    });
+
+    pdf.save(`members_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   return (
@@ -120,6 +243,28 @@ export default function MembersPanel({ user }: any) {
             className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition"
           >
             Clear Filters
+          </button>
+        </div>
+
+        {/* Export Buttons */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          <button
+            onClick={exportToJSON}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+          >
+            <span>📄</span> JSON
+          </button>
+          <button
+            onClick={exportToExcel}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+          >
+            <span>📊</span> Excel
+          </button>
+          <button
+            onClick={exportToPDF}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+          >
+            <span>📕</span> PDF
           </button>
         </div>
       </div>
