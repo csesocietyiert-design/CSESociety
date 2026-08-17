@@ -101,7 +101,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden"
+      className="min-h-screen relative overflow-y-auto"
       style={{
         background: 'linear-gradient(90deg, #020d1a 0%, #081d31 38%, #0d2945 100%)',
       }}
@@ -128,14 +128,12 @@ export default function LoginPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-7 sm:gap-8 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-20 sm:pt-[90px]">
         {/* Left - Login Card */}
-        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm order-1 md:order-1">
-          <div className="mb-5 flex justify-center">
-            <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
-              <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
-            </div>
+        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm order-1 md:order-1 relative pt-20 sm:pt-24 md:pt-28 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
+          <div className="absolute -top-14 sm:-top-18 md:-top-22 left-1/2 transform -translate-x-1/2 flex justify-center">
+            <Image src="/logo.png" alt="CSE Society Logo" width={140} height={140} className="h-32 sm:h-40 md:h-48 w-32 sm:w-40 md:w-48 object-contain" priority />
           </div>
 
-          <div className="mb-6 sm:mb-8 text-center">
+          <div className="mb-4 sm:mb-6 md:mb-8 text-center">
             <h1 className="text-lg sm:text-2xl md:text-[2.2rem] font-bold leading-snug text-white break-words">
               𝗟𝗼𝗴𝗶𝗻 𝘁𝗼 𝗖𝗦𝗘 𝗦𝗼𝗰𝗶𝗲𝘁𝘆
             </h1>
