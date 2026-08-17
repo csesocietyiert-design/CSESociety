@@ -24,18 +24,32 @@ export default function AdminDashboard({ user }: any) {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        if (!supabase) return;
+        if (!supabase) {
+          console.error('Supabase not initialized');
+          return;
+        }
 
-        const [usersResult, eventsResult, pendingResult, certificatesResult] = await Promise.all([
-          supabase.from('users').select('id', { count: 'exact', head: true }),
-          supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'upcoming'),
-          supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false),
-          supabase.from('certificates').select('id', { count: 'exact', head: true }),
-        ]);
+        console.log('Fetching dashboard stats...');
 
-        console.log('Certificate count:', certificatesResult.count);
-        console.log('All stats:', { users: usersResult.count, events: eventsResult.count, pending: pendingResult.count, certs: certificatesResult.count });
-        
+        const usersResult = await supabase.from('users').select('id', { count: 'exact', head: true });
+        console.log('Users result:', usersResult);
+
+        const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'upcoming');
+        console.log('Events result:', eventsResult);
+
+        const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
+        console.log('Pending result:', pendingResult);
+
+        // Test if certificates table exists
+        console.log('Attempting to fetch certificates...');
+        const certificatesResult = await supabase.from('certificates').select('id', { count: 'exact', head: true });
+        console.log('Certificates result:', certificatesResult);
+
+        if (certificatesResult.error) {
+          console.error('CERTIFICATE ERROR:', certificatesResult.error.message);
+          console.error('Certificate table might not exist or missing permissions');
+        }
+
         setPendingCount(pendingResult.count || 0);
         setStats({
           totalMembers: usersResult.count || 0,
@@ -43,9 +57,19 @@ export default function AdminDashboard({ user }: any) {
           pendingApprovals: pendingResult.count || 0,
           totalCertificates: certificatesResult.count || 0,
         });
+
+        console.log('✅ Stats loaded:', {
+          totalMembers: usersResult.count,
+          activeEvents: eventsResult.count,
+          pendingApprovals: pendingResult.count,
+          totalCertificates: certificatesResult.count,
+        });
       } catch (err) {
-        console.error('Error fetching stats:', err);
-        alert('Error loading dashboard stats: ' + (err instanceof Error ? err.message : String(err)));
+        console.error('❌ CRITICAL ERROR fetching stats:', err);
+        console.error('Error details:', {
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : 'no stack',
+        });
       }
     };
 
