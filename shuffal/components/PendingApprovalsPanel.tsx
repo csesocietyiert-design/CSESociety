@@ -10,6 +10,13 @@ export default function PendingApprovalsPage({ user }: any) {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [approvalConfirm, setApprovalConfirm] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredUsers = pendingUsers.filter((u) =>
+    u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.cse_id?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleApprove = async (userId: string) => {
     const userToApprove = pendingUsers.find(u => u.id === userId);
@@ -42,8 +49,22 @@ export default function PendingApprovalsPage({ user }: any) {
           <p className="text-slate-400 mt-2">Verify new member registrations</p>
         </div>
         <div className="px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-          <p className="text-yellow-400 font-semibold">{pendingUsers.length} Pending</p>
+          <p className="text-yellow-400 font-semibold">{filteredUsers.length} Pending</p>
         </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Search by name, email, or CSE ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-slate-900/40 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500/50 text-sm sm:text-base transition"
+        />
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+          🔍
+        </span>
       </div>
 
       {loading ? (
@@ -54,9 +75,13 @@ export default function PendingApprovalsPage({ user }: any) {
         <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-12 text-center">
           <p className="text-slate-400 text-lg">All registrations have been approved!</p>
         </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-12 text-center">
+          <p className="text-slate-400 text-lg">No users found matching "{searchQuery}"</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {pendingUsers.map((u) => (
+          {filteredUsers.map((u) => (
             <div
               key={u.id}
               className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 hover:border-yellow-500/50 transition-colors cursor-pointer"
