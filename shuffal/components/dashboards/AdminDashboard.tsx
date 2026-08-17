@@ -74,6 +74,54 @@ export default function AdminDashboard({ user }: any) {
     };
 
     fetchStats();
+
+    // Set up real-time subscriptions to update stats when data changes
+    if (!supabase) return;
+
+    console.log('Setting up real-time subscriptions...');
+
+    const certificatesSubscription = supabase
+      .channel('certificates-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'certificates' },
+        () => {
+          console.log('Certificate changed, refetching stats...');
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    const usersSubscription = supabase
+      .channel('users-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'users' },
+        () => {
+          console.log('Users changed, refetching stats...');
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    const eventsSubscription = supabase
+      .channel('events-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          console.log('Events changed, refetching stats...');
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      certificatesSubscription.unsubscribe();
+      usersSubscription.unsubscribe();
+      eventsSubscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
