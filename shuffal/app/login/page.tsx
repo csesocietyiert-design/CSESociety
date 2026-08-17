@@ -126,7 +126,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-5 sm:gap-6 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-20 sm:pt-[90px]">
+      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-7 sm:gap-8 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-20 sm:pt-[90px]">
         {/* Left - Login Card */}
         <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm order-1 md:order-1">
           <div className="mb-5 flex justify-center">
@@ -212,7 +212,7 @@ export default function LoginPage() {
         </div>
 
         {/* Mobile Announcements - Shows below the card on mobile */}
-        <div className="w-[85%] md:hidden order-2 mt-2 sm:mt-3 text-white text-left">
+        <div className="w-[85%] md:hidden order-2 mt-3 sm:mt-4 text-white text-left">
           <h2 className="text-xl sm:text-2xl font-medium text-white mb-3 sm:mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             Latest Updates /<br />
             Announcements
