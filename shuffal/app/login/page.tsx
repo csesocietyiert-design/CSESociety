@@ -126,7 +126,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-7 sm:gap-8 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-32 sm:pt-[140px] md:pt-[120px]">
+      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-7 sm:gap-8 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-48 sm:pt-[200px] md:pt-[180px]">
         {/* Left - Login Card */}
         <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm order-1 md:order-1 relative pt-24 sm:pt-32 md:pt-40 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
           <div className="absolute -top-16 sm:-top-24 md:-top-32 left-1/2 transform -translate-x-1/2 flex justify-center">
