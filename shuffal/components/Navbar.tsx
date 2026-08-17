@@ -74,8 +74,8 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700 text-sm">
+        <div className="flex items-center gap-3 sm:gap-6">
+          <div className="hidden sm:flex items-center px-3 sm:px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700 text-xs sm:text-sm">
             <span className="text-slate-400">
               {new Date().toLocaleDateString('en-IN', { 
                 month: 'short', 

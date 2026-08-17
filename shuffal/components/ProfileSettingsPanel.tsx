@@ -98,7 +98,7 @@ export default function ProfileSettingsPanel({ user }: any) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 text-center">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4">
+            <div className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl sm:text-3xl md:text-4xl mx-auto mb-4">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <h3 className="text-lg font-bold text-white">{user?.name}</h3>

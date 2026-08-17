@@ -76,13 +76,13 @@ export default function RegisterPage() {
       }}
     >
       {/* Top Dark Strip */}
-      <div className="fixed top-0 left-0 right-0 h-[70px] bg-[#020f1d] border-b border-white/10 flex items-center px-8 z-50">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
+      <div className="fixed top-0 left-0 right-0 h-16 sm:h-[70px] bg-[#020f1d] border-b border-white/10 flex items-center px-4 sm:px-8 z-50">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
             <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white leading-tight">CSE Society</h1>
+            <h1 className="text-base sm:text-xl font-bold text-white leading-tight">CSE Society</h1>
             <p className="text-xs text-slate-400">IERT Portal</p>
           </div>
         </div>
@@ -95,20 +95,20 @@ export default function RegisterPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-6 pt-[70px]">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-16 sm:pt-[70px]">
         {/* Registration Card */}
-        <div className="w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+        <div className="w-full max-w-full sm:max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-6 sm:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
           <div className="mb-6 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
+            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
               <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
             </div>
           </div>
 
           <div className="mb-8 text-center">
-            <h1 className="text-[2.2rem] font-bold leading-tight text-white">
-              �𝐞𝐠𝐢𝐬𝐭𝐫𝐚𝐭𝐢𝐨𝐧 𝐟𝐨𝐫𝐦
+            <h1 className="text-xl sm:text-[2.2rem] font-bold leading-tight text-white">
+              𝑹𝐞𝐠𝐢𝐬𝐭𝐫𝐚𝐭𝐢𝐨𝐧 𝐟𝐨𝐫𝐦
             </h1>
-            <p className="mt-2 text-[1.05rem] text-slate-200">
+            <p className="mt-2 text-sm sm:text-[1.05rem] text-slate-200">
               𝑱𝒐𝒊𝒏 𝑪𝑺𝑬 𝑺𝒐𝒄𝒊𝒆𝒕𝒚 𝒕𝒐𝒅𝒂𝒚
             </p>
           </div>

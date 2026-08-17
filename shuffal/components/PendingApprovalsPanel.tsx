@@ -91,7 +91,7 @@ export default function PendingApprovalsPage({ user }: any) {
 
       {showDetails && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="backdrop-blur-md bg-slate-900 border border-slate-700/50 rounded-lg p-8 max-w-2xl w-full max-h-96 overflow-y-auto">
+          <div className="backdrop-blur-md bg-slate-900 border border-slate-700/50 rounded-lg p-6 sm:p-8 max-w-full sm:max-w-2xl w-full max-h-96 overflow-y-auto">
             <div className="flex items-start justify-between mb-6">
               <h3 className="text-2xl font-bold text-white">Member Details</h3>
               <button
@@ -158,7 +158,7 @@ export default function PendingApprovalsPage({ user }: any) {
 
       {approvalConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="backdrop-blur-md bg-slate-900 border border-yellow-500/50 rounded-lg p-8 max-w-md w-full">
+          <div className="backdrop-blur-md bg-slate-900 border border-yellow-500/50 rounded-lg p-6 sm:p-8 max-w-full sm:max-w-md w-full">
             <h3 className="text-2xl font-bold text-white mb-4">Confirm Approval</h3>
             <p className="text-slate-300 mb-6">
               Are you sure you want to verify and approve{' '}

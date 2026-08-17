@@ -35,16 +35,16 @@ export default function MembersPanel({ user }: any) {
           <h2 className="text-3xl font-bold text-white">Members Directory</h2>
           <p className="text-slate-400 mt-2">Manage CSE Society members</p>
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
-          <div className="px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-center">
-            <p className="text-blue-400 font-semibold text-lg">{stats.total}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+          <div className="px-2 sm:px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-center">
+            <p className="text-blue-400 font-semibold text-base sm:text-lg">{stats.total}</p>
             <p className="text-blue-300 text-xs">Total</p>
           </div>
-          <div className="px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-center">
-            <p className="text-green-400 font-semibold text-lg">{stats.verified}</p>
+          <div className="px-2 sm:px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-center">
+            <p className="text-green-400 font-semibold text-base sm:text-lg">{stats.verified}</p>
             <p className="text-green-300 text-xs">Verified</p>
           </div>
-          <div className="px-3 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-center">
+          <div className="hidden sm:block px-3 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-center">
             <p className="text-yellow-400 font-semibold text-lg">{stats.pending}</p>
             <p className="text-yellow-300 text-xs">Pending</p>
           </div>
@@ -52,7 +52,7 @@ export default function MembersPanel({ user }: any) {
       </div>
 
       <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           <input
             type="text"
             placeholder="Search by name, email, or CSE ID"
