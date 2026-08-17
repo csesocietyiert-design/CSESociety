@@ -195,13 +195,17 @@ export function useEvents() {
 
         const { data, error: err } = await supabase
           .from('events')
-          .select('*')
-          .order('start_date', { ascending: false });
+          .select('*');
 
-        if (err) throw err;
+        if (err) {
+          console.error('Error fetching events:', err.message);
+          setEvents([]);
+          return;
+        }
         setEvents(data || []);
       } catch (err) {
         console.error('Error fetching events:', err);
+        setEvents([]);
       } finally {
         setLoading(false);
       }

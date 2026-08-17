@@ -35,6 +35,9 @@ export default function AdminDashboard({ user }: any) {
         console.log('Users result:', usersResult);
 
         const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true });
+        if (eventsResult.error) {
+          console.warn('Could not fetch events count:', eventsResult.error.message);
+        }
         console.log('Events result:', eventsResult);
 
         const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
