@@ -247,24 +247,24 @@ export default function MembersPanel({ user }: any) {
         </div>
 
         {/* Export Buttons */}
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2.5 mt-4">
           <button
             onClick={exportToJSON}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+            className="min-w-[92px] rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-medium text-white shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-sm transition-all duration-200 hover:border-white/40 hover:bg-gradient-to-r hover:from-white/20 hover:to-sky-200/10 hover:shadow-[0_8px_24px_rgba(255,255,255,0.14)]"
           >
-            <span>📄</span> JSON
+            <span className="mr-1.5">📄</span>JSON
           </button>
           <button
             onClick={exportToExcel}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+            className="min-w-[92px] rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-medium text-white shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-sm transition-all duration-200 hover:border-white/40 hover:bg-gradient-to-r hover:from-white/20 hover:to-emerald-200/10 hover:shadow-[0_8px_24px_rgba(255,255,255,0.14)]"
           >
-            <span>📊</span> Excel
+            <span className="mr-1.5">📊</span>Excel
           </button>
           <button
             onClick={exportToPDF}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+            className="min-w-[92px] rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-medium text-white shadow-[0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-sm transition-all duration-200 hover:border-white/40 hover:bg-gradient-to-r hover:from-white/20 hover:to-rose-200/10 hover:shadow-[0_8px_24px_rgba(255,255,255,0.14)]"
           >
-            <span>📕</span> PDF
+            <span className="mr-1.5">📕</span>PDF
           </button>
         </div>
       </div>
