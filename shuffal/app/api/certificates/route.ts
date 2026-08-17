@@ -10,12 +10,22 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 export async function GET() {
   try {
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase credentials');
+      return NextResponse.json({ certificates: [] });
+    }
+
     const { data, error } = await supabase
       .from('certificates')
       .select('id, event_name, date, drive_link, created_by, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Supabase error fetching certificates:', error);
+      // Return empty array if table doesn't exist yet
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ certificates: [] });
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -30,12 +40,18 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch certificates' }, { status: 500 });
+    console.error('Error fetching certificates:', error);
+    return NextResponse.json({ certificates: [] });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase credentials');
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+
     const body = await request.json();
     const { eventName, date, driveLink, userId } = body;
 
@@ -55,6 +71,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
+      console.error('Supabase error creating certificate:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -70,6 +87,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    console.error('Error creating certificate:', error);
     return NextResponse.json({ error: 'Failed to create certificate' }, { status: 500 });
   }
 }

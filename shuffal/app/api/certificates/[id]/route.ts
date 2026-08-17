@@ -19,17 +19,24 @@ export async function DELETE(
       return NextResponse.json({ error: 'Certificate ID is required' }, { status: 400 });
     }
 
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase credentials');
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+
     const { error } = await supabase
       .from('certificates')
       .delete()
       .eq('id', id);
 
     if (error) {
+      console.error('Supabase error deleting certificate:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Error deleting certificate:', error);
     return NextResponse.json({ error: 'Failed to delete certificate' }, { status: 500 });
   }
 }
