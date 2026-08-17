@@ -127,26 +127,8 @@ export default function LoginPage() {
 
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-6 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-20 sm:pt-[90px]">
-        
-        {/* Mobile Announcements - Shows on left for mobile */}
-        <div className="w-[85%] md:hidden order-first md:order-none text-white text-left">
-          <h2 className="text-xl sm:text-2xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            Latest Updates /<br />
-            Announcements
-          </h2>
-          <div className="space-y-3">
-            <p className="text-xs sm:text-sm font-medium text-white">
-              Registration Deadline for 2026 session
-            </p>
-            <div className="space-y-1 text-xs sm:text-sm text-white/90">
-              <p>Form release date: 14 Aug 2026</p>
-              <p>Deadline: 25 August 2026</p>
-              <p>Verification: 26 August 2026</p>
-            </div>
-          </div>
-        </div>
         {/* Left - Login Card */}
-        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm order-1 md:order-1">
           <div className="mb-5 flex justify-center">
             <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
               <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
@@ -229,8 +211,26 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Mobile Announcements - Shows below the card on mobile */}
+        <div className="w-[85%] md:hidden order-2 text-white text-left">
+          <h2 className="text-xl sm:text-2xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            Latest Updates /<br />
+            Announcements
+          </h2>
+          <div className="space-y-3">
+            <p className="text-xs sm:text-sm font-medium text-white">
+              Registration Deadline for 2026 session
+            </p>
+            <div className="space-y-1 text-xs sm:text-sm text-white/90">
+              <p>Form release date: 14 Aug 2026</p>
+              <p>Deadline: 25 August 2026</p>
+              <p>Verification: 26 August 2026</p>
+            </div>
+          </div>
+        </div>
+
         {/* Right - Announcements (Responsive) */}
-        <div className="w-full max-w-full md:max-w-[520px] hidden md:block">
+        <div className="w-full max-w-full md:max-w-[520px] hidden md:block order-2 md:order-2">
           <div className="text-white">
             <h2 className="mb-6 sm:mb-8 text-xl sm:text-2xl md:text-3xl font-medium leading-snug tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Latest Updates /<br />
