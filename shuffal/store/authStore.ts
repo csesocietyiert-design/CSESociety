@@ -18,6 +18,7 @@ export interface User {
   role: Role;
   year?: number;
   societyId?: string;
+  profile_image_url?: string | null;
 }
 
 interface AuthStore {

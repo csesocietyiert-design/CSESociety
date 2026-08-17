@@ -56,6 +56,7 @@ export async function POST(request: Request) {
         year: data.year,
         department: data.department,
         is_verified: data.is_verified,
+        profile_image_url: data.profile_image_url || null,
       },
     });
   } catch (error) {

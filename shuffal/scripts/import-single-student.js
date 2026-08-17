@@ -17,6 +17,7 @@ const studentData = {
   dateOfBirth: '29/03/2007',
   gender: 'Male',
   department: 'Computer Science & Engineering',
+  profileImageUrl: 'https://drive.google.com/open?id=1rg6c2ozoK4TeGulu1hk8LxILayO_gVXs',
 };
 
 async function generateCSEId(supabase, admissionYear, currentYear) {
@@ -119,6 +120,7 @@ async function importStudent() {
           role: 'member',
           department: studentData.department.trim() || 'CSE',
           admission_year: studentData.admissionYear,
+          profile_image_url: studentData.profileImageUrl || null,
           is_verified: false,
         },
       ])
