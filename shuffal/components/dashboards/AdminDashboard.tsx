@@ -24,34 +24,12 @@ export default function AdminDashboard({ user }: any) {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        if (!supabase) {
-          console.error('Supabase not initialized');
-          return;
-        }
-
-        console.log('Fetching dashboard stats...');
+        if (!supabase) return;
 
         const usersResult = await supabase.from('users').select('id', { count: 'exact', head: true });
-        console.log('Users result:', usersResult);
-
         const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true });
-        if (eventsResult.error) {
-          console.warn('Could not fetch events count:', eventsResult.error.message);
-        }
-        console.log('Events result:', eventsResult);
-
         const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
-        console.log('Pending result:', pendingResult);
-
-        // Test if certificates table exists
-        console.log('Attempting to fetch certificates...');
         const certificatesResult = await supabase.from('certificates').select('id', { count: 'exact', head: true });
-        console.log('Certificates result:', certificatesResult);
-
-        if (certificatesResult.error) {
-          console.error('CERTIFICATE ERROR:', certificatesResult.error.message);
-          console.error('Certificate table might not exist or missing permissions');
-        }
 
         setPendingCount(pendingResult.count || 0);
         setStats({
@@ -60,19 +38,8 @@ export default function AdminDashboard({ user }: any) {
           pendingApprovals: pendingResult.count || 0,
           totalCertificates: certificatesResult.count || 0,
         });
-
-        console.log('✅ Stats loaded:', {
-          totalMembers: usersResult.count,
-          activeEvents: eventsResult.count,
-          pendingApprovals: pendingResult.count,
-          totalCertificates: certificatesResult.count,
-        });
       } catch (err) {
-        console.error('❌ CRITICAL ERROR fetching stats:', err);
-        console.error('Error details:', {
-          message: err instanceof Error ? err.message : String(err),
-          stack: err instanceof Error ? err.stack : 'no stack',
-        });
+        // Silently fail
       }
     };
 
@@ -81,15 +48,12 @@ export default function AdminDashboard({ user }: any) {
     // Set up real-time subscriptions to update stats when data changes
     if (!supabase) return;
 
-    console.log('Setting up real-time subscriptions...');
-
     const certificatesSubscription = supabase
       .channel('certificates-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'certificates' },
         () => {
-          console.log('Certificate changed, refetching stats...');
           fetchStats();
         }
       )
@@ -101,7 +65,6 @@ export default function AdminDashboard({ user }: any) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users' },
         () => {
-          console.log('Users changed, refetching stats...');
           fetchStats();
         }
       )
@@ -113,7 +76,6 @@ export default function AdminDashboard({ user }: any) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'events' },
         () => {
-          console.log('Events changed, refetching stats...');
           fetchStats();
         }
       )
