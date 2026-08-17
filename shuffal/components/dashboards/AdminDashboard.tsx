@@ -34,7 +34,7 @@ export default function AdminDashboard({ user }: any) {
         const usersResult = await supabase.from('users').select('id', { count: 'exact', head: true });
         console.log('Users result:', usersResult);
 
-        const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'upcoming');
+        const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true });
         console.log('Events result:', eventsResult);
 
         const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
