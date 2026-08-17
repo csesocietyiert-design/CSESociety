@@ -97,25 +97,25 @@ export default function RegisterPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-16 sm:pt-[70px]">
         {/* Registration Card */}
-        <div className="w-full max-w-full sm:max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-6 sm:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
+        <div className="w-full max-w-full sm:max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+          <div className="mb-5 flex justify-center">
+            <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
               <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
             </div>
           </div>
 
-          <div className="mb-8 text-center">
-            <h1 className="text-xl sm:text-[2.2rem] font-bold leading-tight text-white">
-              𝑹𝐞𝐠𝐢𝐬𝐭𝐫𝐚𝐭𝐢𝐨𝐧 𝐟𝐨𝐫𝐦
+          <div className="mb-6 sm:mb-8 text-center">
+            <h1 className="text-lg sm:text-2xl md:text-[2.2rem] font-bold leading-snug text-white break-words">
+              𝑹𝒆𝒈𝒊𝒔𝒕𝒓𝒂𝒕𝒊𝒐𝒏 𝒇𝒐𝒓𝒎
             </h1>
-            <p className="mt-2 text-sm sm:text-[1.05rem] text-slate-200">
+            <p className="mt-2 text-xs sm:text-sm md:text-[1.05rem] text-slate-200 leading-relaxed">
               𝑱𝒐𝒊𝒏 𝑪𝑺𝑬 𝑺𝒐𝒄𝒊𝒆𝒕𝒚 𝒕𝒐𝒅𝒂𝒚
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-xs sm:text-sm font-medium text-white">
                 𝑭𝒖𝒍𝒍 𝑵𝒂𝒎𝒆
               </label>
               <input
@@ -124,14 +124,14 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="𝒀𝒐𝒖𝒓 𝒇𝒖𝒍𝒍 𝒏𝒂𝒎𝒆"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
                 required
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-xs sm:text-sm font-medium text-white">
                 𝑬𝒎𝒂𝒊𝒍 𝑨𝒅𝒅𝒓𝒆𝒔𝒔
               </label>
               <input
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="𝒚𝒐𝒖𝒓@𝒆𝒎𝒂𝒊𝒍.𝒄𝒐𝒎"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
                 required
                 disabled={loading}
               />

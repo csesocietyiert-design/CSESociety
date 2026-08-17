@@ -126,28 +126,28 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-8 md:gap-48 px-4 sm:px-6 pt-16 sm:pt-[70px]">
+      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-6 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-20 sm:pt-[90px]">
         
         {/* Left - Login Card */}
-        <div className="w-full max-w-full sm:max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-6 sm:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
+        <div className="w-full max-w-full sm:max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+          <div className="mb-5 flex justify-center">
+            <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
               <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
             </div>
           </div>
 
-          <div className="mb-8 text-center">
-            <h1 className="text-xl sm:text-[2.2rem] font-bold leading-tight text-white">
+          <div className="mb-6 sm:mb-8 text-center">
+            <h1 className="text-lg sm:text-2xl md:text-[2.2rem] font-bold leading-snug text-white break-words">
               𝗟𝗼𝗴𝗶𝗻 𝘁𝗼 𝗖𝗦𝗘 𝗦𝗼𝗰𝗶𝗲𝘁𝘆
             </h1>
-            <p className="mt-2 text-sm sm:text-[1.05rem] text-slate-200">
+            <p className="mt-2 text-xs sm:text-sm md:text-[1.05rem] text-slate-200 leading-relaxed">
               𝑪𝒐𝒏𝒕𝒊𝒏𝒖𝒆 𝒕𝒐 𝒚𝒐𝒖𝒓 𝑪𝑺𝑬 𝑺𝒐𝒄𝒊𝒆𝒕𝒚 𝒑𝒐𝒓𝒕𝒂𝒍
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-xs sm:text-sm font-medium text-white">
                 𝑪𝑺𝑬 𝑰𝑫 | 𝑬𝒎𝒂𝒊𝒍 𝑰𝑫
               </label>
               <input
@@ -155,14 +155,14 @@ export default function LoginPage() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="Enter your ID"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
                 required
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-white">
+              <label className="mb-2 block text-xs sm:text-sm font-medium text-white">
                 𝑷𝒂𝒔𝒔𝒘𝒐𝒓𝒅
               </label>
               <div className="relative">
@@ -171,14 +171,14 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 pr-12 text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                  className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
                   required
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 text-lg"
+                  className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-slate-300 text-base sm:text-lg hover:text-white transition"
                   disabled={loading}
                 >
                   {showPassword ? '🙈' : '👁️'}
@@ -187,7 +187,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              <div className="rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-xs sm:text-sm text-red-200 break-words">
                 {error}
               </div>
             )}
@@ -195,42 +195,59 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-[#1c8df0] py-3 text-2xl font-bold text-white transition hover:bg-[#157fe4] disabled:opacity-50"
+              className="w-full rounded-md bg-[#1c8df0] py-2 sm:py-3 text-base sm:text-xl md:text-2xl font-bold text-white transition hover:bg-[#157fe4] disabled:opacity-50 active:scale-95"
               style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-base text-slate-200">
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-xs sm:text-sm md:text-base text-slate-200">
               Don't have an account?{' '}
-              <Link href="/register" className="font-medium text-[#6bb8ff] hover:text-white">
+              <Link href="/register" className="font-medium text-[#6bb8ff] hover:text-white transition">
                 Register here
               </Link>
             </p>
           </div>
         </div>
 
-        {/* Right - Announcements */}
-        <div className="hidden lg:block w-full max-w-[520px]">
+        {/* Right - Announcements (Responsive) */}
+        <div className="w-full max-w-full md:max-w-[520px] md:hidden lg:block">
           <div className="text-white">
-            <h2 className="mb-8 text-[2.2rem] font-medium leading-none tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="mb-6 sm:mb-8 text-xl sm:text-2xl md:text-[2.2rem] font-medium leading-snug tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Latest Updates /<br />
               Announcements
             </h2>
 
             <div className="space-y-4 text-white/90">
               <div className="mt-2">
-                <p className="text-[1.15rem] font-medium text-white">
+                <p className="text-sm sm:text-base md:text-[1.15rem] font-medium text-white">
                   Registration Deadline for 2026 session
                 </p>
-                <div className="mt-2 space-y-1 text-[1.15rem] leading-relaxed text-white/90">
+                <div className="mt-2 space-y-1 text-xs sm:text-sm md:text-[1.15rem] leading-relaxed text-white/90">
                   <p>Form release date: 14 Aug 2026</p>
                   <p>Deadline: 25 August 2026</p>
                   <p>Verification: 26 August 2026</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Announcements Card */}
+        <div className="w-full md:hidden backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-4 sm:p-6 mt-6">
+          <h2 className="text-lg sm:text-xl font-medium text-white mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            📢 Latest Updates
+          </h2>
+          <div className="space-y-3">
+            <p className="text-xs sm:text-sm font-medium text-white">
+              Registration Deadline for 2026 session
+            </p>
+            <div className="space-y-1 text-xs sm:text-sm text-white/80">
+              <p>✓ Form release: 14 Aug 2026</p>
+              <p>✓ Deadline: 25 Aug 2026</p>
+              <p>✓ Verification: 26 Aug 2026</p>
             </div>
           </div>
         </div>
