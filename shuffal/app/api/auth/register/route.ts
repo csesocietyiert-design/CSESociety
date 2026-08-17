@@ -44,6 +44,7 @@ export async function POST(request: Request) {
           password_hash: passwordHash,
           role: 'member',
           department: 'CSE',
+          is_verified: false,
         },
       ])
       .select()
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
         role: data.role,
         year: data.year,
         department: data.department,
+        is_verified: data.is_verified,
       },
     });
   } catch (error) {

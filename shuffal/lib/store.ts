@@ -85,6 +85,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       const data = await response.json();
+      
+      // Check if user is verified
+      if (!data.user.is_verified) {
+        throw new Error('Your account is pending approval by admin. Please wait for verification.');
+      }
+
       const user: User = data.user;
 
       set({
@@ -117,11 +123,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       const result = await response.json();
       const user: User = result.user;
 
+      // Store user but mark as not authenticated since they need admin approval
       set({
         user,
-        isAuthenticated: true,
+        isAuthenticated: false, // User cannot login until verified
       });
       localStorage.setItem('authUser', JSON.stringify(user));
+      localStorage.setItem('pendingVerification', 'true');
     } catch (err) {
       throw err instanceof Error ? err : new Error('Registration failed');
     }
