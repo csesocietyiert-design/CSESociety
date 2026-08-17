@@ -30,7 +30,7 @@ interface AuthState {
 
 const demoUsers: Record<string, { password: string; user: User }> = {
   '23F2601': {
-    password: 'admin123',
+    password: 'KuchBhi',
     user: {
       id: '1',
       cseId: '23F2601',

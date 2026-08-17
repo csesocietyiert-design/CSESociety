@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const testUsers = [
   {
     cseId: '23F2601',
-    password: 'admin123',
+    password: 'KuchBhi',
     name: 'Admin User',
     email: 'admin@csesociety.com',
     role: 'admin',

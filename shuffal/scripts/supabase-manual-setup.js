@@ -55,7 +55,7 @@ console.log(createTableSQL);
 console.log('\n\nThen add test users with this SQL:\n');
 console.log(`
 INSERT INTO users (cse_id, password_hash, name, email, role, year, department) VALUES 
-  ('23F2601', '$2b$10$E0qo0tRlf0mghtTteEPjR.HlQBr6PT83oZTSAhZGTDCRU1A2Mtmym', 'Admin User', 'admin@csesociety.com', 'admin', 1, 'CSE'),
+  ('23F2601', '$2b$10$mQMTf2XV2w1Ixp6k4rlHmOTUykW4m.CUN01ekWi55rihuZEtNJGb2', 'Admin User', 'admin@csesociety.com', 'admin', 1, 'CSE'),
   ('23F2602', '$2b$10$.twgqZq8AmEzi8xGmQjuxuVBSCDkRD6dIkXo09vZ2D91uf2OFaN7e', 'Member User', 'member@csesociety.com', 'member', 1, 'CSE'),
   ('23F2603', '$2b$10$xl6tlgF7Zv1ekgv9eeFgU.gMWZCr0ssTHXBGdkbHznQXv12rAv1e6', 'Executive User', 'executive@csesociety.com', 'executive', 2, 'CSE');
 `);

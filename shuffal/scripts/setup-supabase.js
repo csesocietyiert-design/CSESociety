@@ -31,7 +31,7 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 const testUsers = [
   {
     cse_id: '23F2601',
-    password: 'admin123',
+    password: 'KuchBhi',
     name: 'Admin User',
     email: 'admin@csesociety.com',
     role: 'admin',
