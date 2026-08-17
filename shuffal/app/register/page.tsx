@@ -97,7 +97,7 @@ export default function RegisterPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-16 sm:pt-[70px]">
         {/* Registration Card */}
-        <div className="w-full max-w-full sm:max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
           <div className="mb-5 flex justify-center">
             <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
               <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />

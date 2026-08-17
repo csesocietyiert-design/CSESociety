@@ -43,7 +43,7 @@ export default function PendingVerificationPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-20 sm:pt-[90px]">
         {/* Pending Verification Card */}
-        <div className="w-full max-w-full sm:max-w-[500px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-6 sm:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm text-center">
+        <div className="w-[90%] sm:w-full max-w-full sm:max-w-[500px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-6 sm:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm text-center">
           <div className="mb-6 flex justify-center">
             <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center overflow-hidden rounded-full border border-yellow-400/30 bg-yellow-400/10">
               <span className="text-2xl sm:text-4xl">⏳</span>
