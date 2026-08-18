@@ -164,7 +164,7 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
     sessionExpiresAt: state.sessionExpiresAt,
   }),
   merge: (persistedState, currentState) => {
-    const persisted = persistedState as Partial<AuthState>;
+    const persisted = (persistedState ?? {}) as Partial<AuthState>;
     const persistedSessionExpired = Boolean(
       persisted.sessionExpiresAt && persisted.sessionExpiresAt <= Date.now()
     );
