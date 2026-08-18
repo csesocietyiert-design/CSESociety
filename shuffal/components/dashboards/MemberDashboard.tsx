@@ -70,7 +70,7 @@ export default function MemberDashboard({ user }: any) {
       </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="border border-slate-700/70 bg-slate-900/60 p-6">
+        <div className="border border-slate-700/70 bg-slate-900/60 p-6 text-left">
           <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Membership record</p>
@@ -136,7 +136,7 @@ export default function MemberDashboard({ user }: any) {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+      <section className="grid grid-cols-1 gap-6 text-left lg:grid-cols-[1.3fr_0.7fr]">
         <div className="border border-slate-700/70 bg-slate-900/60 p-6">
           <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-5">
             <div>

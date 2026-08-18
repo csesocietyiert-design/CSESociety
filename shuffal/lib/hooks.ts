@@ -72,6 +72,48 @@ function getTodayRange() {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+let notificationAudioContext: AudioContext | null = null;
+
+function getNotificationAudioContext() {
+  if (typeof window === 'undefined') return null;
+  const AudioContextConstructor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextConstructor) return null;
+  notificationAudioContext ??= new AudioContextConstructor();
+  return notificationAudioContext;
+}
+
+export function enableNotificationSound() {
+  const audioContext = getNotificationAudioContext();
+  if (audioContext?.state === 'suspended') {
+    void audioContext.resume();
+  }
+}
+
+function playNotificationSound() {
+  const audioContext = getNotificationAudioContext();
+  if (!audioContext || audioContext.state !== 'running') return;
+
+  try {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const now = audioContext.currentTime;
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(740, now);
+    oscillator.frequency.setValueAtTime(988, now + 0.1);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.3);
+  } catch {
+    // Browser audio restrictions should not affect notification delivery.
+  }
+}
+
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -391,13 +433,10 @@ export function useRealtimeNotifications(userId: string) {
 
     const fetchInitial = async () => {
       try {
-        const { start, end } = getTodayRange();
         const { data, error: err } = await supabase!
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
-          .gte('created_at', start)
-          .lt('created_at', end)
           .order('created_at', { ascending: false });
 
         if (err) throw err;
@@ -434,6 +473,7 @@ export function useRealtimeNotifications(userId: string) {
 
           if (payload.eventType === 'INSERT') {
             if (isCurrentDay) {
+              playNotificationSound();
               setNotifications((prev) => [payload.new, ...prev]);
             }
           } else if (payload.eventType === 'UPDATE') {

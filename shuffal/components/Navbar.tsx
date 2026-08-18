@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { markNotificationsAsRead, useRealtimeNotifications } from '@/lib/hooks';
+import { enableNotificationSound, markNotificationsAsRead, useRealtimeNotifications } from '@/lib/hooks';
 
 interface NavbarProps {
   user: any;
@@ -12,7 +12,12 @@ interface NavbarProps {
 
 export default function Navbar({ user, onMenuClick }: NavbarProps) {
   const router = useRouter();
-  const { notifications: todayNotifications } = useRealtimeNotifications(user?.id);
+  const { notifications } = useRealtimeNotifications(user?.id);
+  const todayNotifications = notifications.filter((notification) => {
+    const notificationDate = new Date(notification.created_at);
+    const today = new Date();
+    return notificationDate.toDateString() === today.toDateString();
+  });
   const [showNotifications, setShowNotifications] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -23,6 +28,17 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
       setProfileImage(user.profile_image_url);
     }
   }, [user?.profile_image_url]);
+
+  useEffect(() => {
+    const unlockNotificationSound = () => enableNotificationSound();
+    window.addEventListener('pointerdown', unlockNotificationSound, { once: true });
+    window.addEventListener('keydown', unlockNotificationSound, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', unlockNotificationSound);
+      window.removeEventListener('keydown', unlockNotificationSound);
+    };
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -52,6 +68,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
   );
 
   const handleNotificationToggle = async () => {
+    enableNotificationSound();
     const openingNotifications = !showNotifications;
     setShowNotifications(openingNotifications);
 
@@ -134,7 +151,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-4 top-12">
                 <h3 className="text-white font-semibold mb-3">Today's Notifications</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto text-left">
                   {todayNotifications.length === 0 ? (
                     <p className="text-slate-400 text-sm text-center py-4">No notifications today</p>
                   ) : (

@@ -10,6 +10,8 @@ export default function NotificationsPanel({ user }: any) {
   const [activeTab, setActiveTab] = useState<'history' | 'send'>('history');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRead, setFilterRead] = useState<'all' | 'unread' | 'read'>('all');
+  const [fromDate, setFromDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [toDate, setToDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showSendForm, setShowSendForm] = useState(false);
   const [sendData, setSendData] = useState({
     title: '',
@@ -23,6 +25,11 @@ export default function NotificationsPanel({ user }: any) {
   const [sendError, setSendError] = useState('');
 
   const filteredNotifications = notifications.filter((notif) => {
+    const notificationDate = new Date(notif.created_at);
+    const notificationDateKey = `${notificationDate.getFullYear()}-${String(notificationDate.getMonth() + 1).padStart(2, '0')}-${String(notificationDate.getDate()).padStart(2, '0')}`;
+    const selectedFromDate = fromDate || new Date().toISOString().slice(0, 10);
+    const selectedToDate = toDate || selectedFromDate;
+    const matchesDate = notificationDateKey >= selectedFromDate && notificationDateKey <= selectedToDate;
     const matchesSearch =
       notif.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notif.message?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -31,7 +38,7 @@ export default function NotificationsPanel({ user }: any) {
       (filterRead === 'unread' && !notif.is_read) ||
       (filterRead === 'read' && notif.is_read);
 
-    return matchesSearch && matchesFilter;
+    return matchesDate && matchesSearch && matchesFilter;
   });
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
@@ -159,7 +166,7 @@ export default function NotificationsPanel({ user }: any) {
       {activeTab === 'history' && (
         <div className="space-y-4">
           <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
               <input
                 type="text"
                 placeholder="Search notifications..."
@@ -176,6 +183,21 @@ export default function NotificationsPanel({ user }: any) {
                 <option value="unread">Unread</option>
                 <option value="read">Read</option>
               </select>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(event) => setFromDate(event.target.value)}
+                className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 transition"
+                aria-label="Notification start date"
+              />
+              <input
+                type="date"
+                value={toDate}
+                min={fromDate || undefined}
+                onChange={(event) => setToDate(event.target.value)}
+                className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 transition"
+                aria-label="Notification end date"
+              />
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAsRead}
@@ -196,7 +218,7 @@ export default function NotificationsPanel({ user }: any) {
               <p className="text-slate-400 text-lg">No notifications found</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-96 overflow-y-auto text-left">
               {filteredNotifications.map((notif) => (
                 <div
                   key={notif.id}

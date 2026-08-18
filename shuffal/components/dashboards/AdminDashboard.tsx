@@ -6,6 +6,10 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+const getLocalDateInputValue = (date = new Date()) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export default function AdminDashboard({ user }: any) {
   const router = useRouter();
   const { users, loading: usersLoading } = useUsers();
@@ -15,6 +19,9 @@ export default function AdminDashboard({ user }: any) {
   const { activityLogs, loading: logsLoading } = useActivityLogs();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [notificationDirection, setNotificationDirection] = useState<'all' | 'sent' | 'received'>('all');
+  const [historyFromDate, setHistoryFromDate] = useState(() => getLocalDateInputValue());
+  const [historyToDate, setHistoryToDate] = useState(() => getLocalDateInputValue());
   const [stats, setStats] = useState({
     totalMembers: 0,
     activeEvents: 0,
@@ -155,6 +162,18 @@ export default function AdminDashboard({ user }: any) {
     const today = new Date();
     return notificationDate.toDateString() === today.toDateString();
   });
+  const filteredNotificationHistory = notificationHistory.filter((notification) => {
+    const notificationDate = new Date(notification.created_at);
+    const notificationDateKey = `${notificationDate.getFullYear()}-${String(notificationDate.getMonth() + 1).padStart(2, '0')}-${String(notificationDate.getDate()).padStart(2, '0')}`;
+    const fromDate = historyFromDate || getLocalDateInputValue();
+    const toDate = historyToDate || fromDate;
+    const inSelectedDateRange = notificationDateKey >= fromDate && notificationDateKey <= toDate;
+
+    if (!inSelectedDateRange) return false;
+    if (notificationDirection === 'sent') return notification.sender_id === user?.id;
+    if (notificationDirection === 'received') return notification.user_id === user?.id;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -260,20 +279,53 @@ export default function AdminDashboard({ user }: any) {
         </div>
       </div>
 
-      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 text-left">
         <div className="flex flex-col gap-2 border-b border-slate-700/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Communication audit</p>
             <h3 className="mt-2 text-xl font-semibold text-white">Notification history</h3>
             <p className="mt-1 text-sm text-slate-500">Complete record of notifications sent and received by society members.</p>
           </div>
-          <span className="text-xs text-slate-500">{notificationHistory.length} delivery records</span>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-slate-500">
+              From
+              <input
+                type="date"
+                value={historyFromDate}
+                onChange={(event) => setHistoryFromDate(event.target.value)}
+                className="border border-slate-700 bg-slate-800/70 px-2 py-2 text-xs text-slate-300 outline-none focus:border-teal-400"
+                aria-label="Notification history start date"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-xs text-slate-500">
+              To
+              <input
+                type="date"
+                value={historyToDate}
+                min={historyFromDate || undefined}
+                onChange={(event) => setHistoryToDate(event.target.value)}
+                className="border border-slate-700 bg-slate-800/70 px-2 py-2 text-xs text-slate-300 outline-none focus:border-teal-400"
+                aria-label="Notification history end date"
+              />
+            </label>
+            <select
+              value={notificationDirection}
+              onChange={(event) => setNotificationDirection(event.target.value as 'all' | 'sent' | 'received')}
+              className="border border-slate-700 bg-slate-800/70 px-3 py-2 text-xs text-slate-300 outline-none focus:border-teal-400"
+              aria-label="Filter notification history"
+            >
+              <option value="all">All notifications</option>
+              <option value="sent">Sent by me</option>
+              <option value="received">Received by me</option>
+            </select>
+            <span className="text-xs text-slate-500">{filteredNotificationHistory.length} records</span>
+          </div>
         </div>
 
         <div className="mt-4 overflow-x-auto">
           {notificationHistoryLoading ? (
             <p className="py-8 text-center text-sm text-slate-500">Loading notification history...</p>
-          ) : notificationHistory.length === 0 ? (
+          ) : filteredNotificationHistory.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">No notifications have been recorded yet.</p>
           ) : (
             <table className="w-full min-w-[760px] text-left">
@@ -287,7 +339,7 @@ export default function AdminDashboard({ user }: any) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {notificationHistory.map((notification) => {
+                {filteredNotificationHistory.map((notification) => {
                   const isSentByAdmin = notification.sender_id === user?.id;
                   const isReceivedByAdmin = notification.user_id === user?.id;
 
@@ -323,7 +375,7 @@ export default function AdminDashboard({ user }: any) {
           </div>
           <span className="text-xs text-slate-500">{todayNotifications.length} records today</span>
         </div>
-        <div className="mt-4 divide-y divide-slate-800">
+            <div className="mt-4 divide-y divide-slate-800 text-left">
           {notificationHistoryLoading ? <p className="py-6 text-center text-sm text-slate-500">Loading today&apos;s notifications...</p> : todayNotifications.length === 0 ? <p className="py-6 text-center text-sm text-slate-500">No notifications recorded today.</p> : todayNotifications.slice(0, 10).map((notification) => (
             <div key={`today-${notification.id}`} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
               <time dateTime={notification.created_at} className="w-24 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
