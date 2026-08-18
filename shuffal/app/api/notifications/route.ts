@@ -1,0 +1,176 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+function isValidUuid(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value.trim());
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'Failed to send notification';
+}
+
+function getErrorDetails(error: unknown) {
+  if (!error || typeof error !== 'object') return undefined;
+
+  const databaseError = error as Record<string, unknown>;
+  return {
+    code: databaseError.code,
+    hint: databaseError.hint,
+    details: databaseError.details,
+  };
+}
+
+export async function POST(request: Request) {
+  try {
+    if (!supabaseUrl || !serviceRoleKey) {
+      return Response.json(
+        { error: 'Supabase not configured' },
+        { status: 500 }
+      );
+    }
+
+    const body = await request.json();
+    const {
+      title,
+      message,
+      senderId,
+      recipientType,
+      recipientIds = [],
+      targetRole,
+      targetYear,
+    } = body ?? {};
+
+    if (!title || !message) {
+      return Response.json(
+        { error: 'Title and message are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(recipientIds) || recipientIds.length === 0) {
+      return Response.json(
+        { error: 'At least one recipient is required' },
+        { status: 400 }
+      );
+    }
+
+    const invalidRecipientIds = recipientIds.filter(
+      (id) => typeof id !== 'string' || !isValidUuid(id)
+    );
+
+    if (invalidRecipientIds.length > 0) {
+      return Response.json(
+        {
+          error:
+            'Invalid recipient user IDs were supplied. Use UUID values from the authenticated user records.',
+          invalidRecipientIds,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (senderId && !isValidUuid(senderId)) {
+      return Response.json(
+        {
+          error:
+            'Invalid sender user ID. The authenticated user must be a valid UUID.',
+          senderId,
+        },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    const { data: recipientUsers, error: recipientCheckError } = await supabase
+      .from('users')
+      .select('id')
+      .in('id', recipientIds);
+
+    if (recipientCheckError) {
+      throw recipientCheckError;
+    }
+
+    const existingRecipientIds = new Set(
+      (recipientUsers || []).map((recipientUser) => recipientUser.id)
+    );
+    const missingRecipientIds = recipientIds.filter(
+      (recipientId: string) => !existingRecipientIds.has(recipientId)
+    );
+
+    if (missingRecipientIds.length > 0) {
+      return Response.json(
+        {
+          error: 'One or more notification recipients do not exist in the users table.',
+          missingRecipientIds,
+        },
+        { status: 400 }
+      );
+    }
+
+    let validSenderId: string | null = null;
+    if (senderId) {
+      const { data: senderUser, error: senderCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', senderId)
+        .maybeSingle();
+
+      if (!senderCheckError && senderUser?.id) {
+        validSenderId = senderUser.id;
+      }
+    }
+
+    const notificationsToCreate = recipientIds.map((recipientId: string) => ({
+      user_id: recipientId,
+      title: String(title).trim(),
+      message: String(message).trim(),
+      sender_id: validSenderId,
+      recipient_type: recipientType || 'specific',
+      target_role: targetRole || null,
+      target_year: targetYear ?? null,
+      type: 'info',
+      is_read: false,
+    }));
+
+    const { error } = await supabase
+      .from('notifications')
+      .insert(notificationsToCreate);
+
+    if (error) {
+      if (
+        error.message?.includes("Could not find the 'message' column") ||
+        error.message?.includes("Could not find the 'title' column") ||
+        error.message?.includes("column of 'notifications'")
+      ) {
+        throw new Error(
+          'The notifications table in Supabase is missing required columns. Run the notifications schema fix migration in the Supabase SQL editor.'
+        );
+      }
+      throw error;
+    }
+
+    return Response.json({ ok: true, created: notificationsToCreate.length });
+  } catch (error) {
+    console.error('Notification send error:', error);
+    return Response.json(
+      {
+        error: getErrorMessage(error),
+        details: getErrorDetails(error),
+      },
+      { status: 400 }
+    );
+  }
+}

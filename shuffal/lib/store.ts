@@ -32,7 +32,7 @@ const demoUsers: Record<string, { password: string; user: User }> = {
   '23F2601': {
     password: 'KuchBhi',
     user: {
-      id: '1',
+      id: '11111111-1111-4111-8111-111111111111',
       cseId: '23F2601',
       name: 'Admin User',
       email: 'admin@csesociety.com',
@@ -44,7 +44,7 @@ const demoUsers: Record<string, { password: string; user: User }> = {
   '23F2602': {
     password: 'user123',
     user: {
-      id: '2',
+      id: '22222222-2222-4222-8222-222222222222',
       cseId: '23F2602',
       name: 'Member User',
       email: 'member@csesociety.com',
@@ -56,7 +56,7 @@ const demoUsers: Record<string, { password: string; user: User }> = {
   '23F2603': {
     password: 'exec123',
     user: {
-      id: '3',
+      id: '33333333-3333-4333-8333-333333333333',
       cseId: '23F2603',
       name: 'Executive User',
       email: 'executive@csesociety.com',

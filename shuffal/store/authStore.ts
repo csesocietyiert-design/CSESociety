@@ -39,21 +39,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
     
     const mockUsers: Record<string, User> = {
       'admin@cse.com': {
-        id: '1',
+        id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         email: 'admin@cse.com',
         name: 'Admin User',
         role: 'admin',
         societyId: '23F2601',
       },
       'faculty@cse.com': {
-        id: '2',
+        id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
         email: 'faculty@cse.com',
         name: 'Dr. Faculty',
         role: 'faculty',
         societyId: '23F2602',
       },
       'vp@cse.com': {
-        id: '3',
+        id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
         email: 'vp@cse.com',
         name: 'Vice President',
         role: 'vice_president',
@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         societyId: '23S2603',
       },
       'treasurer@cse.com': {
-        id: '4',
+        id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
         email: 'treasurer@cse.com',
         name: 'Treasurer',
         role: 'treasurer',
@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         societyId: '23S2604',
       },
       'member@cse.com': {
-        id: '5',
+        id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
         email: 'member@cse.com',
         name: 'John Doe',
         role: 'member',

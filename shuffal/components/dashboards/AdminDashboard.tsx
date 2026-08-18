@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUsers, useEvents, useNotifications, useActivityLogs, Announcement } from '@/lib/hooks';
+import { useUsers, useEvents, useNotifications, useNotificationHistory, useActivityLogs, Announcement } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ export default function AdminDashboard({ user }: any) {
   const { users, loading: usersLoading } = useUsers();
   const { events, loading: eventsLoading } = useEvents();
   const { notifications } = useNotifications(user?.id);
+  const { notifications: notificationHistory, loading: notificationHistoryLoading } = useNotificationHistory();
   const { activityLogs, loading: logsLoading } = useActivityLogs();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
@@ -131,6 +132,24 @@ export default function AdminDashboard({ user }: any) {
     });
   };
 
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const getUserName = (id?: string | null) => {
+    if (!id) return 'System';
+    const matchedUser = users.find((member) => member.id === id);
+    return matchedUser ? `${matchedUser.name} (${matchedUser.cse_id})` : 'Unknown user';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -234,6 +253,60 @@ export default function AdminDashboard({ user }: any) {
           </div>
         </div>
       </div>
+
+      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+        <div className="flex flex-col gap-2 border-b border-slate-700/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Communication audit</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Notification history</h3>
+            <p className="mt-1 text-sm text-slate-500">Complete record of notifications sent and received by society members.</p>
+          </div>
+          <span className="text-xs text-slate-500">{notificationHistory.length} delivery records</span>
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          {notificationHistoryLoading ? (
+            <p className="py-8 text-center text-sm text-slate-500">Loading notification history...</p>
+          ) : notificationHistory.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">No notifications have been recorded yet.</p>
+          ) : (
+            <table className="w-full min-w-[760px] text-left">
+              <thead>
+                <tr className="border-b border-slate-700/60 text-xs uppercase tracking-wider text-slate-500">
+                  <th className="px-3 py-3 font-medium">Notification</th>
+                  <th className="px-3 py-3 font-medium">Sender</th>
+                  <th className="px-3 py-3 font-medium">Recipient</th>
+                  <th className="px-3 py-3 font-medium">Status</th>
+                  <th className="px-3 py-3 text-right font-medium">Date and time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {notificationHistory.map((notification) => {
+                  const isSentByAdmin = notification.sender_id === user?.id;
+                  const isReceivedByAdmin = notification.user_id === user?.id;
+
+                  return (
+                    <tr key={notification.id} className="transition-colors hover:bg-slate-800/40">
+                      <td className="max-w-[260px] px-3 py-4">
+                        <p className="truncate text-sm font-medium text-slate-200">{notification.title}</p>
+                        <p className="mt-1 truncate text-xs text-slate-500">{notification.message}</p>
+                      </td>
+                      <td className="px-3 py-4 text-sm text-slate-400">{getUserName(notification.sender_id)}</td>
+                      <td className="px-3 py-4 text-sm text-slate-400">{getUserName(notification.user_id)}</td>
+                      <td className="px-3 py-4">
+                        <span className={`inline-flex items-center border px-2 py-1 text-xs font-medium ${isSentByAdmin ? 'border-sky-400/30 bg-sky-400/10 text-sky-300' : isReceivedByAdmin ? 'border-amber-400/30 bg-amber-400/10 text-amber-300' : notification.is_read ? 'border-teal-400/30 bg-teal-400/10 text-teal-300' : 'border-rose-400/30 bg-rose-400/10 text-rose-300'}`}>
+                          {isSentByAdmin ? 'Sent' : isReceivedByAdmin ? 'Received' : notification.is_read ? 'Read' : 'Unread'}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-right text-xs text-slate-500">{formatDateTime(notification.created_at)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </section>
 
       <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
         <h3 className="text-lg font-bold text-white mb-4">Upcoming Events</h3>

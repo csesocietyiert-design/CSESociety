@@ -20,6 +20,10 @@ export interface User {
 export interface Notification {
   id: string;
   user_id: string;
+  sender_id?: string | null;
+  recipient_type?: string;
+  target_role?: string | null;
+  target_year?: number | null;
   title: string;
   message: string;
   type: string;
@@ -58,6 +62,14 @@ export interface ActivityLog {
   entity_type: string;
   entity_id: string;
   created_at: string;
+}
+
+function getTodayRange() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start: start.toISOString(), end: end.toISOString() };
 }
 
 export function useUsers() {
@@ -102,10 +114,14 @@ export function useNotifications(userId: string) {
       try {
         if (!supabase) return;
 
+        const { start, end } = getTodayRange();
+
         const { data, error: err } = await supabase
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
+          .gte('created_at', start)
+          .lt('created_at', end)
           .order('created_at', { ascending: false });
 
         if (err) throw err;
@@ -126,6 +142,35 @@ export function useNotifications(userId: string) {
   }, [userId]);
 
   return { notifications, loading, unreadCount };
+}
+
+export function useNotificationHistory() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotificationHistory = async () => {
+      try {
+        if (!supabase) return;
+
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setNotifications(data || []);
+      } catch (error) {
+        console.error('Error fetching notification history:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotificationHistory();
+  }, []);
+
+  return { notifications, loading };
 }
 
 export function useNotificationsToday(userId: string) {
@@ -347,10 +392,13 @@ export function useRealtimeNotifications(userId: string) {
 
     const fetchInitial = async () => {
       try {
+        const { start, end } = getTodayRange();
         const { data, error: err } = await supabase!
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
+          .gte('created_at', start)
+          .lt('created_at', end)
           .order('created_at', { ascending: false });
 
         if (err) throw err;
@@ -363,6 +411,11 @@ export function useRealtimeNotifications(userId: string) {
     };
 
     fetchInitial();
+
+    const now = new Date();
+    const nextMidnight = new Date(now);
+    nextMidnight.setHours(24, 0, 0, 0);
+    const midnightRefresh = window.setTimeout(fetchInitial, nextMidnight.getTime() - now.getTime());
 
     const subscription = supabase
       .channel(`notifications:${userId}`)
@@ -389,6 +442,7 @@ export function useRealtimeNotifications(userId: string) {
       .subscribe();
 
     return () => {
+      window.clearTimeout(midnightRefresh);
       subscription.unsubscribe();
     };
   }, [userId]);
@@ -494,27 +548,31 @@ export async function sendNotification(
   targetYear?: number
 ) {
   try {
-    if (!supabase) return false;
+    if (!recipientIds || recipientIds.length === 0) return false;
 
-    const notificationsToCreate = recipientIds?.map((recipientId) => ({
-      user_id: recipientId,
-      title,
-      message,
-      sender_id: senderId,
-      recipient_type: recipientType,
-      target_role: targetRole,
-      target_year: targetYear,
-      type: 'info',
-      is_read: false,
-    })) || [];
+    const response = await fetch('/api/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        message,
+        senderId,
+        recipientType,
+        recipientIds,
+        targetRole,
+        targetYear,
+      }),
+    });
 
-    if (notificationsToCreate.length === 0) return false;
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      const message = payload?.error || 'Failed to send notification';
+      console.error('Notification API rejected request:', payload);
+      throw new Error(message);
+    }
 
-    const { error: err } = await supabase
-      .from('notifications')
-      .insert(notificationsToCreate);
-
-    if (err) throw err;
     return true;
   } catch (err) {
     console.error('Error sending notification:', err);

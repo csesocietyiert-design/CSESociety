@@ -206,16 +206,18 @@ export default function NotificationsPanel({ user }: any) {
                       : 'bg-blue-900/20 border-blue-500/30'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-white font-semibold text-sm">{notif.title}</h4>
-                    {!notif.is_read && (
-                      <span className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></span>
-                    )}
+                  <div className="flex items-start gap-4">
+                    <time dateTime={notif.created_at} className="w-20 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
+                      {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                    </time>
+                    <div className="min-w-0 flex-1 border-l border-slate-700/70 pl-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <h4 className="text-sm font-bold text-white">{notif.title}</h4>
+                        {!notif.is_read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-400" />}
+                      </div>
+                      <p className="mt-1 text-sm font-normal leading-5 text-slate-300">{notif.message}</p>
+                    </div>
                   </div>
-                  <p className="text-slate-300 text-sm mb-2">{notif.message}</p>
-                  <p className="text-slate-500 text-xs">
-                    {new Date(notif.created_at).toLocaleString('en-IN')}
-                  </p>
                 </div>
               ))}
             </div>
