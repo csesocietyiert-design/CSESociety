@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { enableNotificationSound, markNotificationsAsRead, useRealtimeNotifications } from '@/lib/hooks';
+import { enableNotificationSound, useRealtimeNotifications } from '@/lib/hooks';
 
 interface NavbarProps {
   user: any;
@@ -12,7 +12,7 @@ interface NavbarProps {
 
 export default function Navbar({ user, onMenuClick }: NavbarProps) {
   const router = useRouter();
-  const { notifications } = useRealtimeNotifications(user?.id);
+  const { notifications, markAllAsRead } = useRealtimeNotifications(user?.id);
   const todayNotifications = notifications.filter((notification) => {
     const notificationDate = new Date(notification.created_at);
     const today = new Date();
@@ -76,7 +76,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
 
     if (openingNotifications && todayUnreadCount > 0 && user?.id) {
       setNotificationsAcknowledgedAt(new Date().toISOString());
-      await markNotificationsAsRead(user.id);
+      await markAllAsRead();
     }
   };
 
@@ -147,7 +147,9 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             {hasUnseenNotification && (
-              <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-slate-900"></span>
+              <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[10px] font-bold leading-4 text-white ring-2 ring-slate-900">
+                {todayUnreadCount}
+              </span>
             )}
 
             {showNotifications && (
@@ -162,13 +164,13 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
                   ) : (
                     notifications.map((notif) => (
                       <div key={notif.id} className="flex items-start gap-3 border-b border-slate-700/60 px-2 py-3 last:border-0">
-                        <time dateTime={notif.created_at} className="w-16 shrink-0 pt-0.5 text-left text-xs text-slate-500">
+                        <time dateTime={notif.created_at} className="w-16 shrink-0 pt-0.5 text-left text-xs leading-4 text-slate-500">
                           {new Date(notif.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                           <span className="block mt-1">
                             {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </time>
-                        <div className="min-w-0 border-l border-slate-600 pl-3">
+                        <div className="min-w-0 flex-1 border-l border-slate-600 pl-3">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-bold text-white">{notif.title}</p>
                             <span className="text-[10px] text-slate-500">

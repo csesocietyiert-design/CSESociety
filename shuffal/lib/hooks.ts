@@ -425,6 +425,18 @@ export function useRealtimeNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const markAllAsRead = async () => {
+    if (!userId) return;
+    await markNotificationsAsRead(userId);
+    setNotifications((currentNotifications) =>
+      currentNotifications.map((notification) =>
+        notification.user_id === userId
+          ? { ...notification, is_read: true }
+          : notification
+      )
+    );
+  };
+
   useEffect(() => {
     if (!userId) return;
 
@@ -473,7 +485,7 @@ export function useRealtimeNotifications(userId: string) {
     };
   }, [userId]);
 
-  return { notifications, loading };
+  return { notifications, loading, markAllAsRead };
 }
 
 export function useUserSettings(userId: string) {

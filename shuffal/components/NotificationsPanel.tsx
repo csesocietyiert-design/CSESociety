@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRealtimeNotifications, markNotificationsAsRead, sendNotification } from '@/lib/hooks';
+import { useRealtimeNotifications, sendNotification } from '@/lib/hooks';
 import { useUsers } from '@/lib/hooks';
 
 export default function NotificationsPanel({ user }: any) {
-  const { notifications, loading } = useRealtimeNotifications(user?.id);
+  const { notifications, loading, markAllAsRead } = useRealtimeNotifications(user?.id);
   const { users } = useUsers();
   const [activeTab, setActiveTab] = useState<'history' | 'send'>('history');
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +44,7 @@ export default function NotificationsPanel({ user }: any) {
   const unreadCount = notifications.filter((n) => n.user_id === user?.id && !n.is_read).length;
 
   const handleMarkAsRead = async () => {
-    await markNotificationsAsRead(user?.id);
+    await markAllAsRead();
   };
 
   const handleSendNotification = async (e: React.FormEvent) => {
