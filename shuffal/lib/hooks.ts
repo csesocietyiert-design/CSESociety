@@ -428,13 +428,7 @@ export function useRealtimeNotifications(userId: string) {
   const markAllAsRead = async () => {
     if (!userId) return;
     await markNotificationsAsRead(userId);
-    setNotifications((currentNotifications) =>
-      currentNotifications.map((notification) =>
-        notification.user_id === userId
-          ? { ...notification, is_read: true }
-          : notification
-      )
-    );
+    setNotifications((currentNotifications) => currentNotifications.map((notification) => ({ ...notification, is_read: true })));
   };
 
   useEffect(() => {
@@ -620,13 +614,11 @@ export async function sendNotification(
 
 export async function markNotificationsAsRead(userId: string) {
   try {
-    if (!supabase) return;
-
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', userId)
-      .eq('is_read', false);
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
+    });
   } catch (err) {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { 

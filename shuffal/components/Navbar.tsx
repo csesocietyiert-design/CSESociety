@@ -126,7 +126,8 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">CSE Society</h1>
-              <p className="text-xs text-slate-400">Portal</p>
+              <p className="text-xs text-slate-300">{user?.name || 'Member'}</p>
+              <p className="text-[10px] text-slate-500">Society ID: {user?.cseId || user?.cse_id || 'Not available'}</p>
             </div>
           </div>
         </div>

@@ -87,6 +87,43 @@ export async function GET(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    if (!supabaseUrl || !serviceRoleKey) {
+      return Response.json({ error: 'Supabase not configured' }, { status: 500 });
+    }
+
+    const { user_id: userId } = await request.json();
+    if (!userId || !isValidUuid(userId)) {
+      return Response.json({ error: 'Valid user ID is required' }, { status: 400 });
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    let resolvedUserId = userId;
+    if (localDemoCseIds[userId]) {
+      const { data: mappedUser, error: mappingError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('cse_id', localDemoCseIds[userId])
+        .maybeSingle();
+      if (mappingError) throw mappingError;
+      resolvedUserId = mappedUser?.id || userId;
+    }
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq('user_id', resolvedUserId)
+      .eq('is_read', false);
+    if (error) throw error;
+    return Response.json({ ok: true });
+  } catch (error) {
+    return Response.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
