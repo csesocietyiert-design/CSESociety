@@ -113,6 +113,29 @@ export default function MemberDashboard({ user }: any) {
         </div>
       </section>
 
+      <section className="border border-slate-700/70 bg-slate-900/60 p-6">
+        <div className="flex items-end justify-between gap-4 border-b border-slate-800 pb-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Today</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Received notifications</h2>
+          </div>
+          <Link href="/dashboard/notifications" className="text-sm font-medium text-teal-300 transition hover:text-teal-200">View all</Link>
+        </div>
+        <div className="mt-4 divide-y divide-slate-800">
+          {notificationsLoading ? <p className="py-4 text-sm text-slate-500">Loading notifications...</p> : notifications.length === 0 ? <p className="py-4 text-sm text-slate-500">No notifications received today.</p> : notifications.slice(0, 5).map((notification) => (
+            <div key={notification.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
+              <time dateTime={notification.created_at} className="w-20 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
+                {new Date(notification.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+              </time>
+              <div className="min-w-0 border-l border-slate-700/70 pl-4">
+                <p className="text-sm font-bold text-white">{notification.title}</p>
+                <p className="mt-1 text-sm font-normal leading-5 text-slate-300">{notification.message}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_0.7fr]">
         <div className="border border-slate-700/70 bg-slate-900/60 p-6">
           <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-5">

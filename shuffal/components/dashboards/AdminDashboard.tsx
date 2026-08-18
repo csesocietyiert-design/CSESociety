@@ -150,6 +150,12 @@ export default function AdminDashboard({ user }: any) {
     return matchedUser ? `${matchedUser.name} (${matchedUser.cse_id})` : 'Unknown user';
   };
 
+  const todayNotifications = notificationHistory.filter((notification) => {
+    const notificationDate = new Date(notification.created_at);
+    const today = new Date();
+    return notificationDate.toDateString() === today.toDateString();
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -305,6 +311,34 @@ export default function AdminDashboard({ user }: any) {
               </tbody>
             </table>
           )}
+        </div>
+      </section>
+
+      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+        <div className="flex flex-col gap-2 border-b border-slate-700/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Daily communication</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Today&apos;s notifications</h3>
+            <p className="mt-1 text-sm text-slate-500">Notifications received and delivered today.</p>
+          </div>
+          <span className="text-xs text-slate-500">{todayNotifications.length} records today</span>
+        </div>
+        <div className="mt-4 divide-y divide-slate-800">
+          {notificationHistoryLoading ? <p className="py-6 text-center text-sm text-slate-500">Loading today&apos;s notifications...</p> : todayNotifications.length === 0 ? <p className="py-6 text-center text-sm text-slate-500">No notifications recorded today.</p> : todayNotifications.slice(0, 10).map((notification) => (
+            <div key={`today-${notification.id}`} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
+              <time dateTime={notification.created_at} className="w-24 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
+                {new Date(notification.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+              </time>
+              <div className="min-w-0 border-l border-slate-700/70 pl-4">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <p className="text-sm font-bold text-white">{notification.title}</p>
+                  <span className="text-xs text-slate-600">{notification.is_read ? 'Read' : 'Unread'}</span>
+                </div>
+                <p className="mt-1 text-sm font-normal leading-5 text-slate-300">{notification.message}</p>
+                <p className="mt-2 text-xs text-slate-600">From {getUserName(notification.sender_id)} to {getUserName(notification.user_id)}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

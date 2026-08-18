@@ -1,4 +1,7 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
+const SESSION_DURATION_MS = 5 * 60 * 1000;
 
 export type UserRole = 
   | 'admin' 
@@ -22,6 +25,7 @@ export interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  sessionExpiresAt: number | null;
   login: (cseId: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
@@ -67,9 +71,10 @@ const demoUsers: Record<string, { password: string; user: User }> = {
   },
 };
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>()(persist((set) => ({
   user: null,
   isAuthenticated: false,
+  sessionExpiresAt: null,
 
   login: async (cseId: string, password: string) => {
     try {
@@ -96,6 +101,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         user,
         isAuthenticated: true,
+        sessionExpiresAt: Date.now() + SESSION_DURATION_MS,
       });
       localStorage.setItem('authUser', JSON.stringify(user));
     } catch (err) {
@@ -127,6 +133,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         user,
         isAuthenticated: false, // User cannot login until verified
+        sessionExpiresAt: Date.now() + SESSION_DURATION_MS,
       });
       localStorage.setItem('authUser', JSON.stringify(user));
       localStorage.setItem('pendingVerification', 'true');
@@ -136,12 +143,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, sessionExpiresAt: null });
     localStorage.removeItem('authUser');
   },
 
   setUser: (user: User) => {
-    set({ user, isAuthenticated: true });
+    set({ user, isAuthenticated: true, sessionExpiresAt: Date.now() + SESSION_DURATION_MS });
     localStorage.setItem('authUser', JSON.stringify(user));
+  },
+}), {
+  name: 'cse-auth-session',
+  storage: createJSONStorage(() => localStorage),
+  onRehydrateStorage: () => (state) => {
+    if (state?.sessionExpiresAt && state.sessionExpiresAt <= Date.now()) {
+      state.logout();
+    }
   },
 }));

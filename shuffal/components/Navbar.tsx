@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useNotificationsToday } from '@/lib/hooks';
+import { markNotificationsAsRead, useRealtimeNotifications } from '@/lib/hooks';
 
 interface NavbarProps {
   user: any;
@@ -12,10 +12,11 @@ interface NavbarProps {
 
 export default function Navbar({ user, onMenuClick }: NavbarProps) {
   const router = useRouter();
-  const { todayNotifications } = useNotificationsToday(user?.id);
+  const { notifications: todayNotifications } = useRealtimeNotifications(user?.id);
   const [showNotifications, setShowNotifications] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
+  const [notificationsAcknowledgedAt, setNotificationsAcknowledgedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.profile_image_url) {
@@ -46,6 +47,19 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
   }, []);
 
   const todayUnreadCount = todayNotifications.filter(n => !n.is_read).length;
+  const hasUnseenNotification = todayNotifications.some(
+    (notification) => !notification.is_read && (!notificationsAcknowledgedAt || notification.created_at > notificationsAcknowledgedAt)
+  );
+
+  const handleNotificationToggle = async () => {
+    const openingNotifications = !showNotifications;
+    setShowNotifications(openingNotifications);
+
+    if (openingNotifications && todayUnreadCount > 0 && user?.id) {
+      setNotificationsAcknowledgedAt(new Date().toISOString());
+      await markNotificationsAsRead(user.id);
+    }
+  };
 
   const handleProfileHover = () => {
     if (profileImage) {
@@ -87,6 +101,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
                 src="/logo.png"
                 alt="CSE Society Logo"
                 fill
+                sizes="40px"
                 className="object-contain"
               />
             </div>
@@ -105,14 +120,15 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
           </div>
 
           <button 
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={handleNotificationToggle}
+            aria-label="Notifications"
             className="relative p-2 hover:bg-slate-800 rounded-lg transition group"
           >
             <svg className="w-6 h-6 text-slate-300 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
-            {todayUnreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+            {hasUnseenNotification && (
+              <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-slate-900"></span>
             )}
 
             {showNotifications && (
@@ -123,12 +139,14 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
                     <p className="text-slate-400 text-sm text-center py-4">No notifications today</p>
                   ) : (
                     todayNotifications.map((notif) => (
-                      <div key={notif.id} className="p-2 bg-slate-700/50 rounded border border-slate-600 text-sm">
-                        <p className="text-white font-medium">{notif.title}</p>
-                        <p className="text-slate-300 text-xs mt-1">{notif.message}</p>
-                        <p className="text-slate-500 text-xs mt-1">
-                          {new Date(notif.created_at).toLocaleTimeString()}
-                        </p>
+                      <div key={notif.id} className="flex items-start gap-3 border-b border-slate-700/60 px-2 py-3 last:border-0">
+                        <time dateTime={notif.created_at} className="w-16 shrink-0 pt-0.5 text-left text-xs text-slate-500">
+                          {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </time>
+                        <div className="min-w-0 border-l border-slate-600 pl-3">
+                          <p className="text-sm font-bold text-white">{notif.title}</p>
+                          <p className="mt-1 text-xs font-normal leading-5 text-slate-300">{notif.message}</p>
+                        </div>
                       </div>
                     ))
                   )}
@@ -147,6 +165,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
                   src={profileImage}
                   alt="Profile"
                   fill
+                  sizes="40px"
                   className="object-cover"
                 />
               </div>
