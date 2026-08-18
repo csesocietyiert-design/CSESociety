@@ -333,8 +333,7 @@ export function useCertificates(userId: string) {
         const { data, error: err } = await supabase
           .from('certificates')
           .select('*')
-          .eq('user_id', userId)
-          .order('issued_at', { ascending: false });
+          .order('date', { ascending: false });
 
         if (err) throw err;
         setCertificates(data || []);
@@ -417,8 +416,9 @@ export function useRealtimeNotifications(userId: string) {
     nextMidnight.setHours(24, 0, 0, 0);
     const midnightRefresh = window.setTimeout(fetchInitial, nextMidnight.getTime() - now.getTime());
 
+    const channelName = `notifications:${userId}:${Date.now()}`;
     const subscription = supabase
-      .channel(`notifications:${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -428,12 +428,19 @@ export function useRealtimeNotifications(userId: string) {
           filter: `user_id=eq.${userId}`,
         },
         (payload: any) => {
+          const notificationDate = new Date(payload.new?.created_at || payload.old?.created_at);
+          const currentDay = new Date();
+          const isCurrentDay = notificationDate.toDateString() === currentDay.toDateString();
+
           if (payload.eventType === 'INSERT') {
-            setNotifications((prev) => [payload.new, ...prev]);
+            if (isCurrentDay) {
+              setNotifications((prev) => [payload.new, ...prev]);
+            }
           } else if (payload.eventType === 'UPDATE') {
-            setNotifications((prev) =>
-              prev.map((n) => (n.id === payload.new.id ? payload.new : n))
-            );
+            setNotifications((prev) => {
+              if (!isCurrentDay) return prev.filter((notification) => notification.id !== payload.new.id);
+              return prev.map((notification) => (notification.id === payload.new.id ? payload.new : notification));
+            });
           } else if (payload.eventType === 'DELETE') {
             setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id));
           }
@@ -443,7 +450,7 @@ export function useRealtimeNotifications(userId: string) {
 
     return () => {
       window.clearTimeout(midnightRefresh);
-      subscription.unsubscribe();
+      void supabase!.removeChannel(subscription);
     };
   }, [userId]);
 

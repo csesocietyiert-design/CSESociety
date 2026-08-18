@@ -163,49 +163,28 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
     isAuthenticated: state.isAuthenticated,
     sessionExpiresAt: state.sessionExpiresAt,
   }),
-  merge: (persistedState, currentState) => {
-    const persisted = (persistedState ?? {}) as Partial<AuthState>;
-    const persistedSessionExpired = Boolean(
-      persisted.sessionExpiresAt && persisted.sessionExpiresAt <= Date.now()
-    );
+  onRehydrateStorage: () => (state) => {
+    if (!state || typeof window === 'undefined') return;
 
-    if (persistedSessionExpired) {
-      return currentState;
+    if (state.sessionExpiresAt && state.sessionExpiresAt <= Date.now()) {
+      state.logout();
+      state.setHasHydrated(true);
+      return;
     }
 
-    let legacyUser: User | null = null;
-    if (typeof window !== 'undefined' && !persisted.user) {
+    if (!state.user) {
       const storedUser = window.localStorage.getItem('authUser');
-      if (storedUser) {
+      const pendingVerification = window.localStorage.getItem('pendingVerification');
+
+      if (storedUser && !pendingVerification) {
         try {
-          legacyUser = JSON.parse(storedUser) as User;
+          state.setUser(JSON.parse(storedUser) as User);
         } catch {
-          legacyUser = null;
+          window.localStorage.removeItem('authUser');
         }
       }
     }
 
-    const user = persisted.user || legacyUser;
-    const isAuthenticated = persisted.user
-      ? Boolean(persisted.isAuthenticated)
-      : Boolean(
-          legacyUser &&
-            typeof window !== 'undefined' &&
-            !window.localStorage.getItem('pendingVerification')
-        );
-
-    return {
-      ...currentState,
-      ...persisted,
-      user,
-      isAuthenticated,
-      sessionExpiresAt: isAuthenticated ? Date.now() + SESSION_DURATION_MS : null,
-    };
-  },
-  onRehydrateStorage: () => (state) => {
-    if (state?.sessionExpiresAt && state.sessionExpiresAt <= Date.now()) {
-      state.logout();
-    }
-    state?.setHasHydrated(true);
+    state.setHasHydrated(true);
   },
 }));
