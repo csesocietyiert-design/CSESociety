@@ -10,12 +10,18 @@ export default function NotificationsPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     if (!isAuthenticated || !user) {
       router.push('/login');
     }
-  }, [isAuthenticated, user, router]);
+  }, [hasHydrated, isAuthenticated, user, router]);
+
+  if (!hasHydrated) {
+    return <div className="min-h-screen flex items-center justify-center text-slate-400">Restoring your session...</div>;
+  }
 
   if (!isAuthenticated || !user) {
     return (

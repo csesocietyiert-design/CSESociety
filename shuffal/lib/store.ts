@@ -26,10 +26,12 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   sessionExpiresAt: number | null;
+  hasHydrated: boolean;
   login: (cseId: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 const demoUsers: Record<string, { password: string; user: User }> = {
@@ -75,6 +77,8 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
   user: null,
   isAuthenticated: false,
   sessionExpiresAt: null,
+  hasHydrated: false,
+  setHasHydrated: (hasHydrated: boolean) => set({ hasHydrated }),
 
   login: async (cseId: string, password: string) => {
     try {
@@ -154,9 +158,54 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
 }), {
   name: 'cse-auth-session',
   storage: createJSONStorage(() => localStorage),
+  partialize: (state) => ({
+    user: state.user,
+    isAuthenticated: state.isAuthenticated,
+    sessionExpiresAt: state.sessionExpiresAt,
+  }),
+  merge: (persistedState, currentState) => {
+    const persisted = persistedState as Partial<AuthState>;
+    const persistedSessionExpired = Boolean(
+      persisted.sessionExpiresAt && persisted.sessionExpiresAt <= Date.now()
+    );
+
+    if (persistedSessionExpired) {
+      return currentState;
+    }
+
+    let legacyUser: User | null = null;
+    if (typeof window !== 'undefined' && !persisted.user) {
+      const storedUser = window.localStorage.getItem('authUser');
+      if (storedUser) {
+        try {
+          legacyUser = JSON.parse(storedUser) as User;
+        } catch {
+          legacyUser = null;
+        }
+      }
+    }
+
+    const user = persisted.user || legacyUser;
+    const isAuthenticated = persisted.user
+      ? Boolean(persisted.isAuthenticated)
+      : Boolean(
+          legacyUser &&
+            typeof window !== 'undefined' &&
+            !window.localStorage.getItem('pendingVerification')
+        );
+
+    return {
+      ...currentState,
+      ...persisted,
+      user,
+      isAuthenticated,
+      sessionExpiresAt: isAuthenticated ? Date.now() + SESSION_DURATION_MS : null,
+    };
+  },
   onRehydrateStorage: () => (state) => {
     if (state?.sessionExpiresAt && state.sessionExpiresAt <= Date.now()) {
       state.logout();
     }
+    state?.setHasHydrated(true);
   },
 }));
