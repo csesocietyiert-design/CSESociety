@@ -34,12 +34,14 @@ export interface Notification {
 export interface Event {
   id: string;
   title: string;
-  description: string;
+  description?: string | null;
+  caption?: string | null;
+  authority_letter_url?: string | null;
   start_date: string;
-  end_date: string;
-  location: string;
-  capacity: number;
-  registrations: number;
+  end_date?: string | null;
+  location?: string | null;
+  capacity?: number | null;
+  registrations?: number | null;
   status: string;
   created_by: string;
   created_at: string;
@@ -193,15 +195,10 @@ export function useNotificationHistory() {
   useEffect(() => {
     const fetchNotificationHistory = async () => {
       try {
-        if (!supabase) return;
-
-        const { data, error } = await supabase
-          .from('notifications')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setNotifications(data || []);
+        const response = await fetch('/api/notifications');
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notification history');
+        setNotifications(payload.notifications || []);
       } catch (error) {
         console.error('Error fetching notification history:', error);
       } finally {
@@ -433,14 +430,10 @@ export function useRealtimeNotifications(userId: string) {
 
     const fetchInitial = async () => {
       try {
-        const { data, error: err } = await supabase!
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        if (err) throw err;
-        setNotifications(data || []);
+        const response = await fetch(`/api/notifications?user_id=${encodeURIComponent(userId)}`);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notifications');
+        setNotifications(payload.notifications || []);
       } catch (err) {
         console.error('Error fetching initial notifications:', err);
       } finally {
@@ -455,18 +448,20 @@ export function useRealtimeNotifications(userId: string) {
     nextMidnight.setHours(24, 0, 0, 0);
     const midnightRefresh = window.setTimeout(fetchInitial, nextMidnight.getTime() - now.getTime());
 
-    const channelName = `notifications:${userId}:${Date.now()}`;
-    const subscription = supabase
-      .channel(channelName)
-      .on(
+    const channelName = `notifications:${userId}:${crypto.randomUUID()}`;
+    const channel = supabase.channel(channelName);
+    channel.on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${userId}`,
         },
         (payload: any) => {
+          const notificationUserId = payload.new?.user_id || payload.old?.user_id;
+          const notificationSenderId = payload.new?.sender_id || payload.old?.sender_id;
+          if (notificationUserId !== userId && notificationSenderId !== userId) return;
+
           const notificationDate = new Date(payload.new?.created_at || payload.old?.created_at);
           const currentDay = new Date();
           const isCurrentDay = notificationDate.toDateString() === currentDay.toDateString();
@@ -485,8 +480,8 @@ export function useRealtimeNotifications(userId: string) {
             setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id));
           }
         }
-      )
-      .subscribe();
+      );
+    const subscription = channel.subscribe();
 
     return () => {
       window.clearTimeout(midnightRefresh);

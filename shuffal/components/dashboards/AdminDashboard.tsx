@@ -1,27 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUsers, useEvents, useNotifications, useNotificationHistory, useActivityLogs, Announcement } from '@/lib/hooks';
+import { useUsers, useEvents, useNotifications, useActivityLogs, Announcement } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
-const getLocalDateInputValue = (date = new Date()) => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
 
 export default function AdminDashboard({ user }: any) {
   const router = useRouter();
   const { users, loading: usersLoading } = useUsers();
   const { events, loading: eventsLoading } = useEvents();
   const { notifications } = useNotifications(user?.id);
-  const { notifications: notificationHistory, loading: notificationHistoryLoading } = useNotificationHistory();
   const { activityLogs, loading: logsLoading } = useActivityLogs();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
-  const [notificationDirection, setNotificationDirection] = useState<'all' | 'sent' | 'received'>('all');
-  const [historyFromDate, setHistoryFromDate] = useState(() => getLocalDateInputValue());
-  const [historyToDate, setHistoryToDate] = useState(() => getLocalDateInputValue());
   const [stats, setStats] = useState({
     totalMembers: 0,
     activeEvents: 0,
@@ -139,42 +131,6 @@ export default function AdminDashboard({ user }: any) {
     });
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-    });
-  };
-
-  const getUserName = (id?: string | null) => {
-    if (!id) return 'System';
-    const matchedUser = users.find((member) => member.id === id);
-    return matchedUser ? `${matchedUser.name} (${matchedUser.cse_id})` : 'Unknown user';
-  };
-
-  const todayNotifications = notificationHistory.filter((notification) => {
-    const notificationDate = new Date(notification.created_at);
-    const today = new Date();
-    return notificationDate.toDateString() === today.toDateString();
-  });
-  const filteredNotificationHistory = notificationHistory.filter((notification) => {
-    const notificationDate = new Date(notification.created_at);
-    const notificationDateKey = `${notificationDate.getFullYear()}-${String(notificationDate.getMonth() + 1).padStart(2, '0')}-${String(notificationDate.getDate()).padStart(2, '0')}`;
-    const fromDate = historyFromDate || getLocalDateInputValue();
-    const toDate = historyToDate || fromDate;
-    const inSelectedDateRange = notificationDateKey >= fromDate && notificationDateKey <= toDate;
-
-    if (!inSelectedDateRange) return false;
-    if (notificationDirection === 'sent') return notification.sender_id === user?.id;
-    if (notificationDirection === 'received') return notification.user_id === user?.id;
-    return true;
-  });
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -278,121 +234,6 @@ export default function AdminDashboard({ user }: any) {
           </div>
         </div>
       </div>
-
-      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 text-left">
-        <div className="flex flex-col gap-2 border-b border-slate-700/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Communication audit</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">Notification history</h3>
-            <p className="mt-1 text-sm text-slate-500">Complete record of notifications sent and received by society members.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-xs text-slate-500">
-              From
-              <input
-                type="date"
-                value={historyFromDate}
-                onChange={(event) => setHistoryFromDate(event.target.value)}
-                className="border border-slate-700 bg-slate-800/70 px-2 py-2 text-xs text-slate-300 outline-none focus:border-teal-400"
-                aria-label="Notification history start date"
-              />
-            </label>
-            <label className="flex items-center gap-2 text-xs text-slate-500">
-              To
-              <input
-                type="date"
-                value={historyToDate}
-                min={historyFromDate || undefined}
-                onChange={(event) => setHistoryToDate(event.target.value)}
-                className="border border-slate-700 bg-slate-800/70 px-2 py-2 text-xs text-slate-300 outline-none focus:border-teal-400"
-                aria-label="Notification history end date"
-              />
-            </label>
-            <select
-              value={notificationDirection}
-              onChange={(event) => setNotificationDirection(event.target.value as 'all' | 'sent' | 'received')}
-              className="border border-slate-700 bg-slate-800/70 px-3 py-2 text-xs text-slate-300 outline-none focus:border-teal-400"
-              aria-label="Filter notification history"
-            >
-              <option value="all">All notifications</option>
-              <option value="sent">Sent by me</option>
-              <option value="received">Received by me</option>
-            </select>
-            <span className="text-xs text-slate-500">{filteredNotificationHistory.length} records</span>
-          </div>
-        </div>
-
-        <div className="mt-4 overflow-x-auto">
-          {notificationHistoryLoading ? (
-            <p className="py-8 text-center text-sm text-slate-500">Loading notification history...</p>
-          ) : filteredNotificationHistory.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">No notifications have been recorded yet.</p>
-          ) : (
-            <table className="w-full min-w-[760px] text-left">
-              <thead>
-                <tr className="border-b border-slate-700/60 text-xs uppercase tracking-wider text-slate-500">
-                  <th className="px-3 py-3 font-medium">Notification</th>
-                  <th className="px-3 py-3 font-medium">Sender</th>
-                  <th className="px-3 py-3 font-medium">Recipient</th>
-                  <th className="px-3 py-3 font-medium">Status</th>
-                  <th className="px-3 py-3 text-right font-medium">Date and time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {filteredNotificationHistory.map((notification) => {
-                  const isSentByAdmin = notification.sender_id === user?.id;
-                  const isReceivedByAdmin = notification.user_id === user?.id;
-
-                  return (
-                    <tr key={notification.id} className="transition-colors hover:bg-slate-800/40">
-                      <td className="max-w-[260px] px-3 py-4">
-                        <p className="truncate text-sm font-medium text-slate-200">{notification.title}</p>
-                        <p className="mt-1 truncate text-xs text-slate-500">{notification.message}</p>
-                      </td>
-                      <td className="px-3 py-4 text-sm text-slate-400">{getUserName(notification.sender_id)}</td>
-                      <td className="px-3 py-4 text-sm text-slate-400">{getUserName(notification.user_id)}</td>
-                      <td className="px-3 py-4">
-                        <span className={`inline-flex items-center border px-2 py-1 text-xs font-medium ${isSentByAdmin ? 'border-sky-400/30 bg-sky-400/10 text-sky-300' : isReceivedByAdmin ? 'border-amber-400/30 bg-amber-400/10 text-amber-300' : notification.is_read ? 'border-teal-400/30 bg-teal-400/10 text-teal-300' : 'border-rose-400/30 bg-rose-400/10 text-rose-300'}`}>
-                          {isSentByAdmin ? 'Sent' : isReceivedByAdmin ? 'Received' : notification.is_read ? 'Read' : 'Unread'}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-right text-xs text-slate-500">{formatDateTime(notification.created_at)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </section>
-
-      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
-        <div className="flex flex-col gap-2 border-b border-slate-700/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Daily communication</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">Today&apos;s notifications</h3>
-            <p className="mt-1 text-sm text-slate-500">Notifications received and delivered today.</p>
-          </div>
-          <span className="text-xs text-slate-500">{todayNotifications.length} records today</span>
-        </div>
-            <div className="mt-4 divide-y divide-slate-800 text-left">
-          {notificationHistoryLoading ? <p className="py-6 text-center text-sm text-slate-500">Loading today&apos;s notifications...</p> : todayNotifications.length === 0 ? <p className="py-6 text-center text-sm text-slate-500">No notifications recorded today.</p> : todayNotifications.slice(0, 10).map((notification) => (
-            <div key={`today-${notification.id}`} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
-              <time dateTime={notification.created_at} className="w-24 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
-                {new Date(notification.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-              </time>
-              <div className="min-w-0 border-l border-slate-700/70 pl-4">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <p className="text-sm font-bold text-white">{notification.title}</p>
-                  <span className="text-xs text-slate-600">{notification.is_read ? 'Read' : 'Unread'}</span>
-                </div>
-                <p className="mt-1 text-sm font-normal leading-5 text-slate-300">{notification.message}</p>
-                <p className="mt-2 text-xs text-slate-600">From {getUserName(notification.sender_id)} to {getUserName(notification.user_id)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
         <h3 className="text-lg font-bold text-white mb-4">Upcoming Events</h3>

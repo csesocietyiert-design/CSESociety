@@ -27,6 +27,49 @@ function getErrorDetails(error: unknown) {
   };
 }
 
+export async function GET(request: Request) {
+  try {
+    if (!supabaseUrl || !serviceRoleKey) {
+      return Response.json(
+        { error: 'Supabase not configured' },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    const userId = new URL(request.url).searchParams.get('user_id');
+    if (userId && !isValidUuid(userId)) {
+      return Response.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+
+    let query = supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (userId) {
+      query = query.or(`user_id.eq.${userId},sender_id.eq.${userId}`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return Response.json({ notifications: data || [] });
+  } catch (error) {
+    console.error('Notification history error:', error);
+    return Response.json(
+      { error: getErrorMessage(error), details: getErrorDetails(error) },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {

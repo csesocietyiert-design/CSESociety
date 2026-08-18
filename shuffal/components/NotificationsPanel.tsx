@@ -10,8 +10,8 @@ export default function NotificationsPanel({ user }: any) {
   const [activeTab, setActiveTab] = useState<'history' | 'send'>('history');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRead, setFilterRead] = useState<'all' | 'unread' | 'read'>('all');
-  const [fromDate, setFromDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [toDate, setToDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [showSendForm, setShowSendForm] = useState(false);
   const [sendData, setSendData] = useState({
     title: '',
@@ -27,9 +27,9 @@ export default function NotificationsPanel({ user }: any) {
   const filteredNotifications = notifications.filter((notif) => {
     const notificationDate = new Date(notif.created_at);
     const notificationDateKey = `${notificationDate.getFullYear()}-${String(notificationDate.getMonth() + 1).padStart(2, '0')}-${String(notificationDate.getDate()).padStart(2, '0')}`;
-    const selectedFromDate = fromDate || new Date().toISOString().slice(0, 10);
-    const selectedToDate = toDate || selectedFromDate;
-    const matchesDate = notificationDateKey >= selectedFromDate && notificationDateKey <= selectedToDate;
+    const matchesDate =
+      (!fromDate || notificationDateKey >= fromDate) &&
+      (!toDate || notificationDateKey <= toDate);
     const matchesSearch =
       notif.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notif.message?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -41,7 +41,7 @@ export default function NotificationsPanel({ user }: any) {
     return matchesDate && matchesSearch && matchesFilter;
   });
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => n.user_id === user?.id && !n.is_read).length;
 
   const handleMarkAsRead = async () => {
     await markNotificationsAsRead(user?.id);
@@ -229,9 +229,19 @@ export default function NotificationsPanel({ user }: any) {
                   }`}
                 >
                   <div className="flex items-start gap-4">
-                    <time dateTime={notif.created_at} className="w-20 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
-                      {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                    </time>
+                    <div className="w-20 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
+                      <time dateTime={notif.created_at}>
+                        {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </time>
+                      {notif.sender_id === user?.id && (
+                        <span className="block text-blue-400">Me</span>
+                      )}
+                      {notif.sender_id === user?.id && (
+                        <span className="block truncate" title={notif.target_role || undefined}>
+                          {users.find((member) => member.id === notif.user_id)?.cse_id || notif.target_role || 'Member'}
+                        </span>
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1 border-l border-slate-700/70 pl-4">
                       <div className="flex items-start justify-between gap-3">
                         <h4 className="text-sm font-bold text-white">{notif.title}</h4>

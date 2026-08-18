@@ -105,7 +105,9 @@ export default function MemberDashboard({ user }: any) {
             {eventsLoading ? <p className="text-sm text-slate-500">Loading events...</p> : upcomingEvents.length === 0 ? <p className="text-sm text-slate-500">No upcoming events scheduled.</p> : upcomingEvents.map((event, index) => (
               <div key={event.id} className={`border-l-2 pl-4 ${index % 2 === 0 ? 'border-teal-300/70' : 'border-amber-300/70'}`}>
                 <p className="font-medium text-white">{event.title}</p>
-                <p className="mt-1 text-sm text-slate-400">{new Date(event.start_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} · {event.location || 'Details available in Events'}</p>
+                <p className="mt-1 text-sm text-slate-400">Expected {new Date(event.start_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                {event.caption && <p className="mt-2 text-sm leading-5 text-slate-300">{event.caption}</p>}
+                {event.authority_letter_url && <a href={event.authority_letter_url} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-xs font-medium text-teal-300 hover:text-teal-200">View authority letter</a>}
               </div>
             ))}
           </div>

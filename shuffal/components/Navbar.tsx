@@ -16,7 +16,9 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
   const todayNotifications = notifications.filter((notification) => {
     const notificationDate = new Date(notification.created_at);
     const today = new Date();
-    return notificationDate.toDateString() === today.toDateString();
+    return notificationDate.getFullYear() === today.getFullYear() &&
+      notificationDate.getMonth() === today.getMonth() &&
+      notificationDate.getDate() === today.getDate();
   });
   const [showNotifications, setShowNotifications] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
@@ -150,19 +152,33 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
 
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-4 top-12">
-                <h3 className="text-white font-semibold mb-3">Today's Notifications</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto text-left">
-                  {todayNotifications.length === 0 ? (
-                    <p className="text-slate-400 text-sm text-center py-4">No notifications today</p>
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-white font-semibold">Notification History</h3>
+                  <span className="text-xs text-slate-500">{notifications.length} total</span>
+                </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto text-left">
+                  {notifications.length === 0 ? (
+                    <p className="text-slate-400 text-sm text-center py-4">No notifications</p>
                   ) : (
-                    todayNotifications.map((notif) => (
+                    notifications.map((notif) => (
                       <div key={notif.id} className="flex items-start gap-3 border-b border-slate-700/60 px-2 py-3 last:border-0">
                         <time dateTime={notif.created_at} className="w-16 shrink-0 pt-0.5 text-left text-xs text-slate-500">
-                          {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(notif.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                          <span className="block mt-1">
+                            {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         </time>
                         <div className="min-w-0 border-l border-slate-600 pl-3">
-                          <p className="text-sm font-bold text-white">{notif.title}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-white">{notif.title}</p>
+                            <span className="text-[10px] text-slate-500">
+                              {notif.sender_id === user?.id ? 'Sent' : 'Received'}
+                            </span>
+                          </div>
                           <p className="mt-1 text-xs font-normal leading-5 text-slate-300">{notif.message}</p>
+                          <p className="mt-1 text-[10px] text-slate-500">
+                            {notif.sender_id === user?.id ? `To ${notif.target_role || 'member'}` : 'From society'}
+                          </p>
                         </div>
                       </div>
                     ))
