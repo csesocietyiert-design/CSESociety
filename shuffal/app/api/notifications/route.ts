@@ -27,6 +27,12 @@ function getErrorDetails(error: unknown) {
   };
 }
 
+const localDemoCseIds: Record<string, string> = {
+  '11111111-1111-4111-8111-111111111111': '23F2601',
+  '22222222-2222-4222-8222-222222222222': '23F2602',
+  '33333333-3333-4333-8333-333333333333': '23F2603',
+};
+
 export async function GET(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
@@ -48,13 +54,24 @@ export async function GET(request: Request) {
       return Response.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
+    let resolvedUserId = userId;
+    if (userId && localDemoCseIds[userId]) {
+      const { data: mappedUser, error: mappingError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('cse_id', localDemoCseIds[userId])
+        .maybeSingle();
+      if (mappingError) throw mappingError;
+      resolvedUserId = mappedUser?.id || userId;
+    }
+
     let query = supabase
       .from('notifications')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (userId) {
-      query = query.or(`user_id.eq.${userId},sender_id.eq.${userId}`);
+    if (resolvedUserId) {
+      query = query.or(`user_id.eq.${resolvedUserId},sender_id.eq.${resolvedUserId}`);
     }
 
     const { data, error } = await query;

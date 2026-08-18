@@ -426,7 +426,7 @@ export function useRealtimeNotifications(userId: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId || !supabase) return;
+    if (!userId) return;
 
     const fetchInitial = async () => {
       try {
@@ -448,6 +448,10 @@ export function useRealtimeNotifications(userId: string) {
     nextMidnight.setHours(24, 0, 0, 0);
     const midnightRefresh = window.setTimeout(fetchInitial, nextMidnight.getTime() - now.getTime());
 
+    if (!supabase) {
+      return () => window.clearTimeout(midnightRefresh);
+    }
+
     const channelName = `notifications:${userId}:${crypto.randomUUID()}`;
     const channel = supabase.channel(channelName);
     channel.on(
@@ -457,28 +461,8 @@ export function useRealtimeNotifications(userId: string) {
           schema: 'public',
           table: 'notifications',
         },
-        (payload: any) => {
-          const notificationUserId = payload.new?.user_id || payload.old?.user_id;
-          const notificationSenderId = payload.new?.sender_id || payload.old?.sender_id;
-          if (notificationUserId !== userId && notificationSenderId !== userId) return;
-
-          const notificationDate = new Date(payload.new?.created_at || payload.old?.created_at);
-          const currentDay = new Date();
-          const isCurrentDay = notificationDate.toDateString() === currentDay.toDateString();
-
-          if (payload.eventType === 'INSERT') {
-            if (isCurrentDay) {
-              playNotificationSound();
-              setNotifications((prev) => [payload.new, ...prev]);
-            }
-          } else if (payload.eventType === 'UPDATE') {
-            setNotifications((prev) => {
-              if (!isCurrentDay) return prev.filter((notification) => notification.id !== payload.new.id);
-              return prev.map((notification) => (notification.id === payload.new.id ? payload.new : notification));
-            });
-          } else if (payload.eventType === 'DELETE') {
-            setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id));
-          }
+        () => {
+          void fetchInitial();
         }
       );
     const subscription = channel.subscribe();

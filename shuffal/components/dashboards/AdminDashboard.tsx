@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUsers, useEvents, useNotifications, useActivityLogs, Announcement } from '@/lib/hooks';
+import { useUsers, useEvents, useRealtimeNotifications, useNotificationHistory, useActivityLogs, Announcement } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,8 +10,16 @@ export default function AdminDashboard({ user }: any) {
   const router = useRouter();
   const { users, loading: usersLoading } = useUsers();
   const { events, loading: eventsLoading } = useEvents();
-  const { notifications } = useNotifications(user?.id);
+  const { notifications } = useRealtimeNotifications(user?.id);
+  const { notifications: notificationHistory } = useNotificationHistory();
   const { activityLogs, loading: logsLoading } = useActivityLogs();
+  const todayNotifications = notificationHistory.filter((notification) => {
+    const notificationDate = new Date(notification.created_at);
+    const today = new Date();
+    return notificationDate.getFullYear() === today.getFullYear() &&
+      notificationDate.getMonth() === today.getMonth() &&
+      notificationDate.getDate() === today.getDate();
+  });
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [stats, setStats] = useState({
@@ -234,6 +242,51 @@ export default function AdminDashboard({ user }: any) {
           </div>
         </div>
       </div>
+
+      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+        <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Recent activity</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Notification history</h3>
+          </div>
+          <Link href="/dashboard/notifications" className="text-sm font-medium text-teal-300 hover:text-teal-200">View all</Link>
+        </div>
+        <div className="mt-4 divide-y divide-slate-800">
+          {notificationHistory.length === 0 ? (
+            <p className="py-4 text-sm text-slate-500">No notification history yet.</p>
+          ) : notificationHistory.slice(0, 5).map((notification) => (
+            <div key={notification.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
+              <time dateTime={notification.created_at} className="w-20 shrink-0 text-xs text-slate-500">
+                {new Date(notification.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+              </time>
+              <div className="min-w-0 border-l border-slate-700/70 pl-4">
+                <p className="text-sm font-bold text-white">{notification.title}</p>
+                <p className="mt-1 text-sm leading-5 text-slate-300">{notification.message}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 border-t border-slate-700/60 pt-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-white">Today&apos;s notifications</h4>
+            <span className="text-xs text-slate-500">{todayNotifications.length} today</span>
+          </div>
+          {todayNotifications.length === 0 ? (
+            <p className="py-4 text-sm text-slate-500">No notifications today.</p>
+          ) : (
+            <div className="mt-2 space-y-2">
+              {todayNotifications.slice(0, 5).map((notification) => (
+                <div key={`today-${notification.id}`} className="flex items-start gap-3 py-2">
+                  <time dateTime={notification.created_at} className="w-16 shrink-0 text-xs text-slate-500">
+                    {new Date(notification.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                  </time>
+                  <p className="min-w-0 truncate text-sm text-slate-300">{notification.title}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
         <h3 className="text-lg font-bold text-white mb-4">Upcoming Events</h3>

@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAnnouncements, useCertificates, useEvents, useNotifications } from '@/lib/hooks';
+import { useAnnouncements, useCertificates, useEvents, useRealtimeNotifications } from '@/lib/hooks';
 
 export default function MemberDashboard({ user }: any) {
   const [imageError, setImageError] = useState(false);
   const { events, loading: eventsLoading } = useEvents();
   const { certificates, loading: certificatesLoading } = useCertificates(user.id);
   const { announcements, loading: announcementsLoading } = useAnnouncements();
-  const { notifications, loading: notificationsLoading } = useNotifications(user.id);
+  const { notifications, loading: notificationsLoading } = useRealtimeNotifications(user.id);
   const initials = user.name
     .split(' ')
     .map((part: string) => part[0])
@@ -118,13 +118,13 @@ export default function MemberDashboard({ user }: any) {
       <section className="border border-slate-700/70 bg-slate-900/60 p-6">
         <div className="flex items-end justify-between gap-4 border-b border-slate-800 pb-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Today</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Received notifications</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Recent activity</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Notification history</h2>
           </div>
           <Link href="/dashboard/notifications" className="text-sm font-medium text-teal-300 transition hover:text-teal-200">View all</Link>
         </div>
         <div className="mt-4 divide-y divide-slate-800">
-          {notificationsLoading ? <p className="py-4 text-sm text-slate-500">Loading notifications...</p> : notifications.length === 0 ? <p className="py-4 text-sm text-slate-500">No notifications received today.</p> : notifications.slice(0, 5).map((notification) => (
+          {notificationsLoading ? <p className="py-4 text-sm text-slate-500">Loading notifications...</p> : notifications.length === 0 ? <p className="py-4 text-sm text-slate-500">No notification history yet.</p> : notifications.slice(0, 5).map((notification) => (
             <div key={notification.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
               <time dateTime={notification.created_at} className="w-20 shrink-0 pt-0.5 text-xs leading-5 text-slate-500">
                 {new Date(notification.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
