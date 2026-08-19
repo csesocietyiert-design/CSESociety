@@ -65,7 +65,7 @@ export default function PendingVerificationPage() {
 
           <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4 mb-6">
             <p className="text-slate-400 text-sm">
-              ⏱️ 𝑻𝒚𝒑𝒊𝒄𝒂𝒍𝒍𝒚 ap𝒑𝒓𝒐𝒗𝒆𝒅 𝒘𝒊𝒕𝒉𝒊𝒏 24 𝒉𝒐𝒖𝒓𝒔
+              ⏱️ 𝑻𝒚𝒑𝒊𝒄𝒂𝒍𝒍𝒚 𝒂𝒑𝒑𝒓𝒐𝒗𝒆𝒅 𝒘𝒊𝒕𝒉𝒊𝒏 24 𝒉𝒐𝒖𝒓𝒔
             </p>
           </div>
 
