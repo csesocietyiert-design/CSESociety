@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/activity-logger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -60,6 +61,13 @@ export async function POST(request: Request) {
       }
       throw error;
     }
+    await logActivity(supabase, {
+      userId: creator?.id || createdBy,
+      action: 'Event Created',
+      description: `${data.title} was added to society events`,
+      entityType: 'event',
+      entityId: data.id,
+    });
     return Response.json({ event: data }, { status: 201 });
   } catch (error) {
     const message = getErrorMessage(error);
@@ -99,6 +107,13 @@ export async function DELETE(request: Request) {
       .eq('id', eventId);
 
     if (deleteError) throw deleteError;
+    await logActivity(supabase, {
+      userId: requester.id,
+      action: 'Event Removed',
+      description: 'An event was removed from society events',
+      entityType: 'event',
+      entityId: eventId,
+    });
     return Response.json({ success: true });
   } catch (error) {
     console.error('Event deletion error:', error);

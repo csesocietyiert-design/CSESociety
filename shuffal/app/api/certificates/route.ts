@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '@/lib/activity-logger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -74,6 +75,14 @@ export async function POST(request: NextRequest) {
       console.error('Supabase error creating certificate:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logActivity(supabase, {
+      userId: userId,
+      action: 'Certificate Added',
+      description: `Certificate for ${eventName} was added`,
+      entityType: 'certificate',
+      entityId: data.id,
+    });
 
     return NextResponse.json(
       {

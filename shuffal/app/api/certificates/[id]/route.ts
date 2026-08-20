@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '@/lib/activity-logger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -33,6 +34,13 @@ export async function DELETE(
       console.error('Supabase error deleting certificate:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logActivity(supabase, {
+      action: 'Certificate Removed',
+      description: 'A certificate was removed',
+      entityType: 'certificate',
+      entityId: id,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
