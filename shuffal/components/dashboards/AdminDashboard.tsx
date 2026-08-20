@@ -258,8 +258,8 @@ export default function AdminDashboard({ user }: any) {
       </div>
 
       {canManageMemberPasswords && showPasswordManager && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Change member password">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto">
+        <div onClick={() => setShowPasswordManager(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Change member password">
+          <div onClick={(event) => event.stopPropagation()} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto">
             <div className="mb-2 flex justify-end">
               <button type="button" onClick={() => setShowPasswordManager(false)} className="border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 hover:text-white">Close</button>
             </div>
