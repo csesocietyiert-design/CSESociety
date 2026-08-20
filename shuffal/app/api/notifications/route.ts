@@ -124,6 +124,44 @@ export async function PATCH(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    if (!supabaseUrl || !serviceRoleKey) {
+      return Response.json({ error: 'Supabase not configured' }, { status: 500 });
+    }
+
+    const { user_id: userId } = await request.json();
+    if (!userId || !isValidUuid(userId)) {
+      return Response.json({ error: 'Valid user ID is required' }, { status: 400 });
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    let resolvedUserId = userId;
+    if (localDemoCseIds[userId]) {
+      const { data: mappedUser, error: mappingError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('cse_id', localDemoCseIds[userId])
+        .maybeSingle();
+      if (mappingError) throw mappingError;
+      resolvedUserId = mappedUser?.id || userId;
+    }
+
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .or(`user_id.eq.${resolvedUserId},sender_id.eq.${resolvedUserId}`);
+    if (error) throw error;
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error('Notification history clear error:', error);
+    return Response.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {

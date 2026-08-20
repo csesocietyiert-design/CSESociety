@@ -47,6 +47,23 @@ export default function NotificationsPanel({ user }: any) {
     await markAllAsRead();
   };
 
+  const handleClearHistory = async () => {
+    if (!user?.id || !window.confirm('Clear all notifications associated with your account, including sent and received messages? This cannot be undone.')) return;
+    setSendError('');
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not clear notification history');
+      window.location.reload();
+    } catch (clearError) {
+      setSendError(clearError instanceof Error ? clearError.message : 'Could not clear notification history');
+    }
+  };
+
   const handleSendNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     setSendError('');
@@ -198,14 +215,22 @@ export default function NotificationsPanel({ user }: any) {
                 className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 transition"
                 aria-label="Notification end date"
               />
-              {unreadCount > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAsRead}
+                    className="rounded-lg bg-green-600 px-4 py-2 text-white font-medium transition hover:bg-green-700"
+                  >
+                    Mark All as Read
+                  </button>
+                )}
                 <button
-                  onClick={handleMarkAsRead}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition"
+                  onClick={handleClearHistory}
+                  className="rounded-lg border border-rose-400/40 bg-rose-500/10 px-4 py-2 font-medium text-rose-300 transition hover:border-rose-300 hover:bg-rose-500/20"
                 >
-                  Mark All as Read
+                  Clear History
                 </button>
-              )}
+              </div>
             </div>
           </div>
 

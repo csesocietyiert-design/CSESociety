@@ -58,7 +58,7 @@ export default function EventsPage() {
     };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-8 text-white">
+    <div className="mx-auto max-w-7xl space-y-6 pb-8 pt-4 text-white sm:pt-6">
       <div className="flex items-start gap-4">
         <button onClick={() => router.back()} className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-2 text-sm text-slate-300 backdrop-blur-md transition hover:border-teal-400 hover:text-white">Back</button>
         <div className="space-y-2">

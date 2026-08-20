@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { enableNotificationSound, useRealtimeNotifications } from '@/lib/hooks';
 
@@ -24,6 +24,20 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
   const [profileImage, setProfileImage] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
   const [notificationsAcknowledgedAt, setNotificationsAcknowledgedAt] = useState<string | null>(null);
+  const notificationButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!showNotifications) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!notificationButtonRef.current?.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer);
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer);
+  }, [showNotifications]);
 
   useEffect(() => {
     if (user?.profile_image_url) {
@@ -140,6 +154,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
           </div>
 
           <button 
+            ref={notificationButtonRef}
             onClick={handleNotificationToggle}
             aria-label="Notifications"
             className="relative p-2 hover:bg-slate-800 rounded-lg transition group"
