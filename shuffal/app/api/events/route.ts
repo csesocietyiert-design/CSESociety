@@ -67,3 +67,41 @@ export async function POST(request: Request) {
     return Response.json({ error: message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    if (!supabaseUrl || !serviceRoleKey) {
+      return Response.json({ error: 'Supabase not configured' }, { status: 500 });
+    }
+
+    const { eventId, userId } = await request.json();
+    if (!eventId || !userId) {
+      return Response.json({ error: 'Event ID and admin ID are required' }, { status: 400 });
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: requester, error: requesterError } = await supabase
+      .from('users')
+      .select('id, role, is_verified')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (requesterError) throw requesterError;
+    if (!requester || !['admin', 'faculty'].includes(String(requester.role).toLowerCase()) || requester.is_verified === false) {
+      return Response.json({ error: 'Only a verified admin or faculty user can remove events' }, { status: 403 });
+    }
+
+    const { error: deleteError } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', eventId);
+
+    if (deleteError) throw deleteError;
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error('Event deletion error:', error);
+    return Response.json({ error: getErrorMessage(error).replace('Failed to create event', 'Failed to remove event') }, { status: 500 });
+  }
+}
