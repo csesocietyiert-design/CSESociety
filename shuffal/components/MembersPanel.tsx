@@ -199,21 +199,21 @@ export default function MembersPanel({ user }: any) {
           <h2 className="text-3xl font-bold text-white">Members Directory</h2>
           <p className="text-slate-400 mt-2">Manage CSE Society members</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
-          <div className="px-2 sm:px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-center">
-            <p className="text-blue-400 font-semibold text-base sm:text-lg">{stats.total}</p>
+        <div className="grid w-full grid-cols-3 gap-1.5 sm:w-auto sm:gap-4">
+          <div className="px-1.5 py-2 sm:px-3 bg-blue-500/20 border border-blue-500/30 rounded-lg text-center">
+            <p className="text-blue-400 font-semibold text-sm sm:text-lg">{stats.total}</p>
             <button type="button" onClick={() => {
               if (String(user?.role || '').toLowerCase() === 'admin') handleTotalClick();
             }} className="cursor-pointer select-none text-blue-300 text-xs hover:text-blue-100">
               Total
             </button>
           </div>
-          <div className="px-2 sm:px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-center">
-            <p className="text-green-400 font-semibold text-base sm:text-lg">{stats.verified}</p>
+          <div className="px-1.5 py-2 sm:px-3 bg-green-500/20 border border-green-500/30 rounded-lg text-center">
+            <p className="text-green-400 font-semibold text-sm sm:text-lg">{stats.verified}</p>
             <p className="text-green-300 text-xs">Verified</p>
           </div>
-          <div className="hidden sm:block px-3 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-center">
-            <p className="text-yellow-400 font-semibold text-lg">{stats.pending}</p>
+          <div className="px-1.5 py-2 sm:px-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-center">
+            <p className="text-yellow-400 font-semibold text-sm sm:text-lg">{stats.pending}</p>
             <p className="text-yellow-300 text-xs">Pending</p>
           </div>
         </div>
