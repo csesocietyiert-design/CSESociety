@@ -23,7 +23,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
 
   const menuItems = [
     { label: 'Dashboard', href: '/dashboard', icon: 'grid' },
-    { label: 'Members', href: '/dashboard/members', icon: 'users', show: true },
+    { label: 'Members', href: '/dashboard/members', icon: 'users', show: user.role === 'admin' || user.role === 'faculty' || user.role === 'executive' },
     { label: 'Events', href: '/dashboard/events', icon: 'calendar', show: true },
     { label: 'Notifications', href: '/dashboard/notifications', icon: 'bell', show: true },
     { label: 'Approvals', href: '/dashboard/approvals', icon: 'award', show: user.role === 'admin' || user.role === 'faculty' },

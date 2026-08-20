@@ -11,6 +11,41 @@ export default function PendingApprovalsPage({ user }: any) {
   const [showDetails, setShowDetails] = useState(false);
   const [approvalConfirm, setApprovalConfirm] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [passwordRequests, setPasswordRequests] = useState<any[]>([]);
+  const [passwordRequestLoading, setPasswordRequestLoading] = useState(true);
+  const [passwordRequestError, setPasswordRequestError] = useState('');
+  const [passwordRequestAction, setPasswordRequestAction] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPasswordRequests = async () => {
+      try {
+        const response = await fetch(`/api/auth/change-password?adminId=${encodeURIComponent(user?.id || '')}`);
+        const payload = await response.json();
+        if (response.ok) setPasswordRequests(payload.requests || []);
+        else setPasswordRequestError(payload.error || 'Could not load password requests');
+      } finally {
+        setPasswordRequestLoading(false);
+      }
+    };
+
+    if (user?.id) loadPasswordRequests();
+  }, [user?.id]);
+
+  const reviewPasswordRequest = async (requestId: string, action: 'approve' | 'reject') => {
+    setPasswordRequestAction(requestId);
+    try {
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, action, adminId: user?.id }),
+      });
+      if (response.ok) {
+        setPasswordRequests((requests) => requests.filter((request) => request.id !== requestId));
+      }
+    } finally {
+      setPasswordRequestAction(null);
+    }
+  };
 
   const filteredUsers = pendingUsers.filter((u) =>
     u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,6 +78,17 @@ export default function PendingApprovalsPage({ user }: any) {
 
   return (
     <div className="space-y-6">
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Password Change Requests</h2>
+            <p className="mt-1 text-sm text-slate-400">Review member requests. The password is already securely hashed and is applied only after approval.</p>
+          </div>
+          <span className="border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-300">{passwordRequests.length} Pending</span>
+        </div>
+        {passwordRequestLoading ? <p className="text-sm text-slate-500">Loading password requests...</p> : passwordRequestError ? <div className="border border-rose-400/30 bg-rose-400/5 p-5 text-sm text-rose-300">{passwordRequestError}</div> : passwordRequests.length === 0 ? <div className="border border-slate-700/50 bg-slate-900/40 p-5 text-sm text-slate-400">No password change requests are waiting for approval.</div> : <div className="grid gap-4 md:grid-cols-2">{passwordRequests.map((request) => <article key={request.id} className="border border-slate-700/70 bg-slate-900/50 p-5"><p className="font-semibold text-white">{request.users?.name || 'Member'}</p><p className="mt-1 text-sm text-slate-400">{request.users?.email || 'No email'} · {request.users?.cse_id || 'No CSE ID'}</p><p className="mt-3 text-xs text-slate-500">Requested {new Date(request.created_at).toLocaleString('en-IN')}</p><div className="mt-4 flex gap-3"><button onClick={() => reviewPasswordRequest(request.id, 'approve')} disabled={passwordRequestAction === request.id} className="flex-1 bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">Approve</button><button onClick={() => reviewPasswordRequest(request.id, 'reject')} disabled={passwordRequestAction === request.id} className="flex-1 border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:border-rose-300 disabled:opacity-50">Reject</button></div></article>)}</div>}
+      </section>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-white">Pending Approvals</h2>

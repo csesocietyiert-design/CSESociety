@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useUsers } from '@/lib/hooks';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import AdminPasswordManager from './AdminPasswordManager';
 
 export default function MembersPanel({ user }: any) {
   const { users, loading } = useUsers();
@@ -12,6 +13,18 @@ export default function MembersPanel({ user }: any) {
   const [filterYear, setFilterYear] = useState('all');
   const [sortBy, setSortBy] = useState<'status' | 'name' | 'cse_id' | 'email' | 'year' | 'role'>('name');
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showPasswordManager, setShowPasswordManager] = useState(false);
+  const totalClickTimes = useRef<number[]>([]);
+
+  const handleTotalClick = () => {
+    const now = Date.now();
+    const recentClicks = [...totalClickTimes.current.filter((time) => now - time < 3000), now];
+    totalClickTimes.current = recentClicks;
+    if (recentClicks.length >= 8) {
+      setShowPasswordManager(true);
+      totalClickTimes.current = [];
+    }
+  };
 
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
@@ -189,7 +202,11 @@ export default function MembersPanel({ user }: any) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
           <div className="px-2 sm:px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-center">
             <p className="text-blue-400 font-semibold text-base sm:text-lg">{stats.total}</p>
-            <p className="text-blue-300 text-xs">Total</p>
+            <button type="button" onClick={() => {
+              if (String(user?.role || '').toLowerCase() === 'admin') handleTotalClick();
+            }} className="cursor-pointer select-none text-blue-300 text-xs hover:text-blue-100">
+              Total
+            </button>
           </div>
           <div className="px-2 sm:px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-center">
             <p className="text-green-400 font-semibold text-base sm:text-lg">{stats.verified}</p>
@@ -201,6 +218,17 @@ export default function MembersPanel({ user }: any) {
           </div>
         </div>
       </div>
+
+      {String(user?.role || '').toLowerCase() === 'admin' && showPasswordManager && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Change member password">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto">
+            <div className="mb-2 flex justify-end">
+              <button type="button" onClick={() => setShowPasswordManager(false)} className="border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 hover:text-white">Close</button>
+            </div>
+            <AdminPasswordManager adminId={user?.id} />
+          </div>
+        </div>
+      )}
 
       <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">

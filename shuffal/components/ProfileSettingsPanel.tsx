@@ -1,19 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUserSettings, updateUserSettings, changeUserPassword } from '@/lib/hooks';
-import bcryptjs from 'bcryptjs';
+import { useUserSettings, updateUserSettings } from '@/lib/hooks';
 
 export default function ProfileSettingsPanel({ user }: any) {
   const { settings, loading: settingsLoading } = useUserSettings(user?.id);
   const [theme, setTheme] = useState('dark');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordData, setPasswordData] = useState({
-    identifier: '',
     newPassword: '',
     confirmPassword: '',
-    adminPassword: '',
   });
+  const [confirmPasswordChange, setConfirmPasswordChange] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isChanging, setIsChanging] = useState(false);
@@ -51,35 +49,34 @@ export default function ProfileSettingsPanel({ user }: any) {
         return;
       }
 
-      if (user?.role !== 'admin') {
-        if (passwordData.adminPassword !== 'IERT2026CSE') {
-          setError('Invalid admin password');
-          setIsChanging(false);
-          return;
-        }
+      if (!confirmPasswordChange) {
+        setError('Please confirm that you want to change your password');
+        setIsChanging(false);
+        return;
       }
 
-      const salt = bcryptjs.genSaltSync(10);
-      const hashedPassword = bcryptjs.hashSync(passwordData.newPassword, salt);
-
-      const success = await changeUserPassword(
-        user?.id,
-        hashedPassword,
-        user?.id
-      );
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+      const result = await response.json();
+      const success = response.ok;
 
       if (success) {
-        setSuccess('Password changed successfully!');
+        setSuccess('Password change request sent to an administrator for approval.');
         setPasswordData({
-          identifier: '',
           newPassword: '',
           confirmPassword: '',
-          adminPassword: '',
         });
+        setConfirmPasswordChange(false);
         setShowPasswordChange(false);
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError('Failed to change password');
+        setError(result.error || 'Failed to change password');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -185,28 +182,16 @@ export default function ProfileSettingsPanel({ user }: any) {
                   />
                 </div>
 
-                {user?.role !== 'admin' && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Admin Verification Password
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.adminPassword}
-                      onChange={(e) =>
-                        setPasswordData({ ...passwordData, adminPassword: e.target.value })
-                      }
-                      placeholder="Enter admin password"
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-                      disabled={isChanging}
-                    />
-                  </div>
-                )}
+                <div className="border border-amber-400/20 bg-amber-400/5 p-3 text-sm leading-5 text-slate-400">
+                  Your new password will be securely hashed and sent to an administrator for approval. It will only become active after approval.
+                </div>
 
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="confirm-change"
+                    checked={confirmPasswordChange}
+                    onChange={(e) => setConfirmPasswordChange(e.target.checked)}
                     className="w-4 h-4 rounded border-slate-600 bg-slate-700"
                   />
                   <label htmlFor="confirm-change" className="text-sm text-slate-300">

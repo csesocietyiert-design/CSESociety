@@ -497,7 +497,7 @@ export function useUserSettings(userId: string) {
           .eq('user_id', userId)
           .single();
 
-        if (err && err.code !== 'PGRST116') throw err;
+        if (err && err.code !== 'PGRST116' && err.code !== 'PGRST205') throw err;
         setSettings(data || { theme: 'dark', notifications_enabled: true });
       } catch (err) {
         console.error('Error fetching user settings:', err);
@@ -542,30 +542,6 @@ export async function verifyUser(userId: string, verifiedBy: string) {
     return true;
   } catch (err) {
     console.error('Error verifying user:', err);
-    return false;
-  }
-}
-
-export async function changeUserPassword(userId: string, newPasswordHash: string, changedBy: string) {
-  try {
-    if (!supabase) return false;
-
-    const [userUpdate, logCreate] = await Promise.all([
-      supabase
-        .from('users')
-        .update({ password_hash: newPasswordHash, updated_at: new Date().toISOString() })
-        .eq('id', userId),
-      supabase
-        .from('password_change_logs')
-        .insert({ user_id: userId, changed_by: changedBy })
-    ]);
-
-    if (userUpdate.error) throw userUpdate.error;
-    if (logCreate.error) throw logCreate.error;
-
-    return true;
-  } catch (err) {
-    console.error('Error changing user password:', err);
     return false;
   }
 }
