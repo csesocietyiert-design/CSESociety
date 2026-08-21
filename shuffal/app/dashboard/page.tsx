@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import MemberDashboard from '@/components/dashboards/MemberDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
 import ExecutiveDashboard from '@/components/dashboards/ExecutiveDashboard';
+import RoleDashboard from '@/components/dashboards/RoleDashboard';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -40,8 +41,17 @@ export default function DashboardPage() {
     if (user.role === 'admin' || user.role === 'faculty') {
       return <AdminDashboard user={user} />;
     }
-    if (user.role === 'executive') {
+    if (user.role === 'vice_president' || user.role === 'general_secretary' || user.role === 'executive') {
       return <ExecutiveDashboard user={user} />;
+    }
+    if (user.role === 'technical_secretary' || user.role === 'cultural_secretary' || user.role === 'secretary') {
+      return <RoleDashboard user={user} group="secretary" />;
+    }
+    if (user.role === 'year_representative' || user.role === 'yearRep') {
+      return <RoleDashboard user={user} group="year_representative" />;
+    }
+    if (user.role === 'treasurer') {
+      return <RoleDashboard user={user} group="treasurer" />;
     }
     return <MemberDashboard user={user} />;
   };

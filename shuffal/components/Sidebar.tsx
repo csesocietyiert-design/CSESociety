@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { useAuthStore } from '@/lib/store';
+import type { User } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface SidebarProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  user: any;
+  user: User;
 }
 
 export default function Sidebar({ open, setOpen, user }: SidebarProps) {
@@ -21,14 +22,20 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     router.push('/login');
   };
 
+  const isFacultyAdmin = user.role === 'admin' || user.role === 'faculty';
+  const isExecutive = user.role === 'executive' || user.role === 'vice_president' || user.role === 'general_secretary';
+  const isSecretary = user.role === 'technical_secretary' || user.role === 'cultural_secretary' || user.role === 'secretary';
+  const isYearRepresentative = user.role === 'year_representative' || user.role === 'yearRep';
+  const isTreasurer = user.role === 'treasurer';
   const menuItems = [
     { label: 'Dashboard', href: '/dashboard', icon: 'grid' },
-    { label: 'Members', href: '/dashboard/members', icon: 'users', show: user.role === 'admin' || user.role === 'faculty' || user.role === 'executive' },
-    { label: 'Events', href: '/dashboard/events', icon: 'calendar', show: true },
-    { label: 'Notifications', href: '/dashboard/notifications', icon: 'bell', show: true },
-    { label: 'Approvals', href: '/dashboard/approvals', icon: 'award', show: user.role === 'admin' || user.role === 'faculty' },
+    { label: 'Members', href: '/dashboard/members', icon: 'users', show: isFacultyAdmin || isExecutive },
+    { label: isYearRepresentative ? 'Students' : 'Events', href: '/dashboard/events', icon: 'calendar', show: !isTreasurer },
+    { label: 'Notifications', href: '/dashboard/notifications', icon: 'bell', show: !isTreasurer },
+    { label: 'Approvals', href: '/dashboard/approvals', icon: 'award', show: isFacultyAdmin },
     { label: 'Certificates', href: '/dashboard/certificates', icon: 'bar-chart', show: user.role === 'member' },
-    { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: user.role === 'admin' || user.role === 'executive' },
+    { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative || isTreasurer },
+    { label: isTreasurer ? 'Budget' : isYearRepresentative ? 'My Year' : isSecretary ? 'Resources' : 'Profile', href: isTreasurer || isYearRepresentative || isSecretary ? '/dashboard/reports' : '/dashboard/profile', icon: isTreasurer ? 'bar-chart' : 'user', show: isTreasurer || isYearRepresentative || isSecretary },
     { label: 'Profile', href: '/dashboard/profile', icon: 'user', show: true },
   ];
 

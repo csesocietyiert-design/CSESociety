@@ -7,8 +7,13 @@ export type UserRole =
   | 'admin' 
   | 'faculty' 
   | 'executive' 
+  | 'vice_president'
+  | 'general_secretary'
   | 'secretary' 
+  | 'technical_secretary'
+  | 'cultural_secretary'
   | 'treasurer' 
+  | 'year_representative'
   | 'yearRep' 
   | 'member';
 
