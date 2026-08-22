@@ -153,20 +153,20 @@ export default function AdminDashboard({ user }: any) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-white">Admin Dashboard</h2>
-          <p className="text-slate-400 mt-2">CSE Society Management System</p>
+    <div className="mx-auto max-w-7xl space-y-6 pb-8">
+      <section className="relative overflow-hidden rounded-lg border border-slate-700/70 bg-gradient-to-br from-blue-600/20 via-slate-900/70 to-teal-700/10 px-6 py-7 shadow-2xl shadow-black/20 backdrop-blur-md sm:px-8">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-[linear-gradient(120deg,transparent,rgba(45,212,191,0.08))]" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">CSE Society Admin Portal</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Admin Dashboard</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-300">Manage members, events, certificates, and society operations.</p>
+          </div>
+          <div className="border-t border-white/10 pt-4 text-right text-sm text-slate-400 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+            {new Date().toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </div>
         </div>
-        <div className="text-sm text-slate-400">
-          {new Date().toLocaleDateString('en-IN', { 
-            month: 'long', 
-            day: 'numeric', 
-            year: 'numeric' 
-          })}
-        </div>
-      </div>
+      </section>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="h-full backdrop-blur-md bg-gradient-to-br from-blue-600/20 to-blue-700/10 border border-blue-500/30 rounded-lg p-6">
@@ -204,7 +204,7 @@ export default function AdminDashboard({ user }: any) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+        <div className="lg:col-span-2 rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-blue-950/30 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
           <h3 className="text-lg font-bold text-white mb-4">Recent Activities</h3>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {logsLoading ? (
@@ -234,7 +234,7 @@ export default function AdminDashboard({ user }: any) {
           </div>
         </div>
 
-        <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+        <div className="rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-teal-950/20 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
           <h3 className="text-lg font-bold text-white mb-4">Quick Stats</h3>
           <div className="space-y-3">
             <div className="p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
@@ -268,7 +268,7 @@ export default function AdminDashboard({ user }: any) {
         </div>
       )}
 
-      <section className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+      <section className="rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-rose-950/20 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
         <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-300">Recent activity</p>
@@ -313,7 +313,7 @@ export default function AdminDashboard({ user }: any) {
         </div>
       </section>
 
-      <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+      <div className="rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-amber-950/20 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
         <h3 className="text-lg font-bold text-white mb-4">Upcoming Events</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-80 overflow-y-auto">
           {eventsLoading ? (
@@ -344,7 +344,7 @@ export default function AdminDashboard({ user }: any) {
       </div>
 
       {announcements.length > 0 && (
-        <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+        <div className="rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-purple-950/20 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
           <h3 className="text-lg font-bold text-white mb-4">Latest Announcements</h3>
           <div className="space-y-3">
             {announcements.map((announcement) => (

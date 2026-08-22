@@ -118,7 +118,20 @@ export async function GET(request: Request) {
     const { data, error } = await query;
 
     if (error) throw error;
-    return Response.json({ notifications: userId ? summarizeSentNotifications(data || [], resolvedUserId || userId) : data || [] });
+    let requestedUserIsAdmin = false;
+    if (resolvedUserId) {
+      const { data: requestedUser, error: requestedUserError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', resolvedUserId)
+        .maybeSingle();
+      if (requestedUserError) throw requestedUserError;
+      requestedUserIsAdmin = requestedUser?.role === 'admin';
+    }
+    const visibleNotifications = (data || []).filter((notification) =>
+      !notification.is_anonymous || (requestedUserIsAdmin && notification.user_id === resolvedUserId)
+    );
+    return Response.json({ notifications: userId ? summarizeSentNotifications(visibleNotifications, resolvedUserId || userId) : visibleNotifications });
   } catch (error) {
     console.error('Notification history error:', error);
     return Response.json(
@@ -252,6 +265,7 @@ export async function POST(request: Request) {
       recipientIds = [],
       targetRole,
       targetYear,
+      isAnonymous = false,
     } = body ?? {};
 
     if (!title || !message) {
@@ -336,7 +350,7 @@ export async function POST(request: Request) {
         .eq('id', senderId)
         .maybeSingle();
 
-      if (!senderCheckError && senderUser?.id && senderUser.is_verified !== false && notificationTeamRoles.has(senderUser.role)) {
+      if (!senderCheckError && senderUser?.id && senderUser.is_verified !== false && (notificationTeamRoles.has(senderUser.role) || senderUser.role === 'member' || (isAnonymous && senderUser.role !== 'admin'))) {
         validSenderId = senderUser.id;
         senderRole = senderUser.role;
       }
@@ -344,6 +358,24 @@ export async function POST(request: Request) {
 
     if (!validSenderId) {
       return Response.json({ error: 'Only verified society team members can send notifications.' }, { status: 403 });
+    }
+    if (isAnonymous && (senderRole === 'admin' || recipientType !== 'specific' || recipientIds.length !== 1)) {
+      return Response.json({ error: 'Anonymous Mails can be sent by non-admin users to one specific administrator.' }, { status: 403 });
+    }
+    if (senderRole === 'member' && !isAnonymous) {
+      return Response.json({ error: 'Members can only send anonymous messages.' }, { status: 403 });
+    }
+    if (isAnonymous) {
+      const { data: recipientUser, error: recipientRoleError } = await supabase
+        .from('users')
+        .select('role, is_verified')
+        .eq('id', recipientIds[0])
+        .maybeSingle();
+      if (recipientRoleError) throw recipientRoleError;
+      const recipientIsAllowed = recipientUser?.role === 'admin';
+      if (!recipientUser || recipientUser.is_verified === false || !recipientIsAllowed) {
+        return Response.json({ error: 'Anonymous Mails can only be sent to a verified admin.' }, { status: 403 });
+      }
     }
     if (recipientType === 'all' && senderRole !== 'admin') {
       return Response.json({ error: 'Only the admin can send notifications to all society members.' }, { status: 403 });
@@ -357,6 +389,7 @@ export async function POST(request: Request) {
       recipient_type: recipientType || 'specific',
       target_role: targetRole || null,
       target_year: targetYear ?? null,
+      is_anonymous: Boolean(isAnonymous),
       type: 'info',
       is_read: false,
     }));

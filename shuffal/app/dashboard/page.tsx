@@ -6,7 +6,6 @@ import { useAuthStore } from '@/lib/store';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import MemberDashboard from '@/components/dashboards/MemberDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
-import ExecutiveDashboard from '@/components/dashboards/ExecutiveDashboard';
 import RoleDashboard from '@/components/dashboards/RoleDashboard';
 
 export default function DashboardPage() {
@@ -42,7 +41,7 @@ export default function DashboardPage() {
       return <AdminDashboard user={user} />;
     }
     if (user.role === 'vice_president' || user.role === 'general_secretary' || user.role === 'executive') {
-      return <ExecutiveDashboard user={user} />;
+      return <RoleDashboard user={user} group="executive" />;
     }
     if (user.role === 'technical_secretary' || user.role === 'cultural_secretary' || user.role === 'secretary') {
       return <RoleDashboard user={user} group="secretary" />;

@@ -20,6 +20,7 @@ export default function NotificationsPanel({ user }: any) {
     selectedRole: '',
     selectedYear: '',
     selectedMemberId: '',
+    isAnonymous: false,
   });
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState('');
@@ -61,6 +62,7 @@ export default function NotificationsPanel({ user }: any) {
   };
 
   const senderLabel = (notification: typeof notifications[number]) => {
+    if (notification.is_anonymous) return `Anonymous sender (Notification ID: ${notification.id})`;
     if (notification.sender_id === user?.id) return 'You';
     const sender = users.find((member) => member.id === notification.sender_id);
     return sender ? `${sender.name} (${sender.role.replaceAll('_', ' ')})` : 'Society';
@@ -158,7 +160,8 @@ export default function NotificationsPanel({ user }: any) {
         sendData.recipientType,
         recipientIds,
         sendData.selectedRole || undefined,
-        sendData.selectedYear ? parseInt(sendData.selectedYear) : undefined
+        sendData.selectedYear ? parseInt(sendData.selectedYear) : undefined,
+        canSendAnonymously || sendData.isAnonymous
       );
 
       if (success) {
@@ -169,6 +172,7 @@ export default function NotificationsPanel({ user }: any) {
           selectedRole: '',
           selectedYear: '',
           selectedMemberId: '',
+          isAnonymous: false,
         });
         setShowSendForm(false);
         setActiveTab('history');
@@ -182,8 +186,9 @@ export default function NotificationsPanel({ user }: any) {
     }
   };
 
-  const canSendNotifications = user?.role !== 'member';
   const isAdmin = user?.role === 'admin';
+  const canSendAnonymously = Boolean(user?.role && !isAdmin);
+  const canSendNotifications = Boolean(user?.role);
 
   return (
     <div className="space-y-6">
@@ -219,7 +224,7 @@ export default function NotificationsPanel({ user }: any) {
                 : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
             }`}
           >
-            Send Notification
+            {canSendAnonymously ? 'Anonymous Mails' : 'Send Notification'}
           </button>
         )}
       </div>
@@ -342,6 +347,24 @@ export default function NotificationsPanel({ user }: any) {
               />
             </div>
 
+            {canSendAnonymously && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+                <label className="flex items-start gap-3 text-sm text-amber-100">
+                  <input
+                    type="checkbox"
+                    checked={canSendAnonymously || sendData.isAnonymous}
+                    onChange={(e) => setSendData({ ...sendData, isAnonymous: e.target.checked, recipientType: 'specific', selectedRole: '', selectedYear: '' })}
+                    className="mt-1 accent-amber-400"
+                    disabled={isSending || canSendAnonymously}
+                  />
+                  <span>
+                    <span className="block font-medium">Send anonymously (required)</span>
+                    <span className="mt-1 block text-xs text-amber-200/70">Only admins can view this mail. Your name and society ID are saved in the database but hidden from the frontend.</span>
+                  </span>
+                </label>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Message</label>
               <textarea
@@ -350,7 +373,7 @@ export default function NotificationsPanel({ user }: any) {
                 placeholder="Notification message"
                 rows={4}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none"
-                disabled={isSending}
+                disabled={isSending || sendData.isAnonymous}
               />
             </div>
 
@@ -418,7 +441,7 @@ export default function NotificationsPanel({ user }: any) {
             {sendData.recipientType === 'specific' && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Member CSE ID or Email
+                  {sendData.isAnonymous ? 'Admin CSE ID or Email' : 'Member CSE ID or Email'}
                 </label>
                 <input
                   type="text"

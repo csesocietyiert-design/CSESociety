@@ -25,6 +25,7 @@ export interface Notification {
   target_role?: string | null;
   target_year?: number | null;
   recipient_count?: number;
+  is_anonymous?: boolean;
   title: string;
   message: string;
   type: string;
@@ -563,7 +564,8 @@ export async function sendNotification(
   recipientType: 'all' | 'role' | 'year_representative' | 'specific',
   recipientIds?: string[],
   targetRole?: string,
-  targetYear?: number
+  targetYear?: number,
+  isAnonymous = false
 ) {
   try {
     if (!recipientIds || recipientIds.length === 0) return false;
@@ -581,6 +583,7 @@ export async function sendNotification(
         recipientIds,
         targetRole,
         targetYear,
+        isAnonymous,
       }),
     });
 
