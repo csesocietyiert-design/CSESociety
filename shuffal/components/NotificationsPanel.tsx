@@ -62,7 +62,7 @@ export default function NotificationsPanel({ user }: any) {
   };
 
   const senderLabel = (notification: typeof notifications[number]) => {
-    if (notification.is_anonymous) return notification.id;
+    if (notification.is_anonymous) return `Anonymous sender (Notification ID: ${notification.id})`;
     if (notification.sender_id === user?.id) return 'You';
     const sender = users.find((member) => member.id === notification.sender_id);
     return sender ? `${sender.name} (${sender.role.replaceAll('_', ' ')})` : 'Society';
@@ -307,11 +307,11 @@ export default function NotificationsPanel({ user }: any) {
                       <time dateTime={notif.created_at}>
                         {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                       </time>
-                      {notif.sender_id === user?.id && !notif.is_anonymous && (
+                      {notif.sender_id === user?.id && (
                         <span className="block text-blue-400">From: {senderLabel(notif)}</span>
                       )}
                       <span className="block truncate" title={notif.target_role || undefined}>
-                        {notif.is_anonymous ? senderLabel(notif) : notif.sender_id === user?.id ? `To: ${recipientLabel(notif)}` : `From: ${senderLabel(notif)}`}
+                        {notif.sender_id === user?.id ? `To: ${recipientLabel(notif)}` : `From: ${senderLabel(notif)}`}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1 border-l border-slate-700/70 pl-4">
