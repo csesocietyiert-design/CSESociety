@@ -43,6 +43,28 @@ export default function NotificationsPanel({ user }: any) {
 
   const unreadCount = notifications.filter((n) => n.user_id === user?.id && !n.is_read).length;
 
+  const roleLabels: Record<string, string> = {
+    vice_president: 'Vice President',
+    general_secretary: 'General Secretary',
+    treasurer: 'Treasurer',
+    technical_secretary: 'Technical Secretary',
+    cultural_secretary: 'Cultural Secretary',
+  };
+
+  const recipientLabel = (notification: typeof notifications[number]) => {
+    if (notification.sender_id !== user?.id) return 'Received';
+    if (notification.recipient_type === 'all') return `All Members (${notification.recipient_count || 1})`;
+    if (notification.recipient_type === 'role') return roleLabels[notification.target_role || ''] || 'Selected Role';
+    if (notification.recipient_type === 'year_representative') return `Year ${notification.target_year || ''} Representatives`;
+    return users.find((member) => member.id === notification.user_id)?.cse_id || 'Specific Member';
+  };
+
+  const senderLabel = (notification: typeof notifications[number]) => {
+    if (notification.sender_id === user?.id) return 'You';
+    const sender = users.find((member) => member.id === notification.sender_id);
+    return sender ? `${sender.name} (${sender.role.replaceAll('_', ' ')})` : 'Society';
+  };
+
   const handleMarkAsRead = async () => {
     await markAllAsRead();
   };
@@ -86,7 +108,7 @@ export default function NotificationsPanel({ user }: any) {
           .map((u) => u.id);
       } else if (sendData.recipientType === 'year_representative') {
         recipientIds = users
-          .filter((u) => u.year?.toString() === sendData.selectedYear)
+          .filter((u) => ['year_representative', 'yearRep'].includes(u.role) && u.year?.toString() === sendData.selectedYear)
           .map((u) => u.id);
       } else if (sendData.recipientType === 'specific') {
         const selectedUser = users.find(
@@ -259,13 +281,11 @@ export default function NotificationsPanel({ user }: any) {
                         {new Date(notif.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                       </time>
                       {notif.sender_id === user?.id && (
-                        <span className="block text-blue-400">Me</span>
+                        <span className="block text-blue-400">From: {senderLabel(notif)}</span>
                       )}
-                      {notif.sender_id === user?.id && (
-                        <span className="block truncate" title={notif.target_role || undefined}>
-                          {users.find((member) => member.id === notif.user_id)?.cse_id || notif.target_role || 'Member'}
-                        </span>
-                      )}
+                      <span className="block truncate" title={notif.target_role || undefined}>
+                        {notif.sender_id === user?.id ? `To: ${recipientLabel(notif)}` : `From: ${senderLabel(notif)}`}
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1 border-l border-slate-700/70 pl-4">
                       <div className="flex items-start justify-between gap-3">
@@ -327,8 +347,8 @@ export default function NotificationsPanel({ user }: any) {
               >
                 <option value="specific">Specific Member</option>
                 <option value="all">All Members</option>
-                <option value="role">Specific Role</option>
-                <option value="year_representative">Year Representatives</option>
+                  <option value="role">Society Role</option>
+                  <option value="year_representative">Year Representative</option>
               </select>
             </div>
 
@@ -342,10 +362,11 @@ export default function NotificationsPanel({ user }: any) {
                   disabled={isSending}
                 >
                   <option value="">Choose a role</option>
-                  <option value="admin">Admin</option>
-                  <option value="executive">Executive</option>
-                  <option value="faculty">Faculty</option>
-                  <option value="member">Member</option>
+                  <option value="vice_president">Vice President</option>
+                  <option value="general_secretary">General Secretary</option>
+                  <option value="treasurer">Treasurer</option>
+                  <option value="technical_secretary">Technical Secretary</option>
+                  <option value="cultural_secretary">Cultural Secretary</option>
                 </select>
               </div>
             )}

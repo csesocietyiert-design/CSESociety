@@ -24,6 +24,7 @@ export interface Notification {
   recipient_type?: string;
   target_role?: string | null;
   target_year?: number | null;
+  recipient_count?: number;
   title: string;
   message: string;
   type: string;

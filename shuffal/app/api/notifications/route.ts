@@ -28,6 +28,34 @@ function getErrorDetails(error: unknown) {
   };
 }
 
+function summarizeSentNotifications(notifications: Array<Record<string, any>>, senderId: string) {
+  const summaries = new Map<string, Record<string, any>>();
+
+  for (const notification of notifications) {
+    if (notification.sender_id !== senderId) {
+      summaries.set(notification.id, notification);
+      continue;
+    }
+
+    const groupKey = [
+      notification.title,
+      notification.message,
+      notification.recipient_type,
+      notification.target_role,
+      notification.target_year,
+      Math.floor(new Date(notification.created_at).getTime() / 5000),
+    ].join('|');
+    const existing = summaries.get(groupKey);
+    if (existing) {
+      existing.recipient_count = (existing.recipient_count || 1) + 1;
+    } else {
+      summaries.set(groupKey, { ...notification, recipient_count: 1 });
+    }
+  }
+
+  return [...summaries.values()].sort((first, second) => new Date(second.created_at).getTime() - new Date(first.created_at).getTime());
+}
+
 const localDemoCseIds: Record<string, string> = {
   '11111111-1111-4111-8111-111111111111': '23F2601',
   '22222222-2222-4222-8222-222222222222': '23F2602',
@@ -78,7 +106,7 @@ export async function GET(request: Request) {
     const { data, error } = await query;
 
     if (error) throw error;
-    return Response.json({ notifications: data || [] });
+    return Response.json({ notifications: userId ? summarizeSentNotifications(data || [], resolvedUserId || userId) : data || [] });
   } catch (error) {
     console.error('Notification history error:', error);
     return Response.json(
