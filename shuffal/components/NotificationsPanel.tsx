@@ -23,6 +23,7 @@ export default function NotificationsPanel({ user }: any) {
   });
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [deletingNotification, setDeletingNotification] = useState<string | null>(null);
 
   const filteredNotifications = notifications.filter((notif) => {
     const notificationDate = new Date(notif.created_at);
@@ -83,6 +84,26 @@ export default function NotificationsPanel({ user }: any) {
       window.location.reload();
     } catch (clearError) {
       setSendError(clearError instanceof Error ? clearError.message : 'Could not clear notification history');
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId: string) => {
+    if (!user?.id || !window.confirm('Delete this notification?')) return;
+    setDeletingNotification(notificationId);
+    setSendError('');
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, notification_id: notificationId }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Could not delete notification');
+      window.location.reload();
+    } catch (deleteError) {
+      setSendError(deleteError instanceof Error ? deleteError.message : 'Could not delete notification');
+    } finally {
+      setDeletingNotification(null);
     }
   };
 
@@ -291,7 +312,10 @@ export default function NotificationsPanel({ user }: any) {
                     <div className="min-w-0 flex-1 border-l border-slate-700/70 pl-4">
                       <div className="flex items-start justify-between gap-3">
                         <h4 className="text-sm font-bold text-white">{notif.title}</h4>
-                        {!notif.is_read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-400" />}
+                        <div className="flex shrink-0 items-center gap-3">
+                          {!notif.is_read && <span className="mt-1 h-2 w-2 rounded-full bg-blue-400" />}
+                          <button type="button" onClick={() => handleDeleteNotification(notif.id)} disabled={deletingNotification === notif.id} className="text-xs font-medium text-rose-300 hover:text-rose-200 disabled:opacity-50">{deletingNotification === notif.id ? 'Deleting...' : 'Delete'}</button>
+                        </div>
                       </div>
                       <p className="mt-1 text-sm font-normal leading-5 text-slate-300">{notif.message}</p>
                     </div>

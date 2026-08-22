@@ -171,7 +171,7 @@ export async function DELETE(request: Request) {
       return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     }
 
-    const { user_id: userId } = await request.json();
+    const { user_id: userId, notification_id: notificationId } = await request.json();
     if (!userId || !isValidUuid(userId)) {
       return Response.json({ error: 'Valid user ID is required' }, { status: 400 });
     }
@@ -188,6 +188,37 @@ export async function DELETE(request: Request) {
         .maybeSingle();
       if (mappingError) throw mappingError;
       resolvedUserId = mappedUser?.id || userId;
+    }
+
+    if (notificationId) {
+      const { data: notification, error: notificationError } = await supabase
+        .from('notifications')
+        .select('id, user_id, sender_id, title, message, recipient_type, target_role, target_year, created_at')
+        .eq('id', notificationId)
+        .maybeSingle();
+      if (notificationError) throw notificationError;
+      if (!notification || (notification.user_id !== resolvedUserId && notification.sender_id !== resolvedUserId)) {
+        return Response.json({ error: 'Notification not found' }, { status: 404 });
+      }
+
+      const sentByUser = notification.sender_id === resolvedUserId;
+      let deleteQuery = supabase.from('notifications').delete().eq('id', notificationId);
+      if (sentByUser) {
+        const start = new Date(new Date(notification.created_at).getTime() - 5000).toISOString();
+        const end = new Date(new Date(notification.created_at).getTime() + 5000).toISOString();
+        deleteQuery = supabase
+          .from('notifications')
+          .delete()
+          .eq('sender_id', resolvedUserId)
+          .eq('title', notification.title)
+          .eq('message', notification.message)
+          .eq('recipient_type', notification.recipient_type)
+          .gte('created_at', start)
+          .lte('created_at', end);
+      }
+      const { error: deleteNotificationError } = await deleteQuery;
+      if (deleteNotificationError) throw deleteNotificationError;
+      return Response.json({ ok: true });
     }
 
     const { error } = await supabase
