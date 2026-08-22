@@ -531,15 +531,18 @@ export async function updateUserSettings(userId: string, updates: any) {
 
 export async function verifyUser(userId: string, verifiedBy: string) {
   try {
-    if (!supabase) return false;
+    const response = await fetch('/api/admin/approvals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, adminId: verifiedBy }),
+    });
+    const payload = await response.json().catch(() => ({}));
 
-    const { error: err } = await supabase
-      .from('users')
-      .update({ is_verified: true, verified_at: new Date().toISOString(), verified_by: verifiedBy })
-      .eq('id', userId);
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Member approval failed');
+    }
 
-    if (err) throw err;
-    return true;
+    return payload?.success === true;
   } catch (err) {
     console.error('Error verifying user:', err);
     return false;

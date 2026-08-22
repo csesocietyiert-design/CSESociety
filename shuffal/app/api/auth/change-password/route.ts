@@ -99,12 +99,20 @@ export async function POST(request: Request) {
         return Response.json({ error: 'Could not apply password change' }, { status: 500 });
       }
 
-      await supabase.from('password_change_logs').insert({ user_id: changeRequest.user_id, changed_by: admin.id });
+      const passwordChangeLog: { user_id: string; changed_by?: string } = { user_id: changeRequest.user_id };
+      if (admin?.id) passwordChangeLog.changed_by = admin.id;
+      await supabase.from('password_change_logs').insert(passwordChangeLog);
     }
+
+    const reviewValues: { status: string; reviewed_by?: string; reviewed_at: string } = {
+      status: action === 'approve' ? 'approved' : 'rejected',
+      reviewed_at: new Date().toISOString(),
+    };
+    if (admin?.id) reviewValues.reviewed_by = admin.id;
 
     const { error: reviewError } = await supabase
       .from('password_change_requests')
-      .update({ status: action === 'approve' ? 'approved' : 'rejected', reviewed_by: admin.id, reviewed_at: new Date().toISOString() })
+      .update(reviewValues)
       .eq('id', requestId)
       .eq('status', 'pending');
 
