@@ -55,10 +55,15 @@ export default function ProfileSettingsPanel({ user }: any) {
         return;
       }
 
-      const response = await fetch('/api/auth/change-password', {
+      const isAdmin = user?.role === 'admin';
+      const response = await fetch(isAdmin ? '/api/admin/password' : '/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify(isAdmin ? {
+          adminId: user?.id,
+          targetUserId: user?.id,
+          newPassword: passwordData.newPassword,
+        } : {
           userId: user?.id,
           newPassword: passwordData.newPassword,
         }),
@@ -67,7 +72,7 @@ export default function ProfileSettingsPanel({ user }: any) {
       const success = response.ok;
 
       if (success) {
-        setSuccess('Password change request sent to an administrator for approval.');
+        setSuccess(isAdmin ? 'Your password was changed successfully.' : 'Password change request sent to an administrator for approval.');
         setPasswordData({
           newPassword: '',
           confirmPassword: '',
@@ -183,7 +188,7 @@ export default function ProfileSettingsPanel({ user }: any) {
                 </div>
 
                 <div className="border border-amber-400/20 bg-amber-400/5 p-3 text-sm leading-5 text-slate-400">
-                  Your new password will be securely hashed and sent to an administrator for approval. It will only become active after approval.
+                  {user?.role === 'admin' ? 'Your new password will be securely hashed and applied immediately.' : 'Your new password will be securely hashed and sent to an administrator for approval. It will only become active after approval.'}
                 </div>
 
                 <div className="flex items-center space-x-2">
