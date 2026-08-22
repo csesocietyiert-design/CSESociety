@@ -162,6 +162,7 @@ export default function NotificationsPanel({ user }: any) {
   };
 
   const canSendNotifications = user?.role !== 'member';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="space-y-6">
@@ -346,7 +347,7 @@ export default function NotificationsPanel({ user }: any) {
                 disabled={isSending}
               >
                 <option value="specific">Specific Member</option>
-                <option value="all">All Members</option>
+                {isAdmin && <option value="all">All Members</option>}
                   <option value="role">Society Role</option>
                   <option value="year_representative">Year Representative</option>
               </select>
@@ -362,6 +363,7 @@ export default function NotificationsPanel({ user }: any) {
                   disabled={isSending}
                 >
                   <option value="">Choose a role</option>
+                  <option value="admin">Admin</option>
                   <option value="vice_president">Vice President</option>
                   <option value="general_secretary">General Secretary</option>
                   <option value="treasurer">Treasurer</option>

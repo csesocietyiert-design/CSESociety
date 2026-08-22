@@ -62,6 +62,18 @@ const localDemoCseIds: Record<string, string> = {
   '33333333-3333-4333-8333-333333333333': '23F2603',
 };
 
+const notificationTeamRoles = new Set([
+  'admin',
+  'faculty',
+  'vice_president',
+  'general_secretary',
+  'treasurer',
+  'technical_secretary',
+  'cultural_secretary',
+  'year_representative',
+  'yearRep',
+]);
+
 export async function GET(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
@@ -285,16 +297,25 @@ export async function POST(request: Request) {
     }
 
     let validSenderId: string | null = null;
+    let senderRole = '';
     if (senderId) {
       const { data: senderUser, error: senderCheckError } = await supabase
         .from('users')
-        .select('id')
+        .select('id, role, is_verified')
         .eq('id', senderId)
         .maybeSingle();
 
-      if (!senderCheckError && senderUser?.id) {
+      if (!senderCheckError && senderUser?.id && senderUser.is_verified !== false && notificationTeamRoles.has(senderUser.role)) {
         validSenderId = senderUser.id;
+        senderRole = senderUser.role;
       }
+    }
+
+    if (!validSenderId) {
+      return Response.json({ error: 'Only verified society team members can send notifications.' }, { status: 403 });
+    }
+    if (recipientType === 'all' && senderRole !== 'admin') {
+      return Response.json({ error: 'Only the admin can send notifications to all society members.' }, { status: 403 });
     }
 
     const notificationsToCreate = recipientIds.map((recipientId: string) => ({
