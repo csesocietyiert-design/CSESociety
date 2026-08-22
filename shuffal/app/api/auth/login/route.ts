@@ -4,51 +4,6 @@ import { verifyPassword } from '@/lib/auth-utils';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-const devDemoUsers: Record<string, { password: string; user: any }> = {
-  '23F2601': {
-    password: 'KuchBhi',
-    user: {
-      id: '11111111-1111-4111-8111-111111111111',
-      cseId: '23F2601',
-      name: 'Admin User',
-      email: 'admin@csesociety.com',
-      role: 'admin',
-      year: 1,
-      department: 'CSE',
-      is_verified: true,
-      profile_image_url: null,
-    },
-  },
-  '23F2602': {
-    password: 'user123',
-    user: {
-      id: '22222222-2222-4222-8222-222222222222',
-      cseId: '23F2602',
-      name: 'Member User',
-      email: 'member@csesociety.com',
-      role: 'member',
-      year: 1,
-      department: 'CSE',
-      is_verified: true,
-      profile_image_url: null,
-    },
-  },
-  '23F2603': {
-    password: 'exec123',
-    user: {
-      id: '33333333-3333-4333-8333-333333333333',
-      cseId: '23F2603',
-      name: 'Executive User',
-      email: 'executive@csesociety.com',
-      role: 'executive',
-      year: 2,
-      department: 'CSE',
-      is_verified: true,
-      profile_image_url: null,
-    },
-  },
-};
-
 export async function POST(request: Request) {
   try {
     const { cseId, password } = await request.json();
@@ -61,11 +16,6 @@ export async function POST(request: Request) {
     }
 
     const identifier = String(cseId).trim();
-    const demoUser = devDemoUsers[identifier];
-    if (demoUser && demoUser.password === password) {
-      return Response.json({ user: demoUser.user });
-    }
-
     if (!supabaseUrl || !serviceRoleKey) {
       return Response.json(
         { error: 'Supabase not configured' },

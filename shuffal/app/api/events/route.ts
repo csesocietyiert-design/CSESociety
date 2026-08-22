@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (creatorError) throw creatorError;
     const role = String(creatorRole || creator?.role || '').trim().toLowerCase();
-    const isKnownLocalAdmin = ['1', '11111111-1111-4111-8111-111111111111'].includes(String(createdBy));
+    const isKnownLocalAdmin = ['1', '70cb33d8-74ec-4bd7-be8c-3230accb9c5b'].includes(String(createdBy));
     if (!['admin', 'faculty'].includes(role) && !(isKnownLocalAdmin && !creatorRole)) {
       return Response.json({ error: 'Only admin or faculty can add events' }, { status: 403 });
     }

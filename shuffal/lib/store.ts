@@ -39,45 +39,6 @@ interface AuthState {
   setHasHydrated: (hasHydrated: boolean) => void;
 }
 
-const demoUsers: Record<string, { password: string; user: User }> = {
-  '23F2601': {
-    password: 'KuchBhi',
-    user: {
-      id: '11111111-1111-4111-8111-111111111111',
-      cseId: '23F2601',
-      name: 'Admin User',
-      email: 'admin@csesociety.com',
-      role: 'admin',
-      year: 1,
-      department: 'CSE',
-    },
-  },
-  '23F2602': {
-    password: 'user123',
-    user: {
-      id: '22222222-2222-4222-8222-222222222222',
-      cseId: '23F2602',
-      name: 'Member User',
-      email: 'member@csesociety.com',
-      role: 'member',
-      year: 1,
-      department: 'CSE',
-    },
-  },
-  '23F2603': {
-    password: 'exec123',
-    user: {
-      id: '33333333-3333-4333-8333-333333333333',
-      cseId: '23F2603',
-      name: 'Executive User',
-      email: 'executive@csesociety.com',
-      role: 'executive',
-      year: 2,
-      department: 'CSE',
-    },
-  },
-};
-
 export const useAuthStore = create<AuthState>()(persist((set) => ({
   user: null,
   isAuthenticated: false,
@@ -170,6 +131,13 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
   }),
   onRehydrateStorage: () => (state) => {
     if (!state || typeof window === 'undefined') return;
+
+    if (state.user?.id === '11111111-1111-4111-8111-111111111111' || state.user?.cseId === '23F2601') {
+      state.logout();
+      window.localStorage.removeItem('pendingVerification');
+      state.setHasHydrated(true);
+      return;
+    }
 
     if (state.sessionExpiresAt && state.sessionExpiresAt <= Date.now()) {
       state.logout();

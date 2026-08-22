@@ -3,8 +3,8 @@ import { hashPassword } from '@/lib/auth-utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const demoAdminId = '11111111-1111-4111-8111-111111111111';
-const demoAdminCseId = '23F2601';
+const demoAdminId = '70cb33d8-74ec-4bd7-be8c-3230accb9c5b';
+const demoAdminCseId = 'iertcse';
 
 function getSupabase() {
   if (!supabaseUrl || !serviceRoleKey) return null;

@@ -57,7 +57,7 @@ function summarizeSentNotifications(notifications: Array<Record<string, any>>, s
 }
 
 const localDemoCseIds: Record<string, string> = {
-  '11111111-1111-4111-8111-111111111111': '23F2601',
+  '70cb33d8-74ec-4bd7-be8c-3230accb9c5b': 'iertcse',
   '22222222-2222-4222-8222-222222222222': '23F2602',
   '33333333-3333-4333-8333-333333333333': '23F2603',
 };
