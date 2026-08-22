@@ -115,7 +115,7 @@ export async function PATCH(request: Request) {
 
     const { error } = await supabase
       .from('notifications')
-      .update({ is_read: true, read_at: new Date().toISOString() })
+      .update({ is_read: true })
       .eq('user_id', resolvedUserId)
       .eq('is_read', false);
     if (error) throw error;

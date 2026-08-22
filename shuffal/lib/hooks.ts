@@ -431,8 +431,10 @@ export function useRealtimeNotifications(userId: string) {
 
   const markAllAsRead = async () => {
     if (!userId) return;
-    await markNotificationsAsRead(userId);
-    setNotifications((currentNotifications) => currentNotifications.map((notification) => ({ ...notification, is_read: true })));
+    const success = await markNotificationsAsRead(userId);
+    if (success) {
+      setNotifications((currentNotifications) => currentNotifications.map((notification) => ({ ...notification, is_read: true })));
+    }
   };
 
   useEffect(() => {
@@ -597,11 +599,16 @@ export async function sendNotification(
 
 export async function markNotificationsAsRead(userId: string) {
   try {
-    await fetch('/api/notifications', {
+    const response = await fetch('/api/notifications', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId }),
     });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload?.error || 'Could not mark notifications as read');
+    }
+    return true;
   } catch (err) {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { 
@@ -611,5 +618,6 @@ export async function markNotificationsAsRead(userId: string) {
       hour12: false 
     });
     console.error(`[${timeStr} MAY 2026 TERM] Error marking notifications as read:`, err);
+    return false;
   }
 }

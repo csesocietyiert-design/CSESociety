@@ -25,7 +25,7 @@ export default function EventsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ eventId, userId: user?.id }),
         });
-        const payload = await response.json();
+        const payload = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(payload.error || 'Could not remove event');
         window.location.reload();
       } catch (deleteError) {
