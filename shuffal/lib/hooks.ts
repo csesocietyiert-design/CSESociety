@@ -395,6 +395,10 @@ export function usePendingApprovals() {
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const removePendingUser = (userId: string) => {
+    setPendingUsers((users) => users.filter((user) => user.id !== userId));
+  };
+
   useEffect(() => {
     const fetchPendingUsers = async () => {
       try {
@@ -418,7 +422,7 @@ export function usePendingApprovals() {
     fetchPendingUsers();
   }, []);
 
-  return { pendingUsers, loading };
+  return { pendingUsers, loading, removePendingUser };
 }
 
 export function useRealtimeNotifications(userId: string) {

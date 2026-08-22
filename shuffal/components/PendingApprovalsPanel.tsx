@@ -5,11 +5,12 @@ import { usePendingApprovals, verifyUser } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 
 export default function PendingApprovalsPage({ user }: any) {
-  const { pendingUsers, loading } = usePendingApprovals();
+  const { pendingUsers, loading, removePendingUser } = usePendingApprovals();
   const [verifying, setVerifying] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [approvalConfirm, setApprovalConfirm] = useState<any>(null);
+  const [approvedUser, setApprovedUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [passwordRequests, setPasswordRequests] = useState<any[]>([]);
   const [passwordRequestLoading, setPasswordRequestLoading] = useState(true);
@@ -64,6 +65,8 @@ export default function PendingApprovalsPage({ user }: any) {
     setVerifying(approvalConfirm.id);
     const success = await verifyUser(approvalConfirm.id, user?.id);
     if (success) {
+      setApprovedUser(approvalConfirm);
+      removePendingUser(approvalConfirm.id);
       setSelectedUser(null);
       setShowDetails(false);
       setApprovalConfirm(null);
@@ -254,6 +257,30 @@ export default function PendingApprovalsPage({ user }: any) {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {approvedUser && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl border border-emerald-400/40 bg-slate-900 p-8 text-center shadow-2xl shadow-emerald-950/40">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-400/15 text-3xl text-emerald-300">
+              ✓
+            </div>
+            <h3 className="text-2xl font-bold text-white">Member Approved</h3>
+            <p className="mt-3 text-slate-300">
+              <span className="font-semibold text-emerald-300">{approvedUser.name}</span> can now log in to the portal.
+            </p>
+            <div className="mt-5 rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-3 text-sm text-slate-300">
+              CSE ID: <span className="font-semibold text-white">{approvedUser.cse_id}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setApprovedUser(null)}
+              className="mt-6 w-full rounded-lg bg-emerald-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}
