@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAnnouncements, useCertificates, useEvents, useRealtimeNotifications } from '@/lib/hooks';
+import { useAnnouncements, useCertificates, useEvents, useRealtimeNotifications, useUsers, type User } from '@/lib/hooks';
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -18,6 +18,31 @@ function relativeDate(date: string, currentTime: number) {
   if (days <= 0) return 'Today';
   if (days === 1) return 'Yesterday';
   return `${days} days ago`;
+}
+
+const leadershipOrder = ['vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'treasurer'];
+
+function shuffleUsers(users: User[]) {
+  const shuffled = [...users];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function roleLabel(role: string) {
+  const labels: Record<string, string> = {
+    vice_president: 'Vice President',
+    general_secretary: 'General Secretary',
+    technical_secretary: 'Technical Secretary',
+    cultural_secretary: 'Cultural Secretary',
+    treasurer: 'Treasurer',
+    year_representative: 'Year Representative',
+    yearRep: 'Year Representative',
+    member: 'Member',
+  };
+  return labels[role] || role.replaceAll('_', ' ');
 }
 
 interface MemberUser {
@@ -41,6 +66,22 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
   const { certificates, loading: certificatesLoading } = useCertificates(user.id);
   const { announcements, loading: announcementsLoading } = useAnnouncements();
   const { notifications, loading: notificationsLoading } = useRealtimeNotifications(user.id);
+  const { users, loading: usersLoading } = useUsers();
+  const [randomMembers, setRandomMembers] = useState<User[]>([]);
+  const verifiedUsers = users.filter((member) => member.is_verified !== false);
+  const leadershipMembers = leadershipOrder.flatMap((role) => verifiedUsers.filter((member) => member.role.toLowerCase() === role));
+  const yearRepresentatives = verifiedUsers
+    .filter((member) => ['year_representative', 'yearrep'].includes(member.role.toLowerCase()) || member.role.toLowerCase().startsWith('year_rep_'))
+    .sort((first, second) => (first.year || 0) - (second.year || 0));
+
+  useEffect(() => {
+    setRandomMembers(shuffleUsers(verifiedUsers.filter((member) => member.role.toLowerCase() === 'member')));
+  }, [users]);
+
+  // Shuffle ordinary members once each time the fetched roster changes.
+  const refreshRandomMembers = () => {
+    setRandomMembers(shuffleUsers(verifiedUsers.filter((member) => member.role.toLowerCase() === 'member')));
+  };
   const upcomingEvents = events
     .filter((event) => new Date(event.start_date).getTime() >= currentTime)
     .sort((first, second) => new Date(first.start_date).getTime() - new Date(second.start_date).getTime())
@@ -87,6 +128,35 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
             <p className="mt-2 text-sm text-slate-500 group-hover:text-slate-300">{stat.detail}</p>
           </Link>
         ))}
+      </section>
+
+      <section className="rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-blue-950/30 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
+        <div className="flex flex-col gap-3 border-b border-slate-800 pb-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Society directory</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Our members</h2>
+          </div>
+          <p className="text-sm text-slate-400">Leadership, representatives, and members</p>
+        </div>
+        {usersLoading ? <p className="mt-5 text-sm text-slate-500">Loading society members...</p> : <div className="mt-5 space-y-6">
+          {[...leadershipMembers, ...yearRepresentatives, ...randomMembers].length === 0 ? <p className="text-sm text-slate-500">No verified members found.</p> : <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {[...leadershipMembers, ...yearRepresentatives].map((member) => (
+                <article key={member.id} className="rounded-lg border border-slate-700/70 bg-slate-950/50 p-4">
+                  <p className="font-semibold text-white">{member.name}</p>
+                  <p className="mt-1 text-sm text-teal-300">{roleLabel(member.role)}{member.role.toLowerCase().includes('year') && member.year ? ` - Year ${member.year}` : ''}</p>
+                  <p className="mt-2 text-xs text-slate-500">{member.department || 'Computer Science & Engineering'}</p>
+                </article>
+              ))}
+            </div>
+            {randomMembers.length > 0 && <div>
+              <div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">Members</h3><button type="button" onClick={refreshRandomMembers} className="text-xs font-medium text-teal-300 hover:text-teal-200">Shuffle</button></div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {randomMembers.map((member) => <article key={member.id} className="rounded-lg border border-slate-800 bg-slate-950/30 p-4"><p className="font-medium text-white">{member.name}</p><p className="mt-1 text-xs text-slate-500">{member.department || 'Computer Science & Engineering'}{member.year ? ` - Year ${member.year}` : ''}</p></article>)}
+              </div>
+            </div>}
+          </>}
+        </div>}
       </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
