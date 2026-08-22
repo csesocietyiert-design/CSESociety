@@ -22,6 +22,23 @@ export default function ProfileSettingsPanel({ user }: any) {
     }
   }, [settings]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (theme === 'auto') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+      const applySystemTheme = () => {
+        document.documentElement.dataset.theme = mediaQuery.matches ? 'light' : 'dark';
+      };
+      applySystemTheme();
+      mediaQuery.addEventListener('change', applySystemTheme);
+      localStorage.setItem('cse-theme', 'auto');
+      return () => mediaQuery.removeEventListener('change', applySystemTheme);
+    } else {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem('cse-theme', theme);
+    }
+  }, [theme]);
+
   const handleThemeChange = async (newTheme: string) => {
     setTheme(newTheme);
     const success = await updateUserSettings(user?.id, { theme: newTheme });

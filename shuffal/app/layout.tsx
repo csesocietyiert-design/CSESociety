@@ -28,6 +28,11 @@ export default function RootLayout({ children }: LayoutProps) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-950">{children}</body>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: "try { var theme = localStorage.getItem('cse-theme'); var isLight = theme === 'light' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches); document.documentElement.dataset.theme = isLight ? 'light' : 'dark'; } catch (error) {}",
+        }}
+      />
     </html>
   );
 }
