@@ -9,7 +9,7 @@ import AdminPasswordManager from './AdminPasswordManager';
 
 const coreTeamRoles = new Set(['admin', 'faculty', 'vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'treasurer', 'executive', 'secretary']);
 
-export default function MembersPanel({ user, yearScope }: { user: any; yearScope?: number }) {
+export default function MembersPanel({ user, yearScope, hideSorting = false }: { user: any; yearScope?: number; hideSorting?: boolean }) {
   const { users, loading } = useUsers();
   const isYearRepresentative = ['year_representative', 'yearrep'].includes(String(user?.role).toLowerCase());
   const [searchTerm, setSearchTerm] = useState('');
@@ -256,18 +256,18 @@ export default function MembersPanel({ user, yearScope }: { user: any; yearScope
             <option value="3">3rd Year</option>
             <option value="4">4th Year</option>
           </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'status' | 'name' | 'cse_id' | 'email' | 'year' | 'role')}
-            className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 transition"
-          >
-            <option value="status">Approved</option>
-            <option value="name">Name</option>
-            <option value="cse_id">CSE ID</option>
-            <option value="email">Email</option>
-            <option value="year">Year</option>
-            <option value="role">Role</option>
-          </select>
+          {!hideSorting && <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'status' | 'name' | 'cse_id' | 'email' | 'year' | 'role')}
+              className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 transition"
+            >
+              <option value="status">Approved</option>
+              <option value="name">Name</option>
+              <option value="cse_id">CSE ID</option>
+              <option value="email">Email</option>
+              <option value="year">Year</option>
+              <option value="role">Role</option>
+            </select>}
           <button
             onClick={() => {
               setSearchTerm('');
