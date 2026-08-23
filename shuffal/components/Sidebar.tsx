@@ -38,7 +38,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'ID Card', href: '/dashboard/id-card', icon: 'user', show: true },
     { label: 'Resources', href: '/dashboard/resources', icon: 'bar-chart', show: true },
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative || isTreasurer },
-    { label: isTreasurer ? 'Budget' : isYearRepresentative ? 'My Year' : isSecretary ? 'Resources' : 'Profile', href: isTreasurer || isYearRepresentative || isSecretary ? '/dashboard/reports' : '/dashboard/profile', icon: isTreasurer ? 'bar-chart' : 'user', show: isTreasurer || isYearRepresentative || isSecretary },
+    { label: isTreasurer ? 'Budget' : 'My Year', href: '/dashboard/reports', icon: isTreasurer ? 'bar-chart' : 'user', show: isTreasurer || isYearRepresentative },
     { label: 'Profile', href: '/dashboard/profile', icon: 'user', show: true },
   ];
 
