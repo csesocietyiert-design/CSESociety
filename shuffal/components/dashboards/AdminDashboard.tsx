@@ -388,6 +388,8 @@ export default function AdminDashboard({ user }: any) {
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mb-2 line-clamp-2">{event.description}</p>
+                {event.caption && event.caption !== event.description && <p className="text-xs text-slate-300 mb-2 line-clamp-2">{event.caption}</p>}
+                {event.authority_letter_url && <a href={event.authority_letter_url} target="_blank" rel="noreferrer" className="text-xs font-medium text-teal-300 hover:text-teal-200">Open event document -&gt;</a>}
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span>{formatDate(event.start_date)}</span>
                   <span>{event.registrations}/{event.capacity} registered</span>
