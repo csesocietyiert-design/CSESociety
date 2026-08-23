@@ -30,6 +30,7 @@ export default function AdminDashboard({ user }: any) {
     totalMembers: 0,
     activeEvents: 0,
     pendingApprovals: 0,
+    pendingEventApprovals: 0,
     totalCertificates: 0,
   });
 
@@ -41,6 +42,7 @@ export default function AdminDashboard({ user }: any) {
         const usersResult = await supabase.from('users').select('id', { count: 'exact', head: true });
         const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true });
         const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
+        const pendingEventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending');
         const certificatesResult = await supabase.from('certificates').select('id', { count: 'exact', head: true });
 
         setPendingCount(pendingResult.count || 0);
@@ -48,6 +50,7 @@ export default function AdminDashboard({ user }: any) {
           totalMembers: usersResult.count || 0,
           activeEvents: eventsResult.count || 0,
           pendingApprovals: pendingResult.count || 0,
+          pendingEventApprovals: pendingEventsResult.count || 0,
           totalCertificates: certificatesResult.count || 0,
         });
       } catch (err) {
@@ -189,7 +192,7 @@ export default function AdminDashboard({ user }: any) {
         <Link href="/dashboard/approvals">
           <div className="backdrop-blur-md bg-gradient-to-br from-yellow-600/20 to-yellow-700/10 border border-yellow-500/30 rounded-lg p-6 hover:border-yellow-400/50 transition-all duration-200 cursor-pointer hover:scale-105 transform">
             <p className="text-slate-400 text-sm font-medium mb-2">Pending Approvals</p>
-            <p className="text-4xl font-bold text-white">{stats.pendingApprovals}</p>
+            <p className="text-4xl font-bold text-white">{stats.pendingApprovals + stats.pendingEventApprovals}</p>
             <p className="text-xs text-yellow-400 mt-2">Need review</p>
           </div>
         </Link>
