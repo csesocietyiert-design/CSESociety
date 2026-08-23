@@ -528,7 +528,7 @@ export async function sendNotification(
   title: string,
   message: string,
   senderId: string,
-  recipientType: 'all' | 'role' | 'year_representative' | 'specific',
+  recipientType: 'all' | 'role' | 'year_representative' | 'own_year' | 'specific',
   recipientIds?: string[],
   targetRole?: string,
   targetYear?: number,

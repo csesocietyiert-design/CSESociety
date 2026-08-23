@@ -7,8 +7,6 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import AdminPasswordManager from './AdminPasswordManager';
 
-const coreTeamRoles = new Set(['admin', 'faculty', 'vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'treasurer', 'executive', 'secretary']);
-
 export default function MembersPanel({ user, yearScope, hideSorting = false }: { user: any; yearScope?: number; hideSorting?: boolean }) {
   const { users, loading } = useUsers();
   const isYearRepresentative = ['year_representative', 'yearrep'].includes(String(user?.role).toLowerCase());
@@ -30,7 +28,7 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
   };
 
   const scopedUsers = isYearRepresentative
-    ? users.filter((u) => coreTeamRoles.has(String(u.role).toLowerCase()) || (yearScope !== undefined && u.year === yearScope))
+    ? users.filter((u) => yearScope !== undefined && u.year === yearScope)
     : users;
   const filteredUsers = scopedUsers.filter((u) => {
     const matchesSearch =

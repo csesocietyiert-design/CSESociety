@@ -18,7 +18,7 @@ export default function NotificationsPanel({ user }: any) {
   const [sendData, setSendData] = useState({
     title: '',
     message: '',
-    recipientType: 'specific' as 'all' | 'role' | 'year_representative' | 'specific',
+    recipientType: 'specific' as 'all' | 'role' | 'year_representative' | 'own_year' | 'specific',
     selectedRole: '',
     selectedYear: '',
     selectedMemberId: '',
@@ -27,6 +27,7 @@ export default function NotificationsPanel({ user }: any) {
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [deletingNotification, setDeletingNotification] = useState<string | null>(null);
+  const isYearRepresentative = user?.role === 'year_representative' || user?.role === 'yearRep';
 
   const filteredNotifications = notifications.filter((notif) => {
     const notificationDate = new Date(notif.created_at);
@@ -126,7 +127,7 @@ export default function NotificationsPanel({ user }: any) {
 
       let recipientIds: string[] = [];
 
-      if (messageMode === 'anonymous') {
+      if (messageMode === 'anonymous' || sendData.recipientType === 'own_year') {
         recipientIds = [];
       } else if (sendData.recipientType === 'all') {
         recipientIds = users.map((u) => u.id);
@@ -392,6 +393,7 @@ export default function NotificationsPanel({ user }: any) {
               >
                 <option value="specific">Specific Member</option>
                 {isAdmin && <option value="all">All Members</option>}
+                {isYearRepresentative && <option value="own_year">My Year Members</option>}
                   <option value="role">Society Role</option>
                   <option value="year_representative">Year Representative</option>
               </select>

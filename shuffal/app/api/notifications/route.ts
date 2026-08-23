@@ -236,7 +236,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!Array.isArray(recipientIds) || (recipientIds.length === 0 && !isAnonymous)) {
+    if (!Array.isArray(recipientIds) || (recipientIds.length === 0 && !isAnonymous && recipientType !== 'own_year')) {
       return Response.json(
         { error: 'At least one recipient is required' },
         { status: 400 }
@@ -286,6 +286,26 @@ export async function POST(request: Request) {
       if (adminsError) throw adminsError;
       resolvedRecipientIds = (admins || []).map((admin) => admin.id);
       if (resolvedRecipientIds.length === 0) return Response.json({ error: 'No verified admin is available to receive anonymous mail.' }, { status: 503 });
+    }
+
+    if (recipientType === 'own_year') {
+      const { data: senderProfile, error: senderProfileError } = await supabase
+        .from('users')
+        .select('role, year, is_verified')
+        .eq('id', senderId)
+        .maybeSingle();
+      if (senderProfileError) throw senderProfileError;
+      if (!senderProfile || !['year_representative', 'yearRep'].includes(senderProfile.role) || senderProfile.is_verified === false || !senderProfile.year) {
+        return Response.json({ error: 'Only verified year representatives can message their own year.' }, { status: 403 });
+      }
+      const { data: yearMembers, error: yearMembersError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('year', senderProfile.year)
+        .eq('role', 'member')
+        .neq('is_verified', false);
+      if (yearMembersError) throw yearMembersError;
+      resolvedRecipientIds = (yearMembers || []).map((member) => member.id);
     }
 
     const { data: recipientUsers, error: recipientCheckError } = await supabase
