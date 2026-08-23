@@ -26,6 +26,7 @@ export interface Notification {
   target_year?: number | null;
   recipient_count?: number;
   is_anonymous?: boolean;
+  sent_by_me?: boolean;
   title: string;
   message: string;
   type: string;
@@ -45,6 +46,8 @@ export interface Event {
   capacity?: number | null;
   registrations?: number | null;
   status: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  event_type?: 'general' | 'cultural' | 'technical';
   created_by: string;
   created_at: string;
 }
@@ -267,7 +270,8 @@ export function useEvents() {
 
         const { data, error: err } = await supabase
           .from('events')
-          .select('*');
+          .select('*')
+          .eq('approval_status', 'approved');
 
         if (err) {
           console.error('Error fetching events:', err.message);

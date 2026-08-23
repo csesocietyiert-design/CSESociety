@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react';
 import { usePendingApprovals, verifyUser } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 
+type PendingEvent = {
+  id: string;
+  title: string;
+  caption?: string | null;
+  event_type?: 'general' | 'cultural' | 'technical';
+  start_date: string;
+  created_at: string;
+};
+
 export default function PendingApprovalsPage({ user }: any) {
   const { pendingUsers, loading, removePendingUser } = usePendingApprovals();
   const [verifying, setVerifying] = useState<string | null>(null);
@@ -16,6 +25,8 @@ export default function PendingApprovalsPage({ user }: any) {
   const [passwordRequestLoading, setPasswordRequestLoading] = useState(true);
   const [passwordRequestError, setPasswordRequestError] = useState('');
   const [passwordRequestAction, setPasswordRequestAction] = useState<string | null>(null);
+  const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
+  const [eventApprovalAction, setEventApprovalAction] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPasswordRequests = async () => {
@@ -31,6 +42,29 @@ export default function PendingApprovalsPage({ user }: any) {
 
     if (user?.id) loadPasswordRequests();
   }, [user?.id]);
+
+  useEffect(() => {
+    const loadPendingEvents = async () => {
+      const response = await fetch('/api/admin/event-approvals');
+      const payload = await response.json();
+      if (response.ok) setPendingEvents(payload.events || []);
+    };
+    if (user?.role === 'admin') loadPendingEvents();
+  }, [user?.role]);
+
+  const reviewEvent = async (eventId: string, decision: 'approved' | 'rejected') => {
+    setEventApprovalAction(eventId);
+    try {
+      const response = await fetch('/api/admin/event-approvals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId, decision }),
+      });
+      if (response.ok) setPendingEvents((events) => events.filter((event) => event.id !== eventId));
+    } finally {
+      setEventApprovalAction(null);
+    }
+  };
 
   const reviewPasswordRequest = async (requestId: string, action: 'approve' | 'reject') => {
     setPasswordRequestAction(requestId);
@@ -90,6 +124,17 @@ export default function PendingApprovalsPage({ user }: any) {
           <span className="border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-300">{passwordRequests.length} Pending</span>
         </div>
         {passwordRequestLoading ? <p className="text-sm text-slate-500">Loading password requests...</p> : passwordRequestError ? <div className="border border-rose-400/30 bg-rose-400/5 p-5 text-sm text-rose-300">{passwordRequestError}</div> : passwordRequests.length === 0 ? <div className="border border-slate-700/50 bg-slate-900/40 p-5 text-sm text-slate-400">No password change requests are waiting for approval.</div> : <div className="grid gap-4 md:grid-cols-2">{passwordRequests.map((request) => <article key={request.id} className="border border-slate-700/70 bg-slate-900/50 p-5"><p className="font-semibold text-white">{request.users?.name || 'Member'}</p><p className="mt-1 text-sm text-slate-400">{request.users?.email || 'No email'} · {request.users?.cse_id || 'No CSE ID'}</p><p className="mt-3 text-xs text-slate-500">Requested {new Date(request.created_at).toLocaleString('en-IN')}</p><div className="mt-4 flex gap-3"><button onClick={() => reviewPasswordRequest(request.id, 'approve')} disabled={passwordRequestAction === request.id} className="flex-1 bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">Approve</button><button onClick={() => reviewPasswordRequest(request.id, 'reject')} disabled={passwordRequestAction === request.id} className="flex-1 border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:border-rose-300 disabled:opacity-50">Reject</button></div></article>)}</div>}
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Event Approvals</h2>
+            <p className="mt-1 text-sm text-slate-400">Review cultural events before they are published.</p>
+          </div>
+          <span className="border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-300">{pendingEvents.length} Pending</span>
+        </div>
+        {pendingEvents.length === 0 ? <div className="border border-slate-700/50 bg-slate-900/40 p-5 text-sm text-slate-400">No cultural or technical events are waiting for approval.</div> : <div className="grid gap-4 md:grid-cols-2">{pendingEvents.map((event) => <article key={event.id} className="border border-slate-700/70 bg-slate-900/50 p-5"><p className="text-xs uppercase tracking-wider text-amber-300">{event.event_type === 'technical' ? 'Technical event' : 'Cultural event'} · Expected {new Date(event.start_date).toLocaleDateString('en-IN')}</p><h3 className="mt-2 text-lg font-semibold text-white">{event.title}</h3>{event.caption && <p className="mt-2 text-sm text-slate-300">{event.caption}</p>}<p className="mt-3 text-xs text-slate-500">Submitted {new Date(event.created_at).toLocaleString('en-IN')}</p><div className="mt-4 flex gap-3"><button type="button" onClick={() => reviewEvent(event.id, 'approved')} disabled={eventApprovalAction === event.id} className="flex-1 bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">Approve</button><button type="button" onClick={() => reviewEvent(event.id, 'rejected')} disabled={eventApprovalAction === event.id} className="flex-1 border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:border-rose-300 disabled:opacity-50">Reject</button></div></article>)}</div>}
       </section>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -8,8 +8,10 @@ export default function NotificationsPanel({ user }: any) {
   const { notifications, loading, markAllAsRead } = useRealtimeNotifications(user?.id);
   const { users } = useUsers();
   const [activeTab, setActiveTab] = useState<'history' | 'send'>('history');
+  const [messageMode, setMessageMode] = useState<'normal' | 'anonymous'>(user?.role === 'member' ? 'anonymous' : 'normal');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRead, setFilterRead] = useState<'all' | 'unread' | 'read'>('all');
+  const [historyType, setHistoryType] = useState<'all' | 'normal' | 'anonymous'>('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [showSendForm, setShowSendForm] = useState(false);
@@ -39,8 +41,9 @@ export default function NotificationsPanel({ user }: any) {
       filterRead === 'all' ||
       (filterRead === 'unread' && !notif.is_read) ||
       (filterRead === 'read' && notif.is_read);
+    const matchesHistoryType = historyType === 'all' || (historyType === 'anonymous' ? notif.is_anonymous : !notif.is_anonymous);
 
-    return matchesDate && matchesSearch && matchesFilter;
+    return matchesDate && matchesSearch && matchesFilter && matchesHistoryType;
   });
 
   const unreadCount = notifications.filter((n) => n.user_id === user?.id && !n.is_read).length;
@@ -54,7 +57,7 @@ export default function NotificationsPanel({ user }: any) {
   };
 
   const recipientLabel = (notification: typeof notifications[number]) => {
-    if (notification.sender_id !== user?.id) return 'Received';
+    if (!notification.sent_by_me && notification.sender_id !== user?.id) return 'Received';
     if (notification.recipient_type === 'all') return `All Members (${notification.recipient_count || 1})`;
     if (notification.recipient_type === 'role') return roleLabels[notification.target_role || ''] || 'Selected Role';
     if (notification.recipient_type === 'year_representative') return `Year ${notification.target_year || ''} Representatives`;
@@ -161,7 +164,7 @@ export default function NotificationsPanel({ user }: any) {
         recipientIds,
         sendData.selectedRole || undefined,
         sendData.selectedYear ? parseInt(sendData.selectedYear) : undefined,
-        canSendAnonymously || sendData.isAnonymous
+        messageMode === 'anonymous'
       );
 
       if (success) {
@@ -174,6 +177,7 @@ export default function NotificationsPanel({ user }: any) {
           selectedMemberId: '',
           isAnonymous: false,
         });
+        setMessageMode('normal');
         setShowSendForm(false);
         setActiveTab('history');
       } else {
@@ -188,6 +192,7 @@ export default function NotificationsPanel({ user }: any) {
 
   const isAdmin = user?.role === 'admin';
   const canSendAnonymously = Boolean(user?.role && !isAdmin);
+  const canSendNormalNotification = Boolean(user?.role && user.role !== 'member');
   const canSendNotifications = Boolean(user?.role);
 
   return (
@@ -224,7 +229,7 @@ export default function NotificationsPanel({ user }: any) {
                 : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
             }`}
           >
-            {canSendAnonymously ? 'Anonymous Mails' : 'Send Notification'}
+            Send Messages
           </button>
         )}
       </div>
@@ -232,6 +237,9 @@ export default function NotificationsPanel({ user }: any) {
       {activeTab === 'history' && (
         <div className="space-y-4">
           <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-4">
+            <div className="mb-4 flex flex-wrap gap-2">
+              {(['all', 'normal', 'anonymous'] as const).map((type) => <button key={type} type="button" onClick={() => setHistoryType(type)} className={`rounded-lg px-3 py-2 text-sm font-medium transition ${historyType === type ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'}`}>{type === 'all' ? 'All History' : type === 'normal' ? 'Normal Messages' : 'Anonymous Mail'}</button>)}
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
               <input
                 type="text"
@@ -334,6 +342,11 @@ export default function NotificationsPanel({ user }: any) {
 
       {activeTab === 'send' && canSendNotifications && (
         <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6">
+          <div className="mb-5 flex flex-wrap gap-2">
+            {canSendNormalNotification && <button type="button" onClick={() => setMessageMode('normal')} className={`rounded-lg px-4 py-2 text-sm font-medium transition ${messageMode === 'normal' ? 'bg-blue-600 text-white' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'}`}>Normal Notification</button>}
+            {canSendAnonymously && <button type="button" onClick={() => { setMessageMode('anonymous'); setSendData((current) => ({ ...current, recipientType: 'specific', selectedRole: '', selectedYear: '', selectedMemberId: '' })); }} className={`rounded-lg px-4 py-2 text-sm font-medium transition ${messageMode === 'anonymous' ? 'bg-amber-600 text-white' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'}`}>Anonymous Mail</button>}
+          </div>
+          <p className={`mb-4 text-sm ${messageMode === 'anonymous' ? 'text-amber-200' : 'text-slate-400'}`}>{messageMode === 'anonymous' ? 'Your identity will be hidden. Anonymous mail can only be sent to one verified admin.' : 'Send a notification with your name and role visible to the recipient.'}</p>
           <form onSubmit={handleSendNotification} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Title</label>
@@ -347,24 +360,6 @@ export default function NotificationsPanel({ user }: any) {
               />
             </div>
 
-            {canSendAnonymously && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-                <label className="flex items-start gap-3 text-sm text-amber-100">
-                  <input
-                    type="checkbox"
-                    checked={canSendAnonymously || sendData.isAnonymous}
-                    onChange={(e) => setSendData({ ...sendData, isAnonymous: e.target.checked, recipientType: 'specific', selectedRole: '', selectedYear: '' })}
-                    className="mt-1 accent-amber-400"
-                    disabled={isSending || canSendAnonymously}
-                  />
-                  <span>
-                    <span className="block font-medium">Send anonymously (required)</span>
-                    <span className="mt-1 block text-xs text-amber-200/70">Only admins can view this mail. Your name and society ID are saved in the database but hidden from the frontend.</span>
-                  </span>
-                </label>
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Message</label>
               <textarea
@@ -373,7 +368,7 @@ export default function NotificationsPanel({ user }: any) {
                 placeholder="Notification message"
                 rows={4}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none"
-                disabled={isSending}
+                disabled={isSending || messageMode === 'anonymous'}
               />
             </div>
 
@@ -400,7 +395,7 @@ export default function NotificationsPanel({ user }: any) {
               </select>
             </div>
 
-            {sendData.recipientType === 'role' && (
+            {messageMode === 'normal' && sendData.recipientType === 'role' && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Select Role</label>
                 <select
@@ -420,7 +415,7 @@ export default function NotificationsPanel({ user }: any) {
               </div>
             )}
 
-            {sendData.recipientType === 'year_representative' && (
+            {messageMode === 'normal' && sendData.recipientType === 'year_representative' && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Select Year</label>
                 <select
@@ -441,7 +436,7 @@ export default function NotificationsPanel({ user }: any) {
             {sendData.recipientType === 'specific' && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {sendData.isAnonymous ? 'Admin CSE ID or Email' : 'Member CSE ID or Email'}
+                  {messageMode === 'anonymous' ? 'Verified Admin CSE ID or Email' : 'Member CSE ID or Email'}
                 </label>
                 <input
                   type="text"

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { logActivity } from '@/lib/activity-logger';
+import { getSessionUserId } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -9,7 +10,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, { auth: { persist
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { userId } = await request.json();
+    const userId = getSessionUserId(request);
+    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     const { data: user } = await supabase.from('users').select('role').eq('id', userId).single();
     if (user?.role !== 'admin') return NextResponse.json({ error: 'Only admins can remove resources' }, { status: 403 });
 

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { logActivity } from '@/lib/activity-logger';
+import { getSessionUserId } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -19,9 +20,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, expectedDate, authorityLetterUrl, caption, createdBy, creatorRole } = body ?? {};
+    const { title, expectedDate, authorityLetterUrl, caption } = body ?? {};
+    const createdBy = getSessionUserId(request);
     if (!title || !expectedDate || !authorityLetterUrl || !createdBy) {
-      return Response.json({ error: 'Event name, expected date, authority letter, and creator are required' }, { status: 400 });
+      return Response.json({ error: 'Event name, expected date, authority letter, and authentication are required' }, { status: 400 });
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
@@ -29,14 +31,19 @@ export async function POST(request: Request) {
     });
     const { data: creator, error: creatorError } = await supabase
       .from('users')
-      .select('id, role')
+      .select('id, role, is_verified')
       .eq('id', createdBy)
       .maybeSingle();
     if (creatorError) throw creatorError;
-    const role = String(creatorRole || creator?.role || '').trim().toLowerCase();
-    const isKnownLocalAdmin = ['1', '70cb33d8-74ec-4bd7-be8c-3230accb9c5b'].includes(String(createdBy));
-    if (!['admin', 'faculty'].includes(role) && !(isKnownLocalAdmin && !creatorRole)) {
-      return Response.json({ error: 'Only admin or faculty can add events' }, { status: 403 });
+    if (!creator) {
+      return Response.json({ error: 'Your login session is outdated. Please log out and log in again.' }, { status: 401 });
+    }
+    if (creator.is_verified === false) {
+      return Response.json({ error: 'Your account is not verified.' }, { status: 403 });
+    }
+    const role = String(creator?.role || '').trim().toLowerCase();
+    if (!['admin', 'faculty', 'cultural_secretary', 'technical_secretary'].includes(role)) {
+      return Response.json({ error: 'Only admin, faculty, cultural secretary, or technical secretary can add events' }, { status: 403 });
     }
 
     const eventValues: Record<string, string | null> = {
@@ -45,10 +52,10 @@ export async function POST(request: Request) {
       caption: caption ? String(caption).trim() : null,
       authority_letter_url: String(authorityLetterUrl).trim(),
       start_date: new Date(`${expectedDate}T00:00:00`).toISOString(),
+      approval_status: ['cultural_secretary', 'technical_secretary'].includes(role) ? 'pending' : 'approved',
+      event_type: role === 'cultural_secretary' ? 'cultural' : role === 'technical_secretary' ? 'technical' : 'general',
     };
-    if (creator?.id) {
-      eventValues.created_by = creator.id;
-    }
+    eventValues.created_by = creator.id;
 
     const { data, error } = await supabase
       .from('events')
@@ -76,15 +83,30 @@ export async function POST(request: Request) {
   }
 }
 
+export async function GET(request: Request) {
+  try {
+    if (!supabaseUrl || !serviceRoleKey) return Response.json({ events: [] });
+    const userId = getSessionUserId(request);
+    if (!userId) return Response.json({ error: 'Authentication required' }, { status: 401 });
+    const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data, error } = await supabase.from('events').select('*').eq('created_by', userId).eq('approval_status', 'pending').order('created_at', { ascending: false });
+    if (error) throw error;
+    return Response.json({ events: data || [] });
+  } catch (error) {
+    return Response.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
       return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     }
 
-    const { eventId, userId } = await request.json();
+    const { eventId } = await request.json();
+    const userId = getSessionUserId(request);
     if (!eventId || !userId) {
-      return Response.json({ error: 'Event ID and admin ID are required' }, { status: 400 });
+      return Response.json({ error: 'Event ID and authentication are required' }, { status: 400 });
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
@@ -97,14 +119,20 @@ export async function DELETE(request: Request) {
       .maybeSingle();
 
     if (requesterError) throw requesterError;
-    if (!requester || !['admin', 'faculty'].includes(String(requester.role).toLowerCase()) || requester.is_verified === false) {
-      return Response.json({ error: 'Only a verified admin or faculty user can remove events' }, { status: 403 });
+    if (!requester || requester.is_verified === false) {
+      return Response.json({ error: 'Verified users can remove events' }, { status: 403 });
     }
 
-    const { error: deleteError } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', eventId);
+    const isAdminOrFaculty = ['admin', 'faculty'].includes(String(requester.role).toLowerCase());
+    const isSecretary = ['cultural_secretary', 'technical_secretary'].includes(String(requester.role).toLowerCase());
+    let deleteQuery = supabase.from('events').delete().eq('id', eventId);
+    if (!isAdminOrFaculty && isSecretary) {
+      deleteQuery = deleteQuery.eq('created_by', requester.id).eq('approval_status', 'pending');
+    } else if (!isAdminOrFaculty) {
+      return Response.json({ error: 'You do not have permission to remove events' }, { status: 403 });
+    }
+
+    const { error: deleteError } = await deleteQuery;
 
     if (deleteError) throw deleteError;
     await logActivity(supabase, {

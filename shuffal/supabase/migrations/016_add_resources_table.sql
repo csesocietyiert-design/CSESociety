@@ -12,5 +12,8 @@ CREATE TABLE IF NOT EXISTS resources (
 ALTER TABLE resources
   ADD COLUMN IF NOT EXISTS category VARCHAR(100) NOT NULL DEFAULT 'General';
 
+ALTER TABLE resources
+  ADD COLUMN IF NOT EXISTS caption TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_resources_created_at ON resources(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_resources_category ON resources(category);

@@ -109,9 +109,14 @@ export async function GET(request: Request) {
       requestedUserIsAdmin = requestedUser?.role === 'admin';
     }
     const visibleNotifications = (data || []).filter((notification) =>
-      !notification.is_anonymous || (requestedUserIsAdmin && notification.user_id === resolvedUserId)
-    ).map((notification) => notification.is_anonymous ? { ...notification, sender_id: null } : notification);
-    return Response.json({ notifications: summarizeSentNotifications(visibleNotifications, resolvedUserId) });
+      !notification.is_anonymous || notification.sender_id === resolvedUserId || (requestedUserIsAdmin && notification.user_id === resolvedUserId)
+    );
+    const summarizedNotifications = summarizeSentNotifications(visibleNotifications, resolvedUserId).map((notification) => ({
+      ...notification,
+      sent_by_me: notification.sender_id === resolvedUserId,
+      sender_id: notification.is_anonymous ? null : notification.sender_id,
+    }));
+    return Response.json({ notifications: summarizedNotifications });
   } catch (error) {
     console.error('Notification history error:', error);
     return Response.json(
