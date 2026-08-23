@@ -65,8 +65,7 @@ const configs: Record<'executive' | 'secretary' | 'year_representative' | 'treas
     heroClass: 'from-sky-600/25 via-slate-900/75 to-emerald-700/15',
     accentClass: 'text-sky-300',
     features: [
-      { label: 'Students', href: '/dashboard/members', detail: 'View society members', tone: 'sky' },
-      { label: 'My Year', href: '/dashboard/profile', detail: `Year ${'{year}'} information`, tone: 'teal' },
+      { label: 'My Year', href: '/dashboard/members', detail: `View Year ${'{year}'} student details`, tone: 'teal' },
       { label: 'Events', href: '/dashboard/events', detail: 'Follow upcoming activities', tone: 'amber' },
       { label: 'Attendance', href: '/dashboard/events', detail: 'Track participation', tone: 'emerald' },
       { label: 'Announcements', href: '/dashboard/notifications', detail: 'Read society updates', tone: 'rose' },

@@ -30,7 +30,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
   const isTreasurer = user.role === 'treasurer';
   const menuItems = [
     { label: 'Dashboard', href: '/dashboard', icon: 'grid' },
-    { label: 'Members', href: '/dashboard/members', icon: 'users', show: canViewMembers || isYearRepresentative },
+    { label: 'Members', href: '/dashboard/members', icon: 'users', show: canViewMembers },
     { label: isYearRepresentative ? 'Students' : 'Events', href: '/dashboard/events', icon: 'calendar', show: !isTreasurer },
     { label: 'Notifications', href: '/dashboard/notifications', icon: 'bell', show: !isTreasurer },
     { label: 'Approvals', href: '/dashboard/approvals', icon: 'award', show: isFacultyAdmin },
