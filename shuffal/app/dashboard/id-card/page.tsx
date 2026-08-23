@@ -15,6 +15,7 @@ export default function IdCardPage() {
   const memberData = users.find((member) => member.id === user?.id);
   const [sortBy, setSortBy] = useState<'name' | 'cse_id' | 'year' | 'role' | 'status'>('name');
   const [selectedMemberId, setSelectedMemberId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const isYearRepresentative = user?.role === 'year_representative' || user?.role === 'yearRep';
   const canViewAllCards = ['admin', 'vice_president', 'general_secretary', 'cultural_secretary', 'technical_secretary'].includes(user?.role || '');
   const cardMembers = canViewAllCards
@@ -28,6 +29,10 @@ export default function IdCardPage() {
     if (sortBy === 'role') return first.role.localeCompare(second.role) || first.name.localeCompare(second.name);
     if (sortBy === 'cse_id') return first.cse_id.localeCompare(second.cse_id);
     return first.name.localeCompare(second.name);
+  });
+  const visibleMembers = sortedMembers.filter((member) => {
+    const search = searchTerm.trim().toLowerCase();
+    return !search || member.name.toLowerCase().includes(search) || member.cse_id.toLowerCase().includes(search) || member.email.toLowerCase().includes(search);
   });
   const selectedMember = sortedMembers.find((member) => member.id === selectedMemberId) || sortedMembers[0];
   const cardMember = canViewAllCards || isYearRepresentative ? selectedMember : memberData;
@@ -50,22 +55,25 @@ export default function IdCardPage() {
         </div>
 
         {canViewAllCards && <section className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-300">Card directory</p><p className="mt-1 text-sm text-slate-400">Select a member ID card</p></div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-300">Card directory</p><p className="mt-1 text-sm text-slate-400">Search for a member and open their card</p></div>
             <div className="flex flex-col gap-3 sm:flex-row">
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search name, CSE ID, or email" className="w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400 sm:w-64" />
               <select value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white outline-none focus:border-sky-400">
-                <option value="name">Sort by name</option>
-                <option value="cse_id">Sort by CSE ID</option>
-                <option value="year">Sort by year</option>
-                <option value="role">Sort by role</option>
-                <option value="status">Sort by status</option>
-              </select>
-              <select value={selectedMemberId} onChange={(event) => setSelectedMemberId(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white outline-none focus:border-sky-400">
-                <option value="">Select member</option>
-                {sortedMembers.map((member) => <option key={member.id} value={member.id}>{member.name} ({member.cse_id})</option>)}
+                <option value="name">Name</option>
+                <option value="cse_id">CSE ID</option>
+                <option value="year">Year</option>
+                <option value="role">Role</option>
+                <option value="status">Status</option>
               </select>
             </div>
           </div>
+          <div className="mt-4 max-h-64 space-y-2 overflow-y-auto pr-1">
+            {visibleMembers.length === 0 ? <p className="py-4 text-center text-sm text-slate-500">No matching members found.</p> : visibleMembers.map((member) => <button key={member.id} type="button" onClick={() => setSelectedMemberId(member.id)} className={`flex w-full items-center justify-between gap-4 rounded-lg border px-4 py-3 text-left transition ${selectedMemberId === member.id ? 'border-sky-400/70 bg-sky-500/15' : 'border-slate-700 bg-slate-950/30 hover:border-sky-400/50'}`}>
+              <span className="min-w-0"><span className="block truncate font-medium text-white">{member.name}</span><span className="mt-1 block truncate text-xs text-slate-400">{member.cse_id} | Year {member.year || 'Not set'} | {member.role.replaceAll('_', ' ')}</span></span><span className="shrink-0 text-xs font-medium text-sky-300">View Card -&gt;</span>
+            </button>)}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">Showing {visibleMembers.length} of {sortedMembers.length} members</p>
         </section>}
 
         <section className="rounded-lg border border-slate-700/70 bg-gradient-to-br from-blue-600/20 via-slate-900/80 to-teal-700/10 p-6 shadow-lg backdrop-blur-md">
