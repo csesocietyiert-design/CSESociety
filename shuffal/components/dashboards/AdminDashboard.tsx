@@ -7,6 +7,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AdminPasswordManager from '@/components/AdminPasswordManager';
 
+type PendingEvent = {
+  id: string;
+  title: string;
+  caption?: string | null;
+  event_type?: 'cultural' | 'technical' | 'general';
+  start_date: string;
+};
+
 export default function AdminDashboard({ user }: any) {
   const router = useRouter();
   const [showPasswordManager, setShowPasswordManager] = useState(false);
@@ -25,6 +33,10 @@ export default function AdminDashboard({ user }: any) {
       notificationDate.getDate() === today.getDate();
   });
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
+  const [eventApprovalConfirm, setEventApprovalConfirm] = useState<PendingEvent | null>(null);
+  const [eventApprovalDecision, setEventApprovalDecision] = useState<'approved' | 'rejected'>('approved');
+  const [eventApprovalAction, setEventApprovalAction] = useState<string | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [stats, setStats] = useState({
     totalMembers: 0,
@@ -40,7 +52,7 @@ export default function AdminDashboard({ user }: any) {
         if (!supabase) return;
 
         const usersResult = await supabase.from('users').select('id', { count: 'exact', head: true });
-        const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true });
+        const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'approved');
         const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
         const pendingEventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending');
         const certificatesResult = await supabase.from('certificates').select('id', { count: 'exact', head: true });
@@ -103,6 +115,31 @@ export default function AdminDashboard({ user }: any) {
       eventsSubscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    const loadPendingEvents = async () => {
+      const response = await fetch('/api/admin/event-approvals');
+      const payload = await response.json();
+      if (response.ok) setPendingEvents(payload.events || []);
+    };
+    if (user?.role === 'admin') loadPendingEvents();
+  }, [user?.role]);
+
+  const reviewPendingEvent = async () => {
+    if (!eventApprovalConfirm) return;
+    setEventApprovalAction(eventApprovalConfirm.id);
+    try {
+      const response = await fetch('/api/admin/event-approvals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId: eventApprovalConfirm.id, decision: eventApprovalDecision }),
+      });
+      if (response.ok) setPendingEvents((current) => current.filter((event) => event.id !== eventApprovalConfirm.id));
+    } finally {
+      setEventApprovalAction(null);
+      setEventApprovalConfirm(null);
+    }
+  };
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -213,6 +250,13 @@ export default function AdminDashboard({ user }: any) {
           </div>
         </Link>
       </div>
+
+      {pendingEvents.length > 0 && <section className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-6 shadow-lg shadow-black/10">
+        <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-300">Needs review</p><h2 className="mt-2 text-xl font-semibold text-white">Pending Event Approvals</h2><p className="mt-1 text-sm text-yellow-100/70">Approve an event to publish it to all member dashboards.</p></div><span className="rounded-full border border-yellow-400/30 px-3 py-1 text-sm font-semibold text-yellow-200">{pendingEvents.length}</span></div>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">{pendingEvents.map((event) => <article key={event.id} className="rounded-lg border border-yellow-500/25 bg-slate-950/35 p-5"><p className="text-xs uppercase tracking-wider text-yellow-300">{event.event_type === 'technical' ? 'Technical event' : 'Cultural event'} · {new Date(event.start_date).toLocaleDateString('en-IN')}</p><h3 className="mt-2 text-lg font-semibold text-white">{event.title}</h3>{event.caption && <p className="mt-2 text-sm text-slate-300">{event.caption}</p>}<div className="mt-4 flex gap-3"><button type="button" onClick={() => { setEventApprovalDecision('approved'); setEventApprovalConfirm(event); }} disabled={eventApprovalAction === event.id} className="flex-1 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">Approve</button><button type="button" onClick={() => { setEventApprovalDecision('rejected'); setEventApprovalConfirm(event); }} disabled={eventApprovalAction === event.id} className="flex-1 rounded-lg border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:border-rose-300 disabled:opacity-50">Reject</button></div></article>)}</div>
+      </section>}
+
+      {eventApprovalConfirm && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"><div className="w-full max-w-md rounded-lg border border-yellow-500/50 bg-slate-900 p-6"><h3 className="text-xl font-bold text-white">Confirm {eventApprovalDecision === 'approved' ? 'Approval' : 'Rejection'}</h3><p className="mt-3 text-sm leading-6 text-slate-300">Are you sure you want to {eventApprovalDecision === 'approved' ? 'approve and publish' : 'reject'} <span className="font-semibold text-yellow-300">{eventApprovalConfirm.title}</span>?</p><div className="mt-6 flex gap-3"><button type="button" onClick={reviewPendingEvent} disabled={eventApprovalAction === eventApprovalConfirm.id} className="flex-1 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">Confirm</button><button type="button" onClick={() => setEventApprovalConfirm(null)} className="flex-1 rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300">Cancel</button></div></div></div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 rounded-lg border border-slate-700/50 bg-gradient-to-br from-slate-900/80 to-blue-950/30 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
