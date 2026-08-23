@@ -236,14 +236,15 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!Array.isArray(recipientIds) || recipientIds.length === 0) {
+    if (!Array.isArray(recipientIds) || (recipientIds.length === 0 && !isAnonymous)) {
       return Response.json(
         { error: 'At least one recipient is required' },
         { status: 400 }
       );
     }
 
-    const invalidRecipientIds = recipientIds.filter(
+    let resolvedRecipientIds = recipientIds as string[];
+    const invalidRecipientIds = resolvedRecipientIds.filter(
       (id) => typeof id !== 'string' || !isValidUuid(id)
     );
 
@@ -276,10 +277,21 @@ export async function POST(request: Request) {
       },
     });
 
+    if (isAnonymous) {
+      const { data: admins, error: adminsError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'admin')
+        .neq('is_verified', false);
+      if (adminsError) throw adminsError;
+      resolvedRecipientIds = (admins || []).map((admin) => admin.id);
+      if (resolvedRecipientIds.length === 0) return Response.json({ error: 'No verified admin is available to receive anonymous mail.' }, { status: 503 });
+    }
+
     const { data: recipientUsers, error: recipientCheckError } = await supabase
       .from('users')
       .select('id')
-      .in('id', recipientIds);
+      .in('id', resolvedRecipientIds);
 
     if (recipientCheckError) {
       throw recipientCheckError;
@@ -288,7 +300,7 @@ export async function POST(request: Request) {
     const existingRecipientIds = new Set(
       (recipientUsers || []).map((recipientUser) => recipientUser.id)
     );
-    const missingRecipientIds = recipientIds.filter(
+    const missingRecipientIds = resolvedRecipientIds.filter(
       (recipientId: string) => !existingRecipientIds.has(recipientId)
     );
 
@@ -320,29 +332,26 @@ export async function POST(request: Request) {
     if (!validSenderId) {
       return Response.json({ error: 'Only verified society team members can send notifications.' }, { status: 403 });
     }
-    if (isAnonymous && (senderRole === 'admin' || recipientType !== 'specific' || recipientIds.length !== 1)) {
-      return Response.json({ error: 'Anonymous Mails can be sent by non-admin users to one specific administrator.' }, { status: 403 });
+    if (isAnonymous && senderRole === 'admin') {
+      return Response.json({ error: 'Admins cannot send anonymous mail.' }, { status: 403 });
     }
     if (senderRole === 'member' && !isAnonymous) {
       return Response.json({ error: 'Members can only send anonymous messages.' }, { status: 403 });
     }
     if (isAnonymous) {
-      const { data: recipientUser, error: recipientRoleError } = await supabase
+      const { data: recipientUsersForAnonymous, error: recipientRoleError } = await supabase
         .from('users')
-        .select('role, is_verified')
-        .eq('id', recipientIds[0])
-        .maybeSingle();
+        .select('id, role, is_verified')
+        .in('id', resolvedRecipientIds);
       if (recipientRoleError) throw recipientRoleError;
-      const recipientIsAllowed = recipientUser?.role === 'admin';
-      if (!recipientUser || recipientUser.is_verified === false || !recipientIsAllowed) {
-        return Response.json({ error: 'Anonymous Mails can only be sent to a verified admin.' }, { status: 403 });
-      }
+      const allRecipientsAreAdmins = (recipientUsersForAnonymous || []).length === resolvedRecipientIds.length && (recipientUsersForAnonymous || []).every((recipientUser) => recipientUser.role === 'admin' && recipientUser.is_verified !== false);
+      if (!allRecipientsAreAdmins) return Response.json({ error: 'Anonymous Mails can only be sent to verified admins.' }, { status: 403 });
     }
     if (recipientType === 'all' && senderRole !== 'admin') {
       return Response.json({ error: 'Only the admin can send notifications to all society members.' }, { status: 403 });
     }
 
-    const notificationsToCreate = recipientIds.map((recipientId: string) => ({
+    const notificationsToCreate = resolvedRecipientIds.map((recipientId: string) => ({
       user_id: recipientId,
       title: String(title).trim(),
       message: String(message).trim(),

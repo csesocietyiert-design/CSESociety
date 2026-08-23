@@ -535,7 +535,7 @@ export async function sendNotification(
   isAnonymous = false
 ) {
   try {
-    if (!recipientIds || recipientIds.length === 0) return false;
+    if ((!recipientIds || recipientIds.length === 0) && !isAnonymous) return false;
 
     const response = await fetch('/api/notifications', {
       method: 'POST',

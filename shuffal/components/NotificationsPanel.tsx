@@ -126,7 +126,9 @@ export default function NotificationsPanel({ user }: any) {
 
       let recipientIds: string[] = [];
 
-      if (sendData.recipientType === 'all') {
+      if (messageMode === 'anonymous') {
+        recipientIds = [];
+      } else if (sendData.recipientType === 'all') {
         recipientIds = users.map((u) => u.id);
       } else if (sendData.recipientType === 'role') {
         recipientIds = users
@@ -150,7 +152,7 @@ export default function NotificationsPanel({ user }: any) {
         recipientIds = [selectedUser.id];
       }
 
-      if (recipientIds.length === 0) {
+      if (recipientIds.length === 0 && messageMode !== 'anonymous') {
         setSendError('No recipients found');
         setIsSending(false);
         return;
@@ -368,11 +370,11 @@ export default function NotificationsPanel({ user }: any) {
                 placeholder="Notification message"
                 rows={4}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none"
-                disabled={isSending || messageMode === 'anonymous'}
+                disabled={isSending}
               />
             </div>
 
-            <div>
+            {messageMode === 'normal' && <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Send To</label>
               <select
                 value={sendData.recipientType}
@@ -393,7 +395,7 @@ export default function NotificationsPanel({ user }: any) {
                   <option value="role">Society Role</option>
                   <option value="year_representative">Year Representative</option>
               </select>
-            </div>
+            </div>}
 
             {messageMode === 'normal' && sendData.recipientType === 'role' && (
               <div>
@@ -433,10 +435,10 @@ export default function NotificationsPanel({ user }: any) {
               </div>
             )}
 
-            {sendData.recipientType === 'specific' && (
+            {messageMode === 'normal' && sendData.recipientType === 'specific' && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {messageMode === 'anonymous' ? 'Verified Admin CSE ID or Email' : 'Member CSE ID or Email'}
+                  Member CSE ID or Email
                 </label>
                 <input
                   type="text"
