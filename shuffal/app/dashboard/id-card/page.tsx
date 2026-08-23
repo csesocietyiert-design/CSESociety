@@ -18,6 +18,7 @@ export default function IdCardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const isYearRepresentative = user?.role === 'year_representative' || user?.role === 'yearRep';
   const canViewAllCards = ['admin', 'vice_president', 'general_secretary', 'cultural_secretary', 'technical_secretary'].includes(user?.role || '');
+  const canViewCardDirectory = canViewAllCards || isYearRepresentative;
   const cardMembers = canViewAllCards
     ? users
     : isYearRepresentative
@@ -54,18 +55,18 @@ export default function IdCardPage() {
           <p className="mt-2 text-sm text-slate-400">Your society identity card.</p>
         </div>
 
-        {canViewAllCards && <section className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md">
+        {canViewCardDirectory && <section className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-300">Card directory</p><p className="mt-1 text-sm text-slate-400">Search for a member and open their card</p></div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search name, CSE ID, or email" className="w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400 sm:w-64" />
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white outline-none focus:border-sky-400">
-                <option value="name">Name</option>
-                <option value="cse_id">CSE ID</option>
-                <option value="year">Year</option>
-                <option value="role">Role</option>
-                <option value="status">Status</option>
-              </select>
+              {canViewAllCards && <select value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white outline-none focus:border-sky-400">
+                  <option value="name">Name</option>
+                  <option value="cse_id">CSE ID</option>
+                  <option value="year">Year</option>
+                  <option value="role">Role</option>
+                  <option value="status">Status</option>
+                </select>}
             </div>
           </div>
           <div className="mt-4 max-h-64 space-y-2 overflow-y-auto pr-1">
