@@ -33,7 +33,7 @@ export default function MembersPage() {
 
   return (
     <LayoutWrapper user={user}>
-      <MembersPanel user={user} />
+      <MembersPanel user={user} yearScope={user.role === 'year_representative' || user.role === 'yearRep' ? user.year : undefined} />
     </LayoutWrapper>
   );
 }

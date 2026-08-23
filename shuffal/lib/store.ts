@@ -113,6 +113,7 @@ export const useAuthStore = create<AuthState>()(persist((set) => ({
   },
 
   logout: () => {
+    void fetch('/api/auth/logout', { method: 'POST' });
     set({ user: null, isAuthenticated: false, sessionExpiresAt: null });
     localStorage.removeItem('authUser');
   },

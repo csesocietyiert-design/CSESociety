@@ -3,11 +3,11 @@ const bcrypt = require('bcryptjs');
 const testUsers = [
   {
     cseId: '23F2601',
-    password: 'KuchBhi',
+    password: 'cse@iert.ac.in',
     name: 'Admin User',
-    email: 'admin@csesociety.com',
+    email: 'adm,in@csesociety.com',
     role: 'admin',
-    year: 1,
+    year: 0,
   },
   {
     cseId: '23F2602',

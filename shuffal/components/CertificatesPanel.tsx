@@ -14,7 +14,7 @@ type CertificateCard = {
 
 export default function CertificatesPanel() {
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role === 'admin' || user?.role === 'faculty';
+  const isAdmin = user?.role === 'admin';
   const [cards, setCards] = useState<CertificateCard[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [eventName, setEventName] = useState('');
@@ -52,6 +52,8 @@ export default function CertificatesPanel() {
     try {
       const response = await fetch(`/api/certificates/${cardId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id }),
       });
 
       if (!response.ok) {

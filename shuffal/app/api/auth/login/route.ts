@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { verifyPassword } from '@/lib/auth-utils';
+import { createSessionCookie } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
         is_verified: data.is_verified,
         profile_image_url: data.profile_image_url || null,
       },
-    });
+    }, { headers: { 'Set-Cookie': createSessionCookie(data.id) } });
   } catch (error) {
     console.error('Login error:', error);
     return Response.json(

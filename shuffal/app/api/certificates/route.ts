@@ -9,6 +9,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: { persistSession: false },
 });
 
+async function isAdmin(userId: string) {
+  const { data } = await supabase.from('users').select('role').eq('id', userId).single();
+  return data?.role === 'admin';
+}
+
 export async function GET() {
   try {
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -58,6 +63,9 @@ export async function POST(request: NextRequest) {
 
     if (!eventName || !date || !driveLink || !userId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    if (!(await isAdmin(userId))) {
+      return NextResponse.json({ error: 'Only admins can add certificates' }, { status: 403 });
     }
 
     const { data, error } = await supabase

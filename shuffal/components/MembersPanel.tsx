@@ -7,8 +7,11 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import AdminPasswordManager from './AdminPasswordManager';
 
-export default function MembersPanel({ user }: any) {
+const coreTeamRoles = new Set(['admin', 'faculty', 'vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'treasurer', 'executive', 'secretary']);
+
+export default function MembersPanel({ user, yearScope }: { user: any; yearScope?: number }) {
   const { users, loading } = useUsers();
+  const isYearRepresentative = ['year_representative', 'yearrep'].includes(String(user?.role).toLowerCase());
   const [searchTerm, setSearchTerm] = useState('');
   const [filterYear, setFilterYear] = useState('all');
   const [sortBy, setSortBy] = useState<'status' | 'name' | 'cse_id' | 'email' | 'year' | 'role'>('name');
@@ -26,7 +29,10 @@ export default function MembersPanel({ user }: any) {
     }
   };
 
-  const filteredUsers = users.filter((u) => {
+  const scopedUsers = isYearRepresentative
+    ? users.filter((u) => coreTeamRoles.has(String(u.role).toLowerCase()) || (yearScope !== undefined && u.year === yearScope))
+    : users;
+  const filteredUsers = scopedUsers.filter((u) => {
     const matchesSearch =
       u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.cse_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -66,9 +72,9 @@ export default function MembersPanel({ user }: any) {
   });
 
   const stats = {
-    total: users.length,
-    verified: users.filter((u) => u.is_verified).length,
-    pending: users.filter((u) => !u.is_verified).length,
+    total: scopedUsers.length,
+    verified: scopedUsers.filter((u) => u.is_verified).length,
+    pending: scopedUsers.filter((u) => !u.is_verified).length,
   };
 
   // Export functions

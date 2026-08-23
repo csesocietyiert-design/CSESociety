@@ -95,6 +95,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
     { label: 'Membership', value: 'ACTIVE', detail: 'Verified Member', href: '/dashboard/profile', tone: 'teal' },
     { label: 'Upcoming Events', value: eventsLoading ? '--' : String(upcomingEvents.length).padStart(2, '0'), detail: 'Events available', href: '/dashboard/events', tone: 'amber' },
     { label: 'Certificates', value: certificatesLoading ? '--' : String(certificates.length).padStart(2, '0'), detail: 'Earned certificates', href: '/dashboard/certificates', tone: 'sky' },
+    { label: 'Resources', value: 'OPEN', detail: 'Society resources', href: '/dashboard/resources', tone: 'teal' },
     { label: 'Notifications', value: notificationsLoading ? '--' : String(unreadNotifications).padStart(2, '0'), detail: 'Unread notifications', href: '/dashboard/notifications', tone: 'rose' },
   ];
 

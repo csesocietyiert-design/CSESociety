@@ -31,11 +31,11 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 const testUsers = [
   {
     cse_id: '23F2601',
-    password: 'KuchBhi',
+    password: 'cse@iert.ac.in',
     name: 'Admin User',
-    email: 'admin@csesociety.com',
+    email: 'adm,in@csesociety.com',
     role: 'admin',
-    year: 1,
+    year: 0,
   },
   {
     cse_id: '23F2602',
@@ -114,7 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     console.log('👥 Inserting test users...');
     const { data, error } = await supabase
       .from('users')
-      .insert(usersToInsert)
+      .upsert(usersToInsert, { onConflict: 'cse_id' })
       .select();
 
     if (error) {

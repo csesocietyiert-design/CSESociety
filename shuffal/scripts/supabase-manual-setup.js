@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS users (
   cse_id VARCHAR(20) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
-  year INTEGER NOT NULL CHECK (year >= 1 AND year <= 4),
+  year INTEGER NOT NULL CHECK (year >= 0 AND year <= 4),
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(50) NOT NULL DEFAULT 'member' CHECK (role IN ('member', 'admin', 'executive', 'secretary', 'treasurer', 'yearRep', 'faculty')),
   department VARCHAR(100) DEFAULT 'CSE',
@@ -55,7 +55,7 @@ console.log(createTableSQL);
 console.log('\n\nThen add test users with this SQL:\n');
 console.log(`
 INSERT INTO users (cse_id, password_hash, name, email, role, year, department) VALUES 
-  ('23F2601', '$2b$10$mQMTf2XV2w1Ixp6k4rlHmOTUykW4m.CUN01ekWi55rihuZEtNJGb2', 'Admin User', 'admin@csesociety.com', 'admin', 1, 'CSE'),
+  ('23F2601', '$2b$10$/86VVQiwXPSCFtRaCNEEsOSDWt21HSuOklni2za9.Uq66U3vi.Cme', 'Admin User', 'adm,in@csesociety.com', 'admin', 0, 'CSE'),
   ('23F2602', '$2b$10$.twgqZq8AmEzi8xGmQjuxuVBSCDkRD6dIkXo09vZ2D91uf2OFaN7e', 'Member User', 'member@csesociety.com', 'member', 1, 'CSE'),
   ('23F2603', '$2b$10$xl6tlgF7Zv1ekgv9eeFgU.gMWZCr0ssTHXBGdkbHznQXv12rAv1e6', 'Executive User', 'executive@csesociety.com', 'executive', 2, 'CSE');
 `);

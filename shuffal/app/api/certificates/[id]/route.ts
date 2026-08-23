@@ -15,6 +15,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const { userId } = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: 'Certificate ID is required' }, { status: 400 });
@@ -23,6 +24,11 @@ export async function DELETE(
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing Supabase credentials');
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+
+    const { data: user } = await supabase.from('users').select('role').eq('id', userId).single();
+    if (user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Only admins can remove certificates' }, { status: 403 });
     }
 
     const { error } = await supabase

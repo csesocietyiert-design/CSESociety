@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createSessionCookie } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
         department: data.department,
         is_verified: data.is_verified,
       },
-    });
+    }, { headers: { 'Set-Cookie': createSessionCookie(data.id) } });
   } catch (error) {
     console.error('Google auth error:', error);
     return Response.json(

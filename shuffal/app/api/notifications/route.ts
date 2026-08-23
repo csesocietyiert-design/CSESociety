@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { logActivity } from '@/lib/activity-logger';
+import { getSessionUserId } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -56,12 +57,6 @@ function summarizeSentNotifications(notifications: Array<Record<string, any>>, s
   return [...summaries.values()].sort((first, second) => new Date(second.created_at).getTime() - new Date(first.created_at).getTime());
 }
 
-const localDemoCseIds: Record<string, string> = {
-  '70cb33d8-74ec-4bd7-be8c-3230accb9c5b': 'iertcse',
-  '22222222-2222-4222-8222-222222222222': '23F2602',
-  '33333333-3333-4333-8333-333333333333': '23F2603',
-};
-
 const notificationTeamRoles = new Set([
   'admin',
   'faculty',
@@ -90,30 +85,15 @@ export async function GET(request: Request) {
       },
     });
 
-    const userId = new URL(request.url).searchParams.get('user_id');
-    if (userId && !isValidUuid(userId)) {
-      return Response.json({ error: 'Invalid user ID' }, { status: 400 });
-    }
-
-    let resolvedUserId = userId;
-    if (userId && localDemoCseIds[userId]) {
-      const { data: mappedUser, error: mappingError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('cse_id', localDemoCseIds[userId])
-        .maybeSingle();
-      if (mappingError) throw mappingError;
-      resolvedUserId = mappedUser?.id || userId;
-    }
+    const resolvedUserId = getSessionUserId(request);
+    if (!resolvedUserId || !isValidUuid(resolvedUserId)) return Response.json({ error: 'Authentication required' }, { status: 401 });
 
     let query = supabase
       .from('notifications')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (resolvedUserId) {
-      query = query.or(`user_id.eq.${resolvedUserId},sender_id.eq.${resolvedUserId}`);
-    }
+    query = query.or(`user_id.eq.${resolvedUserId},sender_id.eq.${resolvedUserId}`);
 
     const { data, error } = await query;
 
@@ -130,8 +110,8 @@ export async function GET(request: Request) {
     }
     const visibleNotifications = (data || []).filter((notification) =>
       !notification.is_anonymous || (requestedUserIsAdmin && notification.user_id === resolvedUserId)
-    );
-    return Response.json({ notifications: userId ? summarizeSentNotifications(visibleNotifications, resolvedUserId || userId) : visibleNotifications });
+    ).map((notification) => notification.is_anonymous ? { ...notification, sender_id: null } : notification);
+    return Response.json({ notifications: summarizeSentNotifications(visibleNotifications, resolvedUserId) });
   } catch (error) {
     console.error('Notification history error:', error);
     return Response.json(
@@ -147,25 +127,12 @@ export async function PATCH(request: Request) {
       return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     }
 
-    const { user_id: userId } = await request.json();
-    if (!userId || !isValidUuid(userId)) {
-      return Response.json({ error: 'Valid user ID is required' }, { status: 400 });
-    }
+    const resolvedUserId = getSessionUserId(request);
+    if (!resolvedUserId || !isValidUuid(resolvedUserId)) return Response.json({ error: 'Authentication required' }, { status: 401 });
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    let resolvedUserId = userId;
-    if (localDemoCseIds[userId]) {
-      const { data: mappedUser, error: mappingError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('cse_id', localDemoCseIds[userId])
-        .maybeSingle();
-      if (mappingError) throw mappingError;
-      resolvedUserId = mappedUser?.id || userId;
-    }
-
     const { error } = await supabase
       .from('notifications')
       .update({ is_read: true })
@@ -184,25 +151,13 @@ export async function DELETE(request: Request) {
       return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     }
 
-    const { user_id: userId, notification_id: notificationId } = await request.json();
-    if (!userId || !isValidUuid(userId)) {
-      return Response.json({ error: 'Valid user ID is required' }, { status: 400 });
-    }
+    const { notification_id: notificationId } = await request.json();
+    const resolvedUserId = getSessionUserId(request);
+    if (!resolvedUserId || !isValidUuid(resolvedUserId)) return Response.json({ error: 'Authentication required' }, { status: 401 });
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    let resolvedUserId = userId;
-    if (localDemoCseIds[userId]) {
-      const { data: mappedUser, error: mappingError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('cse_id', localDemoCseIds[userId])
-        .maybeSingle();
-      if (mappingError) throw mappingError;
-      resolvedUserId = mappedUser?.id || userId;
-    }
-
     if (notificationId) {
       const { data: notification, error: notificationError } = await supabase
         .from('notifications')
@@ -260,13 +215,14 @@ export async function POST(request: Request) {
     const {
       title,
       message,
-      senderId,
       recipientType,
       recipientIds = [],
       targetRole,
       targetYear,
       isAnonymous = false,
     } = body ?? {};
+    const senderId = getSessionUserId(request);
+    if (!senderId || !isValidUuid(senderId)) return Response.json({ error: 'Authentication required' }, { status: 401 });
 
     if (!title || !message) {
       return Response.json(

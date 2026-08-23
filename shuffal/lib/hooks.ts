@@ -158,22 +158,14 @@ export function useNotifications(userId: string) {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        if (!supabase) return;
-
         const { start, end } = getTodayRange();
+        const response = await fetch('/api/notifications');
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notifications');
+        const data = (payload.notifications || []).filter((notification: Notification) => notification.created_at >= start && notification.created_at < end);
+        setNotifications(data);
 
-        const { data, error: err } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .gte('created_at', start)
-          .lt('created_at', end)
-          .order('created_at', { ascending: false });
-
-        if (err) throw err;
-        setNotifications(data || []);
-
-        const unread = (data || []).filter(n => !n.is_read).length;
+        const unread = (data || []).filter((n: Notification) => !n.is_read).length;
         setUnreadCount(unread);
       } catch (err) {
         console.error('Error fetching notifications:', err);
@@ -224,16 +216,10 @@ export function useNotificationsToday(userId: string) {
         if (!supabase) return;
 
         // Fetch all notifications for user and filter in client-side
-        const { data, error: err } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        if (err) {
-          console.error('Error fetching notifications:', err);
-          throw err;
-        }
+        const response = await fetch('/api/notifications');
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notifications');
+        const data = payload.notifications || [];
 
         // Filter for today's notifications client-side
         const today = new Date();
@@ -241,7 +227,7 @@ export function useNotificationsToday(userId: string) {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const filtered = (data || []).filter(notification => {
+        const filtered = (data || []).filter((notification: Notification) => {
           const notifDate = new Date(notification.created_at);
           return notifDate >= today && notifDate < tomorrow;
         });
@@ -444,7 +430,7 @@ export function useRealtimeNotifications(userId: string) {
 
     const fetchInitial = async () => {
       try {
-        const response = await fetch(`/api/notifications?user_id=${encodeURIComponent(userId)}`);
+        const response = await fetch('/api/notifications');
         const payload = await response.json();
         if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notifications');
         setNotifications(payload.notifications || []);
@@ -457,33 +443,10 @@ export function useRealtimeNotifications(userId: string) {
 
     fetchInitial();
 
-    const now = new Date();
-    const nextMidnight = new Date(now);
-    nextMidnight.setHours(24, 0, 0, 0);
-    const midnightRefresh = window.setTimeout(fetchInitial, nextMidnight.getTime() - now.getTime());
-
-    if (!supabase) {
-      return () => window.clearTimeout(midnightRefresh);
-    }
-
-    const channelName = `notifications:${userId}:${crypto.randomUUID()}`;
-    const channel = supabase.channel(channelName);
-    channel.on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-        },
-        () => {
-          void fetchInitial();
-        }
-      );
-    const subscription = channel.subscribe();
+    const refreshInterval = window.setInterval(fetchInitial, 30000);
 
     return () => {
-      window.clearTimeout(midnightRefresh);
-      void supabase!.removeChannel(subscription);
+      window.clearInterval(refreshInterval);
     };
   }, [userId]);
 
@@ -606,7 +569,7 @@ export async function markNotificationsAsRead(userId: string) {
     const response = await fetch('/api/notifications', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId }),
+      body: JSON.stringify({}),
     });
     if (!response.ok) {
       const payload = await response.json().catch(() => ({}));

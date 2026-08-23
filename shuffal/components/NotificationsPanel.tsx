@@ -79,7 +79,7 @@ export default function NotificationsPanel({ user }: any) {
       const response = await fetch('/api/notifications', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id }),
+        body: JSON.stringify({}),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not clear notification history');
@@ -97,7 +97,7 @@ export default function NotificationsPanel({ user }: any) {
       const response = await fetch('/api/notifications', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, notification_id: notificationId }),
+        body: JSON.stringify({ notification_id: notificationId }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || 'Could not delete notification');
@@ -373,7 +373,7 @@ export default function NotificationsPanel({ user }: any) {
                 placeholder="Notification message"
                 rows={4}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none"
-                disabled={isSending || sendData.isAnonymous}
+                disabled={isSending}
               />
             </div>
 

@@ -49,12 +49,13 @@ export default function ReportsPage() {
         return;
       }
 
-      const [certificatesResult, notificationsResult] = await Promise.all([
+      const [certificatesResult, notificationsResponse] = await Promise.all([
         supabase.from('certificates').select('id', { count: 'exact', head: true }),
-        supabase.from('notifications').select('id', { count: 'exact', head: true }),
+        fetch('/api/notifications'),
       ]);
+      const notificationsPayload = await notificationsResponse.json();
       setCertificateCount(certificatesResult.count || 0);
-      setNotificationCount(notificationsResult.count || 0);
+      setNotificationCount(notificationsPayload.notifications?.length || 0);
       setDataLoading(false);
     };
 
