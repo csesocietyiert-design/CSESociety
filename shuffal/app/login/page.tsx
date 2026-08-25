@@ -257,14 +257,6 @@ export default function LoginPage() {
             <span>{googleLoading ? 'Connecting...' : 'Continue with Google'}</span>
           </button>
 
-          <div className="mt-4 sm:mt-6 text-center">
-            <p className="text-xs sm:text-sm md:text-base text-slate-200">
-              Don't have an account?{' '}
-              <Link href="/register" className="font-medium text-[#6bb8ff] hover:text-white transition">
-                Register here
-              </Link>
-            </p>
-          </div>
         </div>
 
         {/* Mobile Announcements - Shows below the card on mobile */}
