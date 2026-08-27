@@ -25,14 +25,18 @@ export default function RootLayout({ children }: LayoutProps) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          async
+          dangerouslySetInnerHTML={{
+            __html: "try { var theme = localStorage.getItem('cse-theme'); var isLight = theme === 'light' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches); document.documentElement.dataset.theme = isLight ? 'light' : 'dark'; } catch (error) {}",
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-slate-950">{children}</body>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: "try { var theme = localStorage.getItem('cse-theme'); var isLight = theme === 'light' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches); document.documentElement.dataset.theme = isLight ? 'light' : 'dark'; } catch (error) {}",
-        }}
-      />
     </html>
   );
 }

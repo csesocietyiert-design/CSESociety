@@ -20,6 +20,13 @@ function relativeDate(date: string, currentTime: number) {
   return `${days} days ago`;
 }
 
+function getGreeting(currentTime: number) {
+  const hour = new Date(currentTime).getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 const leadershipOrder = ['vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'treasurer'];
 
 function shuffleUsers(users: User[]) {
@@ -106,7 +113,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">CSE Society Member Portal</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Good morning, {user.name.split(' ')[0]}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{getGreeting(currentTime)}, {user.name.split(' ')[0]}</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">Stay updated with society events, opportunities, achievements, and your membership.</p>
           </div>
           <div className="flex items-center gap-4 border-t border-white/10 pt-5 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">

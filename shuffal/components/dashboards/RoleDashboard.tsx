@@ -83,11 +83,11 @@ const configs: Record<'executive' | 'secretary' | 'year_representative' | 'treas
     heroClass: 'from-emerald-600/25 via-slate-900/75 to-amber-700/15',
     accentClass: 'text-emerald-300',
     features: [
-      { label: 'Income', href: '/dashboard/reports', detail: 'Record incoming funds', tone: 'emerald' },
-      { label: 'Expenses', href: '/dashboard/reports', detail: 'Track outgoing funds', tone: 'rose' },
-      { label: 'Transactions', href: '/dashboard/reports', detail: 'Review the transaction log', tone: 'sky' },
-      { label: 'Budget', href: '/dashboard/reports', detail: 'Monitor planned spending', tone: 'amber' },
-      { label: 'Reports', href: '/dashboard/reports', detail: 'Generate financial summaries', tone: 'teal' },
+      { label: 'Funds', href: '/dashboard/finance', detail: 'Share the live society balance', tone: 'emerald' },
+      { label: 'Event Expenses', href: '/dashboard/finance', detail: 'Track spending by event', tone: 'rose' },
+      { label: 'Transactions', href: '/dashboard/finance', detail: 'Review the shared fund ledger', tone: 'sky' },
+      { label: 'Budget', href: '/dashboard/finance', detail: 'Monitor income and spending', tone: 'amber' },
+      { label: 'Reports', href: '/dashboard/finance', detail: 'View financial summaries', tone: 'teal' },
       { label: 'Certificates', href: '/dashboard/certificates', detail: 'View society certificates', tone: 'sky' },
       { label: 'Resources', href: '/dashboard/resources', detail: 'Access society resources', tone: 'teal' },
       { label: 'Profile', href: '/dashboard/profile', detail: 'Maintain your account', tone: 'slate' },
@@ -152,7 +152,7 @@ export default function RoleDashboard({ user, group }: { user: RoleDashboardUser
       <section>
         <div className="mb-4"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Workspace</p><h2 className="mt-2 text-xl font-semibold text-white">Your available features</h2></div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {features.map((feature) => <Link key={feature.label} href={feature.href} className={`group rounded-lg border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition hover:-translate-y-0.5 ${toneClasses(feature.tone)}`}><div className="mb-6 flex items-center justify-between"><h3 className="text-lg font-semibold text-white">{feature.label}</h3><span className="h-2 w-2 rounded-full bg-teal-300" /></div><p className="text-sm leading-6 text-slate-400 group-hover:text-slate-200">{feature.detail}</p><p className="mt-5 text-sm font-medium text-teal-300">Open workspace -&gt;</p></Link>)}
+          {features.map((feature, index) => <Link key={`${feature.label}-${index}`} href={feature.href} className={`group rounded-lg border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition hover:-translate-y-0.5 ${toneClasses(feature.tone)}`}><div className="mb-6 flex items-center justify-between"><h3 className="text-lg font-semibold text-white">{feature.label}</h3><span className="h-2 w-2 rounded-full bg-teal-300" /></div><p className="text-sm leading-6 text-slate-400 group-hover:text-slate-200">{feature.detail}</p><p className="mt-5 text-sm font-medium text-teal-300">Open workspace -&gt;</p></Link>)}
         </div>
       </section>
     </div>
