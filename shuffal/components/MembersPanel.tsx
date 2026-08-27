@@ -77,7 +77,8 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
 
   // Export functions
   const exportToJSON = () => {
-    const dataToExport = sortedUsers.map((u) => ({
+    const dataToExport = sortedUsers.map((u, index) => ({
+      serialNumber: index + 1,
       name: u.name,
       cseId: u.cse_id,
       email: u.email,
@@ -101,7 +102,8 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
   };
 
   const exportToExcel = () => {
-    const dataToExport = sortedUsers.map((u) => ({
+    const dataToExport = sortedUsers.map((u, index) => ({
+      'S.No.': index + 1,
       Name: u.name,
       'CSE ID': u.cse_id,
       Email: u.email,
@@ -118,6 +120,7 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
 
     // Auto-size columns
     const colWidths = [
+      { wch: 8 },
       { wch: 20 },
       { wch: 12 },
       { wch: 25 },
@@ -154,8 +157,8 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
     yPosition += 10;
 
     // Table headers
-    const headers = ['Name', 'CSE ID', 'Email', 'Year', 'Role', 'Status'];
-    const colWidths = [30, 20, 40, 10, 20, 18];
+    const headers = ['S.No.', 'Name', 'CSE ID', 'Email', 'Year', 'Role', 'Status'];
+    const colWidths = [10, 30, 20, 40, 10, 20, 18];
     let xPosition = 10;
 
     pdf.setFontSize(10);
@@ -169,7 +172,7 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
 
     // Table rows
     pdf.setFontSize(9);
-    sortedUsers.forEach((u) => {
+    sortedUsers.forEach((u, index) => {
       if (yPosition > pageHeight - 20) {
         pdf.addPage();
         yPosition = 10;
@@ -177,6 +180,7 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
 
       xPosition = 10;
       const rowData = [
+        String(index + 1),
         String(u.name || ''),
         String(u.cse_id || ''),
         String(u.email || ''),
@@ -315,6 +319,7 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-700/50 bg-slate-800/50">
+                  <th className="w-16 px-6 py-3 text-left text-sm font-semibold text-slate-300">S.No.</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-300">Name</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-300">CSE ID</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-300">Email</th>
@@ -325,11 +330,12 @@ export default function MembersPanel({ user, yearScope, hideSorting = false }: {
                 </tr>
               </thead>
               <tbody>
-                {sortedUsers.map((u) => (
+                {sortedUsers.map((u, index) => (
                   <tr
                     key={u.id}
                     className="border-b border-slate-700/20 hover:bg-slate-800/30 transition-colors"
                   >
+                    <td className="px-6 py-4 text-sm text-slate-400 font-medium">{index + 1}</td>
                     <td className="px-6 py-4 text-sm text-white font-medium">{u.name}</td>
                     <td className="px-6 py-4 text-sm text-slate-300">{u.cse_id}</td>
                     <td className="px-6 py-4 text-sm text-slate-300">{u.email}</td>
