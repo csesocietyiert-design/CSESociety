@@ -24,10 +24,10 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
 
   const isFacultyAdmin = user.role === 'admin' || user.role === 'faculty';
   const isExecutive = user.role === 'executive' || user.role === 'vice_president' || user.role === 'general_secretary';
-  const canViewMembers = isFacultyAdmin || isExecutive || user.role === 'technical_secretary' || user.role === 'cultural_secretary';
+  const isTreasurer = user.role === 'treasurer';
+  const canViewMembers = isFacultyAdmin || isExecutive || user.role === 'technical_secretary' || user.role === 'cultural_secretary' || isTreasurer;
   const isSecretary = user.role === 'technical_secretary' || user.role === 'cultural_secretary' || user.role === 'secretary';
   const isYearRepresentative = user.role === 'year_representative' || user.role === 'yearRep';
-  const isTreasurer = user.role === 'treasurer';
   const menuItems = [
     { label: 'Dashboard', href: '/dashboard', icon: 'grid' },
     { label: 'Members', href: '/dashboard/members', icon: 'users', show: canViewMembers },
