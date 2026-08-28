@@ -242,13 +242,6 @@ export default function AdminDashboard({ user }: any) {
           </div>
         </Link>
 
-        <Link href="/dashboard/resources">
-          <div className="backdrop-blur-md bg-gradient-to-br from-teal-600/20 to-teal-700/10 border border-teal-500/30 rounded-lg p-6 hover:border-teal-400/50 transition-all duration-200 cursor-pointer hover:scale-105 transform">
-            <p className="text-slate-400 text-sm font-medium mb-2">Resources</p>
-            <p className="text-4xl font-bold text-white">View</p>
-            <p className="text-xs text-teal-400 mt-2">Manage library</p>
-          </div>
-        </Link>
       </div>
 
       {pendingEvents.length > 0 && <section className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-6 shadow-lg shadow-black/10">

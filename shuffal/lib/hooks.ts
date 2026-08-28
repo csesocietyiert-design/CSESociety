@@ -187,6 +187,46 @@ export function useMembershipProfileImage(fallbackImage?: string | null) {
   return profileImage;
 }
 
+export interface MembershipProfileDetails {
+  timestamp?: string | null;
+  roll_number_aktu?: string | null;
+  father_name?: string | null;
+  mother_name?: string | null;
+  father_guardian_mobile_number?: string | null;
+  emergency_contact_number?: string | null;
+  mobile_number?: string | null;
+  whatsapp_number?: string | null;
+  date_of_birth?: string | null;
+  blood_group?: string | null;
+  permanent_address?: string | null;
+}
+
+let membershipProfileDetailsCache: MembershipProfileDetails | null | undefined;
+let membershipProfileDetailsRequest: Promise<MembershipProfileDetails | null> | undefined;
+
+export function useMembershipProfileDetails() {
+  const [profileDetails, setProfileDetails] = useState<MembershipProfileDetails | null>(membershipProfileDetailsCache ?? null);
+
+  useEffect(() => {
+    if (membershipProfileDetailsCache !== undefined) return;
+
+    membershipProfileDetailsRequest ??= fetch('/api/membership/profile-image')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: { profile?: MembershipProfileDetails | null } | null) => {
+        membershipProfileDetailsCache = data?.profile || null;
+        return membershipProfileDetailsCache;
+      })
+      .catch(() => {
+        membershipProfileDetailsCache = null;
+        return null;
+      });
+
+    void membershipProfileDetailsRequest.then(setProfileDetails);
+  }, []);
+
+  return profileDetails;
+}
+
 export function useNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -504,10 +544,11 @@ export function useUserSettings(userId: string) {
           .from('user_settings')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .limit(2);
 
-        if (err && err.code !== 'PGRST116' && err.code !== 'PGRST205') throw err;
-        setSettings(data || { theme: 'dark', notifications_enabled: true });
+        if (err && err.code !== 'PGRST205') throw err;
+        if ((data || []).length > 1) throw new Error('Multiple user settings records found for this user');
+        setSettings(data?.[0] || { theme: 'dark', notifications_enabled: true });
       } catch (err) {
         console.error('Error fetching user settings:', err);
       } finally {

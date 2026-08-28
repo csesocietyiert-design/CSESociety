@@ -30,9 +30,8 @@ export default function RootLayout({ children }: LayoutProps) {
     >
       <head>
         <script
-          async
           dangerouslySetInnerHTML={{
-            __html: "try { var theme = localStorage.getItem('cse-theme'); var isLight = theme === 'light' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches); document.documentElement.dataset.theme = isLight ? 'light' : 'dark'; } catch (error) {}",
+            __html: "try { var theme = localStorage.getItem('cse-theme'); var hour = new Date().getHours(); var isLight = theme === 'light' || (theme === 'auto' && hour >= 6 && hour < 18); document.documentElement.dataset.theme = isLight ? 'light' : 'dark'; } catch (error) {}",
           }}
         />
       </head>

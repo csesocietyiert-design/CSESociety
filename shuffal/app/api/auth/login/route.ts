@@ -71,6 +71,7 @@ export async function POST(request: Request) {
         role: data.role,
         year: data.year,
         department: data.department,
+        created_at: data.created_at,
         is_verified: data.is_verified,
         profile_image_url: data.profile_image_url || null,
       },

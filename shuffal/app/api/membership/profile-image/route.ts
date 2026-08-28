@@ -21,28 +21,28 @@ export async function GET(request: Request) {
 
   const { data: profile, error: profileError } = await supabase
     .from('membership')
-    .select('student_photograph')
+    .select('student_photograph, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('society_id', user.cse_id)
     .limit(1)
     .maybeSingle();
   if (profileError) return Response.json({ error: profileError.message }, { status: 500 });
-  if (profile?.student_photograph) return Response.json({ profileImage: profile.student_photograph });
+  if (profile) return Response.json({ profileImage: profile.student_photograph || null, profile });
 
   const { data: secondaryEmailMatch, error: secondaryEmailError } = await supabase
     .from('membership')
-    .select('student_photograph')
+    .select('student_photograph, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('email_address_secondary', user.email)
     .limit(1)
     .maybeSingle();
   if (secondaryEmailError) return Response.json({ error: secondaryEmailError.message }, { status: 500 });
-  if (secondaryEmailMatch?.student_photograph) return Response.json({ profileImage: secondaryEmailMatch.student_photograph });
+  if (secondaryEmailMatch) return Response.json({ profileImage: secondaryEmailMatch.student_photograph || null, profile: secondaryEmailMatch });
 
   const { data: primaryEmailMatch, error: primaryEmailError } = await supabase
     .from('membership')
-    .select('student_photograph')
+    .select('student_photograph, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('email_address', user.email)
     .limit(1)
     .maybeSingle();
   if (primaryEmailError) return Response.json({ error: primaryEmailError.message }, { status: 500 });
-  return Response.json({ profileImage: primaryEmailMatch?.student_photograph || null });
+  return Response.json({ profileImage: primaryEmailMatch?.student_photograph || null, profile: primaryEmailMatch || null });
 }

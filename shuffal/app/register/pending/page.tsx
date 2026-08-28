@@ -16,13 +16,10 @@ export default function PendingVerificationPage() {
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(90deg, #020d1a 0%, #081d31 38%, #0d2945 100%)',
-      }}
+      className="auth-page min-h-screen relative overflow-hidden"
     >
       {/* Top Dark Strip */}
-      <div className="fixed top-0 left-0 right-0 h-16 sm:h-[70px] bg-[#020f1d] border-b border-white/10 flex items-center px-4 sm:px-8 z-50">
+      <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
             <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
@@ -43,7 +40,7 @@ export default function PendingVerificationPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-20 sm:pt-[90px]">
         {/* Pending Verification Card */}
-        <div className="w-[90%] sm:w-full max-w-full sm:max-w-[500px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-6 sm:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm text-center">
+        <div className="auth-card w-[90%] sm:w-full max-w-full sm:max-w-[500px] rounded-[20px] border p-6 sm:p-8 backdrop-blur-sm text-center">
           <div className="mb-6 flex justify-center">
             <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center overflow-hidden rounded-full border border-yellow-400/30 bg-yellow-400/10">
               <span className="text-2xl sm:text-4xl">⏳</span>
@@ -75,7 +72,7 @@ export default function PendingVerificationPage() {
             </p>
             <Link
               href="/login"
-              className="inline-block w-full px-6 py-3 bg-[#1c8df0] hover:bg-[#157fe4] text-white rounded-md font-bold text-xl transition"
+              className="auth-primary-button inline-block w-full px-6 py-3 rounded-md font-bold text-xl transition"
             >
               𝑹𝒆𝒕𝒖𝒓𝒏 𝒕𝒐 𝑳𝒐𝒈𝒊𝒏
             </Link>

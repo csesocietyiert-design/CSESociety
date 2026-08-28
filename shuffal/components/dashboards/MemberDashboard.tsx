@@ -101,12 +101,11 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
     { label: 'Membership', value: 'ACTIVE', detail: 'Verified Member', href: '/dashboard/profile', tone: 'teal' },
     { label: 'Upcoming Events', value: eventsLoading ? '--' : String(upcomingEvents.length).padStart(2, '0'), detail: 'Events available', href: '/dashboard/events', tone: 'amber' },
     { label: 'Certificates', value: certificatesLoading ? '--' : String(certificates.length).padStart(2, '0'), detail: 'Earned certificates', href: '/dashboard/certificates', tone: 'sky' },
-    { label: 'Resources', value: 'OPEN', detail: 'Society resources', href: '/dashboard/resources', tone: 'teal' },
     { label: 'Notifications', value: notificationsLoading ? '--' : String(unreadNotifications).padStart(2, '0'), detail: 'Unread notifications', href: '/dashboard/notifications', tone: 'rose' },
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-8">
+    <div className="dashboard-front mx-auto max-w-7xl space-y-6 pb-8">
       <section className="relative overflow-hidden rounded-lg border border-slate-700/70 bg-gradient-to-br from-blue-600/20 via-slate-900/70 to-teal-700/10 px-6 py-7 shadow-2xl shadow-black/20 backdrop-blur-md sm:px-8">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-[linear-gradient(120deg,transparent,rgba(45,212,191,0.08))]" />
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -129,7 +128,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((stat) => (
-          <Link key={stat.label} href={stat.href} className={`group rounded-lg border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition hover:-translate-y-0.5 ${stat.tone === 'amber' ? 'border-amber-500/30 bg-gradient-to-br from-amber-600/20 to-amber-700/10 hover:border-amber-400/60' : stat.tone === 'sky' ? 'border-sky-500/30 bg-gradient-to-br from-sky-600/20 to-sky-700/10 hover:border-sky-400/60' : stat.tone === 'rose' ? 'border-rose-500/30 bg-gradient-to-br from-rose-600/20 to-rose-700/10 hover:border-rose-400/60' : 'border-teal-500/30 bg-gradient-to-br from-teal-600/20 to-teal-700/10 hover:border-teal-400/60'}`}>
+          <Link key={stat.label} href={stat.href} className={`dashboard-stat-card group rounded-lg border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition hover:-translate-y-0.5 ${stat.tone === 'amber' ? 'border-amber-500/30 bg-gradient-to-br from-amber-600/20 to-amber-700/10 hover:border-amber-400/60' : stat.tone === 'sky' ? 'border-sky-500/30 bg-gradient-to-br from-sky-600/20 to-sky-700/10 hover:border-sky-400/60' : stat.tone === 'rose' ? 'border-rose-500/30 bg-gradient-to-br from-rose-600/20 to-rose-700/10 hover:border-rose-400/60' : 'border-teal-500/30 bg-gradient-to-br from-teal-600/20 to-teal-700/10 hover:border-teal-400/60'}`}>
             <div className="mb-5 flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{stat.label}</p><span className={`h-2 w-2 rounded-full ${stat.tone === 'amber' ? 'bg-amber-300' : stat.tone === 'sky' ? 'bg-sky-300' : stat.tone === 'rose' ? 'bg-rose-300' : 'bg-teal-300'}`} /></div>
             <p className="text-3xl font-semibold tracking-tight text-white">{stat.value}</p>
             <p className="mt-2 text-sm text-slate-500 group-hover:text-slate-300">{stat.detail}</p>

@@ -138,13 +138,10 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen relative overflow-y-auto"
-      style={{
-        background: 'linear-gradient(90deg, #020d1a 0%, #081d31 38%, #0d2945 100%)',
-      }}
+      className="auth-page min-h-screen relative overflow-y-auto"
     >
       {/* Top Dark Strip */}
-      <div className="fixed top-0 left-0 right-0 h-16 sm:h-[70px] bg-[#020f1d] border-b border-white/10 flex items-center px-4 sm:px-8 z-50">
+      <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
             <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
@@ -165,7 +162,7 @@ export default function LoginPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-7 sm:gap-8 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-48 sm:pt-[200px] md:pt-[180px]">
         {/* Left - Login Card */}
-        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm order-1 md:order-1 relative pt-24 sm:pt-32 md:pt-40 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
+        <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border backdrop-blur-sm order-1 md:order-1 relative pt-24 sm:pt-32 md:pt-40 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
           <div className="absolute -top-16 sm:-top-24 md:-top-32 left-1/2 transform -translate-x-1/2 flex justify-center">
             <Image src="/logo.png" alt="CSE Society Logo" width={140} height={140} className="h-32 sm:h-40 md:h-48 w-32 sm:w-40 md:w-48 object-contain" priority />
           </div>
@@ -189,7 +186,7 @@ export default function LoginPage() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="Enter your ID"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="auth-input w-full rounded-md border px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base"
                 required
                 disabled={loading}
               />
@@ -205,7 +202,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                  className="auth-input w-full rounded-md border px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 text-sm sm:text-base"
                   required
                   disabled={loading}
                 />
@@ -221,7 +218,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-xs sm:text-sm text-red-200 break-words">
+              <div className="auth-error rounded-md border px-3 py-2 text-xs sm:text-sm break-words">
                 {error}
               </div>
             )}
@@ -229,7 +226,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-[#1c8df0] py-2 sm:py-3 text-sm sm:text-base md:text-lg font-bold text-white transition hover:bg-[#157fe4] disabled:opacity-50 active:scale-95"
+              className="auth-primary-button w-full rounded-md py-2 sm:py-3 text-sm sm:text-base md:text-lg font-bold transition disabled:opacity-50 active:scale-95"
               style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
             >
               {loading ? 'Signing in...' : 'Sign In'}

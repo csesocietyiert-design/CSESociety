@@ -25,6 +25,7 @@ export interface User {
   role: UserRole;
   year?: number;
   department?: string;
+  created_at?: string;
 }
 
 interface AuthState {

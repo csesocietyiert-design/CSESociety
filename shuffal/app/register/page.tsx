@@ -70,13 +70,10 @@ export default function RegisterPage() {
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(90deg, #020d1a 0%, #081d31 38%, #0d2945 100%)',
-      }}
+      className="auth-page min-h-screen relative overflow-hidden"
     >
       {/* Top Dark Strip */}
-      <div className="fixed top-0 left-0 right-0 h-16 sm:h-[70px] bg-[#020f1d] border-b border-white/10 flex items-center px-4 sm:px-8 z-50">
+      <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
             <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
@@ -97,7 +94,7 @@ export default function RegisterPage() {
       {/* Main Content */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-16 sm:pt-[70px]">
         {/* Registration Card */}
-        <div className="w-[90%] sm:w-full max-w-[420px] rounded-[20px] border border-white/10 bg-[#0d2237]/80 p-5 sm:p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.25)] backdrop-blur-sm">
+        <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border p-5 sm:p-6 md:p-8 backdrop-blur-sm">
           <div className="mb-5 flex justify-center">
             <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
               <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
@@ -124,7 +121,7 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="𝒀𝒐𝒖𝒓 𝒇𝒖𝒍𝒍 𝒏𝒂𝒎𝒆"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="auth-input w-full rounded-md border px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base"
                 required
                 disabled={loading}
               />
@@ -140,7 +137,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="𝒚𝒐𝒖𝒓@𝒆𝒎𝒂𝒊𝒍.𝒄𝒐𝒎"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="auth-input w-full rounded-md border px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base"
                 required
                 disabled={loading}
               />
@@ -154,7 +151,7 @@ export default function RegisterPage() {
                 name="currentYear"
                 value={formData.currentYear}
                 onChange={handleChange}
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-white focus:border-blue-400 focus:outline-none"
+                className="auth-input w-full rounded-md border px-4 py-3 text-base"
                 required
                 disabled={loading}
               >
@@ -173,7 +170,7 @@ export default function RegisterPage() {
                 type="text"
                 value={admissionYear}
                 placeholder="𝑨𝒖𝒕𝒐𝒎𝒂𝒕𝒊𝒄𝒂𝒍𝒍𝒚 𝒄𝒂𝒍𝒄𝒖𝒍𝒂𝒕𝒆𝒅"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-slate-400 cursor-not-allowed"
+                className="auth-input w-full rounded-md border px-4 py-3 text-base cursor-not-allowed"
                 disabled
                 readOnly
               />
@@ -189,7 +186,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="𝑪𝒓𝒆𝒂𝒕𝒆 𝒂 𝒑𝒂𝒔𝒔𝒘𝒐𝒓𝒅 (𝒎𝒊𝒏 6 𝒄𝒉𝒂𝒓𝒂𝒄𝒕𝒆𝒓𝒔)"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="auth-input w-full rounded-md border px-4 py-3 text-base"
                 required
                 disabled={loading}
               />
@@ -205,14 +202,14 @@ export default function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="𝑪𝒐𝒏𝒇𝒊𝒓𝒎 𝒑𝒂𝒔𝒔𝒘𝒐𝒓𝒅"
-                className="w-full rounded-md border border-white/10 bg-[#0a1e30] px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+                className="auth-input w-full rounded-md border px-4 py-3 text-base"
                 required
                 disabled={loading}
               />
             </div>
 
             {error && (
-              <div className="rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              <div className="auth-error rounded-md border px-3 py-2 text-sm">
                 {error}
               </div>
             )}
@@ -220,7 +217,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-[#1c8df0] py-3 text-2xl font-bold text-white transition hover:bg-[#157fe4] disabled:opacity-50"
+              className="auth-primary-button w-full rounded-md py-3 text-2xl font-bold transition disabled:opacity-50"
               style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
             >
               {loading ? '𝑪𝒓𝒆𝒂𝒕𝒊𝒏𝒈 𝒂𝒄𝒄𝒐𝒖𝒏𝒕...' : '𝑪𝒓𝒆𝒂𝒕𝒆 𝑨𝒄𝒄𝒐𝒖𝒏𝒕'}
