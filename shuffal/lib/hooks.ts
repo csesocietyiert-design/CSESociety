@@ -89,6 +89,9 @@ function getNotificationAudioContext() {
   return notificationAudioContext;
 }
 
+let membershipProfileImageCache: string | null | undefined;
+let membershipProfileImageRequest: Promise<string | null> | undefined;
+
 export function enableNotificationSound() {
   const audioContext = getNotificationAudioContext();
   if (audioContext?.state === 'suspended') {
@@ -153,20 +156,28 @@ export function useUsers() {
   return { users, loading, error };
 }
 
-export function useMembershipProfileImage() {
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+export function useMembershipProfileImage(fallbackImage?: string | null) {
+  const [profileImage, setProfileImage] = useState<string | null>(membershipProfileImageCache ?? fallbackImage ?? null);
 
   useEffect(() => {
+    if (membershipProfileImageCache !== undefined) return;
+
     let active = true;
 
-    fetch('/api/membership/profile-image')
+    membershipProfileImageRequest ??= fetch('/api/membership/profile-image')
       .then((response) => response.ok ? response.json() : null)
       .then((data: { profileImage?: string | null } | null) => {
-        if (active) setProfileImage(data?.profileImage || null);
+        membershipProfileImageCache = data?.profileImage || null;
+        return membershipProfileImageCache;
       })
       .catch(() => {
-        if (active) setProfileImage(null);
+        membershipProfileImageCache = null;
+        return null;
       });
+
+    void membershipProfileImageRequest.then((image) => {
+      if (active) setProfileImage(image);
+    });
 
     return () => {
       active = false;

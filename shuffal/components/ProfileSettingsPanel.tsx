@@ -6,7 +6,7 @@ import MemberAvatar from '@/components/MemberAvatar';
 
 export default function ProfileSettingsPanel({ user }: any) {
   const { settings, loading: settingsLoading } = useUserSettings(user?.id);
-  const membershipProfileImage = useMembershipProfileImage();
+  const membershipProfileImage = useMembershipProfileImage(user?.profile_image_url);
   const [theme, setTheme] = useState('dark');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordData, setPasswordData] = useState({

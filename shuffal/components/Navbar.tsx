@@ -22,7 +22,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
       notificationDate.getDate() === today.getDate();
   });
   const [showNotifications, setShowNotifications] = useState(false);
-  const membershipProfileImage = useMembershipProfileImage();
+  const membershipProfileImage = useMembershipProfileImage(user?.profile_image_url);
   const [currentTime, setCurrentTime] = useState<string>('');
   const [notificationsAcknowledgedAt, setNotificationsAcknowledgedAt] = useState<string | null>(null);
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
