@@ -26,7 +26,6 @@ export default function NotificationsPanel({ user }: any) {
   });
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState('');
-  const [deletingNotification, setDeletingNotification] = useState<string | null>(null);
   const isYearRepresentative = user?.role === 'year_representative' || user?.role === 'yearRep';
 
   const filteredNotifications = notifications.filter((notif) => {
@@ -74,43 +73,6 @@ export default function NotificationsPanel({ user }: any) {
 
   const handleMarkAsRead = async () => {
     await markAllAsRead();
-  };
-
-  const handleClearHistory = async () => {
-    if (!user?.id || !window.confirm('Clear all notifications associated with your account, including sent and received messages? This cannot be undone.')) return;
-    setSendError('');
-    try {
-      const response = await fetch('/api/notifications', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || 'Could not clear notification history');
-      window.location.reload();
-    } catch (clearError) {
-      setSendError(clearError instanceof Error ? clearError.message : 'Could not clear notification history');
-    }
-  };
-
-  const handleDeleteNotification = async (notificationId: string) => {
-    if (!user?.id || !window.confirm('Delete this notification?')) return;
-    setDeletingNotification(notificationId);
-    setSendError('');
-    try {
-      const response = await fetch('/api/notifications', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notification_id: notificationId }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || 'Could not delete notification');
-      window.location.reload();
-    } catch (deleteError) {
-      setSendError(deleteError instanceof Error ? deleteError.message : 'Could not delete notification');
-    } finally {
-      setDeletingNotification(null);
-    }
   };
 
   const handleSendNotification = async (e: React.FormEvent) => {
@@ -284,12 +246,6 @@ export default function NotificationsPanel({ user }: any) {
                     Mark All as Read
                   </button>
                 )}
-                <button
-                  onClick={handleClearHistory}
-                  className="rounded-lg border border-rose-400/40 bg-rose-500/10 px-4 py-2 font-medium text-rose-300 transition hover:border-rose-300 hover:bg-rose-500/20"
-                >
-                  Clear History
-                </button>
               </div>
             </div>
           </div>
@@ -330,7 +286,6 @@ export default function NotificationsPanel({ user }: any) {
                         <h4 className="text-sm font-bold text-white">{notif.title}</h4>
                         <div className="flex shrink-0 items-center gap-3">
                           {!notif.is_read && <span className="mt-1 h-2 w-2 rounded-full bg-blue-400" />}
-                          <button type="button" onClick={() => handleDeleteNotification(notif.id)} disabled={deletingNotification === notif.id} className="text-xs font-medium text-rose-300 hover:text-rose-200 disabled:opacity-50">{deletingNotification === notif.id ? 'Deleting...' : 'Delete'}</button>
                         </div>
                       </div>
                       <p className="mt-1 text-sm font-normal leading-5 text-slate-300">{notif.message}</p>

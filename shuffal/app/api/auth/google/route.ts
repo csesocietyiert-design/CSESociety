@@ -1,51 +1,47 @@
 import { createClient } from '@supabase/supabase-js';
+import { OAuth2Client } from 'google-auth-library';
 import { createSessionCookie } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+const googleClient = new OAuth2Client(googleClientId);
 
 export async function POST(request: Request) {
   try {
-    if (!supabaseUrl || !serviceRoleKey) {
+    if (!supabaseUrl || !serviceRoleKey || !googleClientId) {
       return Response.json(
-        { error: 'Supabase not configured' },
-        { status: 500 }
+        { error: 'Google authentication is not configured' },
+        { status: 503 }
       );
     }
 
     const body = await request.json();
-    const credential = body?.credential || body?.token || body?.access_token;
+    const credential = typeof body?.credential === 'string' ? body.credential.trim() : '';
 
     if (!credential) {
       return Response.json(
-        { error: 'Google credential required' },
+        { error: 'Google ID token required' },
         { status: 400 }
       );
     }
 
-    const googleResponse = credential.includes('.')
-      ? await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`)
-      : await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${encodeURIComponent(credential)}`);
-
-    if (!googleResponse.ok) {
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: googleClientId,
+      });
+    } catch {
       return Response.json(
-        { error: 'Invalid Google token' },
+        { error: 'Invalid or expired Google ID token' },
         { status: 401 }
       );
     }
+    const googleUser = ticket.getPayload();
+    const email = googleUser?.email?.trim().toLowerCase();
 
-    const googleUser = await googleResponse.json();
-    const email = String(googleUser.email || '').trim().toLowerCase();
-    const name = googleUser.name || 'Google User';
-
-    if (!email) {
-      return Response.json(
-        { error: 'Google account email not verified' },
-        { status: 400 }
-      );
-    }
-
-    if (googleUser.email_verified === false && googleUser.verified_email === false) {
+    if (!googleUser || !email || googleUser.email_verified !== true) {
       return Response.json(
         { error: 'Google account email is not verified' },
         { status: 400 }
@@ -78,7 +74,7 @@ export async function POST(request: Request) {
       user: {
         id: data.id,
         cseId: data.cse_id,
-        name: data.name || name,
+        name: data.name || googleUser.name || 'Google User',
         email: data.email,
         role: data.role,
         year: data.year,

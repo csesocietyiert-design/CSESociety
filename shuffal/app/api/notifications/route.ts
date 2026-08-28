@@ -150,61 +150,8 @@ export async function PATCH(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
-  try {
-    if (!supabaseUrl || !serviceRoleKey) {
-      return Response.json({ error: 'Supabase not configured' }, { status: 500 });
-    }
-
-    const { notification_id: notificationId } = await request.json();
-    const resolvedUserId = getSessionUserId(request);
-    if (!resolvedUserId || !isValidUuid(resolvedUserId)) return Response.json({ error: 'Authentication required' }, { status: 401 });
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    if (notificationId) {
-      const { data: notification, error: notificationError } = await supabase
-        .from('notifications')
-        .select('id, user_id, sender_id, title, message, recipient_type, target_role, target_year, created_at')
-        .eq('id', notificationId)
-        .maybeSingle();
-      if (notificationError) throw notificationError;
-      if (!notification || (notification.user_id !== resolvedUserId && notification.sender_id !== resolvedUserId)) {
-        return Response.json({ error: 'Notification not found' }, { status: 404 });
-      }
-
-      const sentByUser = notification.sender_id === resolvedUserId;
-      let deleteQuery = supabase.from('notifications').delete().eq('id', notificationId);
-      if (sentByUser) {
-        const start = new Date(new Date(notification.created_at).getTime() - 5000).toISOString();
-        const end = new Date(new Date(notification.created_at).getTime() + 5000).toISOString();
-        deleteQuery = supabase
-          .from('notifications')
-          .delete()
-          .eq('sender_id', resolvedUserId)
-          .eq('title', notification.title)
-          .eq('message', notification.message)
-          .eq('recipient_type', notification.recipient_type)
-          .gte('created_at', start)
-          .lte('created_at', end);
-      }
-      const { error: deleteNotificationError } = await deleteQuery;
-      if (deleteNotificationError) throw deleteNotificationError;
-      return Response.json({ ok: true });
-    }
-
-    const { error } = await supabase
-      .from('notifications')
-      .delete()
-      .or(`user_id.eq.${resolvedUserId},sender_id.eq.${resolvedUserId}`);
-    if (error) throw error;
-
-    return Response.json({ ok: true });
-  } catch (error) {
-    console.error('Notification history clear error:', error);
-    return Response.json({ error: getErrorMessage(error) }, { status: 500 });
-  }
+export async function DELETE() {
+  return Response.json({ error: 'Notifications cannot be deleted once sent.' }, { status: 405 });
 }
 
 export async function POST(request: Request) {

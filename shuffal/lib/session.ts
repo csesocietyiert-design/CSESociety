@@ -4,7 +4,11 @@ const cookieName = 'cse_session';
 const sessionDurationSeconds = 60 * 60 * 8;
 
 function getSecret() {
-  return process.env.AUTH_SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'development-session-secret';
+  const secret = process.env.AUTH_SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_SESSION_SECRET is required in production');
+  }
+  return secret || 'development-session-secret';
 }
 
 function sign(value: string) {

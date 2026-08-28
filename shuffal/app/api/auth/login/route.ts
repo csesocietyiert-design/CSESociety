@@ -16,7 +16,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const identifier = String(cseId).trim();
+    const rawIdentifier = String(cseId).trim();
+    const normalizedIdentifier = rawIdentifier.toLowerCase();
     if (!supabaseUrl || !serviceRoleKey) {
       return Response.json(
         { error: 'Supabase not configured' },
@@ -29,19 +30,19 @@ export async function POST(request: Request) {
     let data = null;
     let error = null;
 
-    const lookupValue = identifier;
+    const lookupValue = normalizedIdentifier;
 
     if (lookupValue.includes('@')) {
-      const emailQuery = await supabase.from('users').select('*').eq('email', lookupValue).limit(1);
+      const emailQuery = await supabase.from('users').select('*').ilike('email', lookupValue).limit(1);
       data = emailQuery.data?.[0] ?? null;
       error = emailQuery.error;
     } else {
-      const cseQuery = await supabase.from('users').select('*').eq('cse_id', lookupValue).limit(1);
+      const cseQuery = await supabase.from('users').select('*').ilike('cse_id', lookupValue).limit(1);
       data = cseQuery.data?.[0] ?? null;
       error = cseQuery.error;
 
       if (!data && !error) {
-        const emailQuery = await supabase.from('users').select('*').eq('email', lookupValue).limit(1);
+        const emailQuery = await supabase.from('users').select('*').ilike('email', lookupValue).limit(1);
         data = emailQuery.data?.[0] ?? null;
         error = emailQuery.error;
       }
