@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/store';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,18 +34,44 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
 
     const googleScriptId = 'google-gsi-script';
     const initializeGoogle = () => {
-      if (!(window as any).google?.accounts?.id) return;
+      const clientId = GOOGLE_CLIENT_ID?.trim();
 
+      if (!clientId) {
+        console.error('[Google Login] NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing or empty at runtime.');
+        setError('Google Sign-In is not configured for this site.');
+        return;
+      }
+
+      if (!(window as any).google?.accounts?.id) {
+        console.error('[Google Login] Google Identity Services SDK did not load.');
+        return;
+      }
+
+      if ((window as any).__googleGsiInitialized) {
+        return;
+      }
+
+      console.log('[Google Login] Initializing Google Identity Services with client_id:', clientId);
       (window as any).google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: handleGoogleSuccess,
         ux_mode: 'popup',
       });
+      (window as any).__googleGsiInitialized = true;
     };
+
+    if (!GOOGLE_CLIENT_ID) {
+      console.error('[Google Login] Runtime value missing for NEXT_PUBLIC_GOOGLE_CLIENT_ID', {
+        GOOGLE_CLIENT_ID,
+        nodeEnv: process.env.NODE_ENV,
+      });
+      setError('Google Sign-In is not configured for this site.');
+      return;
+    }
 
     if (document.getElementById(googleScriptId)) {
       initializeGoogle();
@@ -58,6 +84,10 @@ export default function LoginPage() {
     script.async = true;
     script.defer = true;
     script.onload = initializeGoogle;
+    script.onerror = () => {
+      console.error('[Google Login] Failed to load Google Identity Services script.');
+      setError('Google Sign-In is not available right now. Please try again.');
+    };
     document.body.appendChild(script);
   }, []);
 
@@ -67,6 +97,7 @@ export default function LoginPage() {
 
     try {
       const credential = response?.credential || response?.access_token;
+      console.log('[Google Login] Credential received from Google:', !!credential, response?.credential ? 'credential present' : 'no credential');
 
       if (!credential) {
         throw new Error('Google sign-in failed. No credential was returned.');
@@ -115,19 +146,23 @@ export default function LoginPage() {
     setError('');
 
     if (!GOOGLE_CLIENT_ID) {
+      console.error('[Google Login] Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID before prompt activation.');
       setError('Google Sign-In is not configured for this site.');
       return;
     }
 
     if (!(window as any).google?.accounts?.id) {
+      console.error('[Google Login] Google SDK not ready when prompt was triggered.');
       setError('Google Sign-In is not available right now. Please try again.');
       return;
     }
 
+    console.log('[Google Login] Triggering Google prompt with client_id:', GOOGLE_CLIENT_ID);
     setGoogleLoading(true);
 
     (window as any).google.accounts.id.prompt((notification: any) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        console.warn('[Google Login] Prompt not displayed or skipped:', notification);
         setError('Google sign-in was cancelled or is unavailable. Please try again.');
         setGoogleLoading(false);
       }
