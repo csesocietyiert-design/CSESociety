@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { enableNotificationSound, useRealtimeNotifications } from '@/lib/hooks';
+import { enableNotificationSound, useMembershipProfileImage, useRealtimeNotifications } from '@/lib/hooks';
+import MemberAvatar from './MemberAvatar';
 
 interface NavbarProps {
   user: any;
@@ -21,7 +22,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
       notificationDate.getDate() === today.getDate();
   });
   const [showNotifications, setShowNotifications] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>('');
+  const membershipProfileImage = useMembershipProfileImage();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [notificationsAcknowledgedAt, setNotificationsAcknowledgedAt] = useState<string | null>(null);
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
@@ -39,11 +40,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
     return () => document.removeEventListener('pointerdown', closeOnOutsidePointer);
   }, [showNotifications]);
 
-  useEffect(() => {
-    if (user?.profile_image_url) {
-      setProfileImage(user.profile_image_url);
-    }
-  }, [user?.profile_image_url]);
+  const profileImage = membershipProfileImage || user?.profile_image_url || '';
 
   useEffect(() => {
     const unlockNotificationSound = () => enableNotificationSound();
@@ -91,28 +88,6 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
     if (openingNotifications && todayUnreadCount > 0 && user?.id) {
       setNotificationsAcknowledgedAt(new Date().toISOString());
       await markAllAsRead();
-    }
-  };
-
-  const handleProfileHover = () => {
-    if (profileImage) {
-      const newWindow = window.open('', '_blank', 'width=400,height=500');
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>Profile</title>
-              <style>
-                body { margin: 0; padding: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-                img { max-width: 100%; max-height: 100%; border-radius: 8px; }
-              </style>
-            </head>
-            <body>
-              <img src="${profileImage}" alt="Profile">
-            </body>
-          </html>
-        `);
-      }
     }
   };
 
@@ -206,25 +181,13 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
             )}
           </button>
 
-          <button
-            onMouseEnter={handleProfileHover}
-            className="relative group"
-          >
-            {profileImage ? (
-              <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-slate-600 group-hover:border-blue-500 transition cursor-pointer">
-                <Image
-                  src={profileImage}
-                  alt="Profile"
-                  fill
-                  sizes="40px"
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold group-hover:ring-2 group-hover:ring-blue-400 transition">
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-            )}
+          <button className="relative group" aria-label="Profile">
+            <MemberAvatar
+              name={user?.name}
+              profileImage={profileImage}
+              alt="Profile"
+              className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-slate-600 bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold transition group-hover:border-blue-500 group-hover:ring-2 group-hover:ring-blue-400"
+            />
           </button>
         </div>
       </div>

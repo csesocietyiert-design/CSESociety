@@ -47,7 +47,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
   return (
     <>
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 backdrop-blur-md bg-slate-900/95 border-r border-slate-700/50 transition-transform duration-300 md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform-gpu flex-col backdrop-blur-md bg-slate-900/95 border-r border-slate-700/50 transition-transform duration-300 ease-out will-change-transform md:relative md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -66,13 +66,14 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
           </button>
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="min-h-0 flex-1 overflow-y-auto p-4 space-y-1">
           {menuItems
             .filter((item) => item.show !== false)
             .map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setOpen(false)}
                 onMouseEnter={() => setHoveredItem(item.href)}
                 onMouseLeave={() => setHoveredItem(null)}
                 className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 transform ${
@@ -87,7 +88,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
             ))}
         </nav>
 
-        <div className="absolute bottom-6 left-4 right-4 space-y-3">
+        <div className="shrink-0 space-y-3 p-4 pt-2">
           <div className="px-4 py-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
             <p className="text-xs text-slate-400">Current Role</p>
             <p className="text-sm font-medium text-white capitalize mt-1">{user.role}</p>
@@ -101,12 +102,11 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
         </div>
       </div>
 
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
-          onClick={() => setOpen(false)}
-        ></div>
-      )}
+      <div
+        aria-hidden={!open}
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
+        onClick={() => setOpen(false)}
+      ></div>
     </>
   );
 }

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUserSettings, updateUserSettings } from '@/lib/hooks';
+import { useMembershipProfileImage, useUserSettings, updateUserSettings } from '@/lib/hooks';
+import MemberAvatar from '@/components/MemberAvatar';
 
 export default function ProfileSettingsPanel({ user }: any) {
   const { settings, loading: settingsLoading } = useUserSettings(user?.id);
+  const membershipProfileImage = useMembershipProfileImage();
   const [theme, setTheme] = useState('dark');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -117,9 +119,11 @@ export default function ProfileSettingsPanel({ user }: any) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <div className="backdrop-blur-md bg-slate-900/40 border border-slate-700/50 rounded-lg p-6 text-center">
-            <div className="w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl sm:text-3xl md:text-4xl mx-auto mb-4">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
+            <MemberAvatar
+              name={user?.name}
+              profileImage={membershipProfileImage || user?.profile_image_url}
+              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white sm:h-20 sm:w-20 sm:text-3xl md:h-24 md:w-24 md:text-4xl"
+            />
             <h3 className="text-lg font-bold text-white">{user?.name}</h3>
             <p className="text-slate-400 text-sm mt-1">{user?.email}</p>
             <p className="text-slate-500 text-xs mt-2">CSE ID: {user?.cse_id}</p>

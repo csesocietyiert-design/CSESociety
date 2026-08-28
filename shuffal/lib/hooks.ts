@@ -153,6 +153,29 @@ export function useUsers() {
   return { users, loading, error };
 }
 
+export function useMembershipProfileImage() {
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch('/api/membership/profile-image')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: { profileImage?: string | null } | null) => {
+        if (active) setProfileImage(data?.profileImage || null);
+      })
+      .catch(() => {
+        if (active) setProfileImage(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return profileImage;
+}
+
 export function useNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);

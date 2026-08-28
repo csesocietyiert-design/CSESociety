@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useAnnouncements, useCertificates, useEvents, useRealtimeNotifications, useUsers, type User } from '@/lib/hooks';
+import { useAnnouncements, useCertificates, useEvents, useMembershipProfileImage, useRealtimeNotifications, useUsers, type User } from '@/lib/hooks';
+import MemberAvatar from '@/components/MemberAvatar';
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -67,8 +67,8 @@ interface MemberUser {
 }
 
 export default function MemberDashboard({ user }: { user: MemberUser }) {
-  const [imageError, setImageError] = useState(false);
   const [currentTime] = useState(() => Date.now());
+  const membershipProfileImage = useMembershipProfileImage();
   const { events, loading: eventsLoading } = useEvents();
   const { certificates, loading: certificatesLoading } = useCertificates(user.id);
   const { announcements, loading: announcementsLoading } = useAnnouncements();
@@ -94,8 +94,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
     .sort((first, second) => new Date(first.start_date).getTime() - new Date(second.start_date).getTime())
     .slice(0, 3);
   const unreadNotifications = notifications.filter((notification) => !notification.is_read).length;
-  const initials = user.name.split(' ').map((part: string) => part[0]).join('').slice(0, 2).toUpperCase();
-  const profileFields = [user.phone, user.bio, user.profile_image_url];
+  const profileFields = [user.phone, user.bio, membershipProfileImage || user.profile_image_url];
   const profileCompletion = Math.round((6 + profileFields.filter(Boolean).length) / 9 * 100);
   const membershipStatus = user.is_verified === false ? 'Pending review' : 'Verified';
   const statCards = [
@@ -118,7 +117,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
           </div>
           <div className="flex items-center gap-4 border-t border-white/10 pt-5 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
             <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-teal-300/60 bg-teal-400/15 text-lg font-semibold text-teal-100">
-              {user.profile_image_url && !imageError ? <Image src={user.profile_image_url} alt="Member profile" fill className="object-cover" onError={() => setImageError(true)} /> : initials}
+              <MemberAvatar name={user.name} profileImage={membershipProfileImage || user.profile_image_url} alt="Member profile" className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-teal-300/60 bg-teal-400/15 text-lg font-semibold text-teal-100" />
             </div>
             <div>
               <p className="font-mono text-lg font-semibold text-white">{user.cseId}</p>

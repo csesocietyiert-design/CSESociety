@@ -5,20 +5,10 @@ import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import LayoutWrapper from '@/components/LayoutWrapper';
+import MemberAvatar from '@/components/MemberAvatar';
 import { useAuthStore } from '@/lib/store';
 import { useEvents, useUsers } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
-
-type ReportStudent = {
-  name: string;
-  cse_id: string;
-  email: string;
-  year: string;
-  role: string;
-  department: string;
-  status: string;
-  joined: string;
-};
 
 export default function ReportsPage() {
   const router = useRouter();
@@ -27,6 +17,11 @@ export default function ReportsPage() {
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { users, loading: usersLoading } = useUsers();
   const { events, loading: eventsLoading } = useEvents();
+  const [memberRows, setMemberRows] = useState<Record<string, unknown>[]>([]);
+  const [membersError, setMembersError] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<Record<string, unknown> | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [yearFilter, setYearFilter] = useState('all');
   const [certificateCount, setCertificateCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
   const [dataLoading, setDataLoading] = useState(true);
@@ -62,16 +57,40 @@ export default function ReportsPage() {
     loadReportTotals();
   }, []);
 
-  const studentRows = useMemo<ReportStudent[]>(() => users.map((student) => ({
-    name: student.name || '',
-    cse_id: student.cse_id || '',
-    email: student.email || '',
-    year: student.year ? `Year ${student.year}` : 'Not set',
-    role: student.role || '',
-    department: student.department || 'CSE',
-    status: student.is_verified ? 'Verified' : 'Pending',
-    joined: student.created_at ? new Date(student.created_at).toLocaleDateString('en-IN') : 'Not available',
-  })), [users]);
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        const response = await fetch('/api/reports/members');
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Failed to load members');
+        setMemberRows((payload.members || []) as Record<string, unknown>[]);
+      } catch (error) {
+        setMembersError(error instanceof Error ? error.message : 'Failed to load members');
+      }
+    };
+
+    void loadMembers();
+  }, []);
+
+  const memberColumns = useMemo(() => {
+    const columns = new Set<string>();
+    memberRows.forEach((member) => Object.keys(member).forEach((column) => columns.add(column)));
+    return [...columns];
+  }, [memberRows]);
+
+  const yearOptions = useMemo(() => {
+    const availableYears = memberRows.map((member) => String(member.current_year ?? member.year ?? '')).filter(Boolean);
+    return [...new Set(['1st Year', '2nd Year', '3rd Year', '4th Year', ...availableYears])];
+  }, [memberRows]);
+  const filteredMemberRows = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+    return memberRows.filter((member) => {
+      const memberYear = String(member.current_year ?? member.year ?? '').trim().toLowerCase();
+      const matchesYear = yearFilter === 'all' || memberYear === yearFilter.trim().toLowerCase();
+      const matchesSearch = !search || memberColumns.some((column) => String(member[column] ?? '').toLowerCase().includes(search));
+      return matchesYear && matchesSearch;
+    });
+  }, [memberColumns, memberRows, searchTerm, yearFilter]);
 
   const verifiedCount = users.filter((student) => student.is_verified).length;
   const pendingCount = users.length - verifiedCount;
@@ -79,17 +98,8 @@ export default function ReportsPage() {
   const fileDate = new Date().toISOString().split('T')[0];
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(studentRows.map((student) => ({
-      Name: student.name,
-      'CSE ID': student.cse_id,
-      Email: student.email,
-      Year: student.year,
-      Role: student.role,
-      Department: student.department,
-      Status: student.status,
-      'Joined Date': student.joined,
-    })));
-    worksheet['!cols'] = [{ wch: 24 }, { wch: 14 }, { wch: 30 }, { wch: 12 }, { wch: 22 }, { wch: 20 }, { wch: 14 }, { wch: 16 }];
+    const worksheet = XLSX.utils.json_to_sheet(filteredMemberRows);
+    worksheet['!cols'] = memberColumns.map(() => ({ wch: 22 }));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
     XLSX.writeFile(workbook, `cse-society-students-${fileDate}.xlsx`);
@@ -100,9 +110,9 @@ export default function ReportsPage() {
     pdf.setFontSize(16);
     pdf.text('CSE Society Student Report', 14, 16);
     pdf.setFontSize(9);
-    pdf.text(`Generated: ${reportDate} | Total students: ${studentRows.length}`, 14, 23);
-    const headers = ['Name', 'CSE ID', 'Email', 'Year', 'Role', 'Department', 'Status'];
-    const widths = [42, 24, 58, 20, 34, 38, 24];
+    pdf.text(`Generated: ${reportDate} | Total members: ${filteredMemberRows.length}`, 14, 23);
+    const headers = memberColumns;
+    const widths = headers.map(() => Math.max(22, 270 / Math.max(headers.length, 1)));
     let y = 34;
     let x = 10;
     pdf.setFont('helvetica', 'bold');
@@ -112,13 +122,13 @@ export default function ReportsPage() {
     });
     pdf.setFont('helvetica', 'normal');
     y += 7;
-    studentRows.forEach((student) => {
+    filteredMemberRows.forEach((member) => {
       if (y > 190) {
         pdf.addPage('landscape');
         y = 15;
       }
       x = 10;
-      [student.name, student.cse_id, student.email, student.year, student.role, student.department, student.status].forEach((value, index) => {
+      memberColumns.map((column) => String(member[column] ?? '')).forEach((value, index) => {
         const text = value.length > 28 ? `${value.slice(0, 25)}...` : value;
         pdf.text(text, x, y);
         x += widths[index];
@@ -163,17 +173,56 @@ export default function ReportsPage() {
 
         <section className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-6 shadow-lg backdrop-blur-md print:border-slate-300 print:bg-white print:p-0 print:shadow-none">
           <div className="mb-5 flex items-center justify-between print:mb-3">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-300 print:text-slate-600">Database records</p><h2 className="mt-2 text-xl font-semibold text-white print:text-black">All Students</h2></div>
-            <p className="text-sm text-slate-400 print:text-slate-600">{studentRows.length} records</p>
+            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-300 print:text-slate-600">Membership records</p><h2 className="mt-2 text-xl font-semibold text-white print:text-black">All Membership Records</h2></div>
+            <p className="text-sm text-slate-400 print:text-slate-600">{filteredMemberRows.length} of {memberRows.length} records</p>
+          </div>
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row print:hidden">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">Search all member details</span>
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search any member detail..." className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400" />
+            </label>
+            <label>
+              <span className="sr-only">Filter by year</span>
+              <select value={yearFilter} onChange={(event) => setYearFilter(event.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400 sm:w-48">
+                <option value="all">All years</option>
+                {yearOptions.map((year) => <option key={year} value={year}>{year}</option>)}
+              </select>
+            </label>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[850px] border-collapse text-left text-sm print:min-w-0">
-              <thead><tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400 print:border-slate-300 print:text-slate-600">{['Name', 'CSE ID', 'Email', 'Year', 'Role', 'Department', 'Status', 'Joined'].map((heading) => <th key={heading} className="px-3 py-3 font-semibold">{heading}</th>)}</tr></thead>
-              <tbody>{studentRows.map((student) => <tr key={`${student.cse_id}-${student.email}`} className="border-b border-slate-800/80 text-slate-300 print:border-slate-200 print:text-black"><td className="px-3 py-3 font-medium text-white print:text-black">{student.name}</td><td className="px-3 py-3 font-mono">{student.cse_id}</td><td className="px-3 py-3">{student.email}</td><td className="px-3 py-3">{student.year}</td><td className="px-3 py-3 capitalize">{student.role}</td><td className="px-3 py-3">{student.department}</td><td className="px-3 py-3">{student.status}</td><td className="px-3 py-3">{student.joined}</td></tr>)}</tbody>
+              <thead><tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400 print:border-slate-300 print:text-slate-600"><th className="px-3 py-3 font-semibold">Profile</th>{memberColumns.map((heading) => <th key={heading} className="px-3 py-3 font-semibold">{heading}</th>)}</tr></thead>
+              <tbody>{filteredMemberRows.map((member, index) => <tr key={String(member.id || index)} onClick={() => setSelectedMember(member)} className="cursor-pointer border-b border-slate-800/80 text-slate-300 transition-colors hover:bg-sky-500/10 print:border-slate-200 print:text-black"><td className="px-3 py-3 align-top"><MemberAvatar name={`${String(member.first_name ?? '')} ${String(member.last_name ?? '')}`} profileImage={String(member.student_photograph ?? '')} alt="Member profile" className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-sky-500/15 text-sm font-semibold text-sky-200" /></td>{memberColumns.map((column) => <td key={column} className="max-w-xs whitespace-pre-wrap px-3 py-3 align-top">{String(member[column] ?? '')}</td>)}</tr>)}</tbody>
             </table>
-            {!isLoading && studentRows.length === 0 && <p className="py-10 text-center text-sm text-slate-500 print:text-slate-600">No student records found.</p>}
+            {!isLoading && membersError && <p className="py-10 text-center text-sm text-rose-300 print:text-black">Unable to load member records: {membersError}</p>}
+            {!isLoading && !membersError && filteredMemberRows.length === 0 && <p className="py-10 text-center text-sm text-slate-500 print:text-slate-600">No matching member records found.</p>}
           </div>
         </section>
+
+        {selectedMember && (
+          <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-sm print:hidden" role="dialog" aria-modal="true" aria-label="Membership record details">
+            <button type="button" aria-label="Close member details" onClick={() => setSelectedMember(null)} className="absolute inset-0 cursor-default" />
+            <aside className="relative z-10 flex h-full w-full max-w-xl origin-right animate-[report-drawer-in_220ms_ease-out] flex-col border-l border-slate-700 bg-slate-900 shadow-2xl shadow-black/40">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-700/70 px-6 py-5">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">Membership detail</p>
+                  <h2 className="mt-2 truncate text-xl font-semibold text-white">{String(selectedMember.first_name || '')} {String(selectedMember.last_name || '')}</h2>
+                </div>
+                <button type="button" onClick={() => setSelectedMember(null)} aria-label="Close member details" className="rounded-lg border border-slate-700 p-2 text-xl leading-none text-slate-300 transition hover:border-sky-400 hover:text-white">&times;</button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                <dl className="grid gap-4 sm:grid-cols-2">
+                  {memberColumns.map((column) => (
+                    <div key={column} className="min-w-0 border-b border-slate-800/80 pb-3">
+                      <dt className="break-words text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">{column.replaceAll('_', ' ')}</dt>
+                      <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-200">{String(selectedMember[column] ?? '') || 'Not provided'}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </aside>
+          </div>
+        )}
       </div>
     </LayoutWrapper>
   );

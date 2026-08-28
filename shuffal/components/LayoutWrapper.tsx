@@ -14,11 +14,10 @@ export default function LayoutWrapper({ user, children }: LayoutWrapperProps) {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setSidebarOpen(true);
-      }
+      setSidebarOpen(window.innerWidth >= 768);
     };
 
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
