@@ -548,7 +548,7 @@ export function useUserSettings(userId: string) {
 
         if (err && err.code !== 'PGRST205') throw err;
         if ((data || []).length > 1) throw new Error('Multiple user settings records found for this user');
-        setSettings(data?.[0] || { theme: 'dark', notifications_enabled: true });
+        setSettings(data?.[0] || { theme: getStoredTheme(), notifications_enabled: true });
       } catch (err) {
         console.error('Error fetching user settings:', err);
       } finally {
@@ -560,6 +560,12 @@ export function useUserSettings(userId: string) {
   }, [userId]);
 
   return { settings, loading };
+}
+
+function getStoredTheme() {
+  if (typeof window === 'undefined') return 'dark';
+  const storedTheme = window.localStorage.getItem('cse-theme');
+  return storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'auto' ? storedTheme : 'dark';
 }
 
 export async function updateUserSettings(userId: string, updates: any) {
