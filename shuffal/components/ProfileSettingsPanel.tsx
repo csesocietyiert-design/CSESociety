@@ -122,7 +122,8 @@ export default function ProfileSettingsPanel({ user }: any) {
             <MemberAvatar
               name={user?.name}
               profileImage={membershipProfileImage || user?.profile_image_url}
-              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white sm:h-20 sm:w-20 sm:text-3xl md:h-24 md:w-24 md:text-4xl"
+              className="mx-auto mb-4 flex h-44 w-36 items-center justify-center overflow-hidden rounded-2xl border border-sky-300/30 bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-1 text-5xl font-bold text-white shadow-lg shadow-blue-950/30 sm:h-52 sm:w-44"
+              imageClassName="h-full w-full rounded-xl object-cover"
             />
             <h3 className="text-lg font-bold text-white">{user?.name}</h3>
             <p className="text-slate-400 text-sm mt-1">{user?.email}</p>

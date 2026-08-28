@@ -22,6 +22,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
       notificationDate.getDate() === today.getDate();
   });
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfilePreview, setShowProfilePreview] = useState(false);
   const membershipProfileImage = useMembershipProfileImage();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [notificationsAcknowledgedAt, setNotificationsAcknowledgedAt] = useState<string | null>(null);
@@ -39,6 +40,15 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
     document.addEventListener('pointerdown', closeOnOutsidePointer);
     return () => document.removeEventListener('pointerdown', closeOnOutsidePointer);
   }, [showNotifications]);
+
+  useEffect(() => {
+    if (!showProfilePreview) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowProfilePreview(false);
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [showProfilePreview]);
 
   const profileImage = membershipProfileImage || user?.profile_image_url || '';
 
@@ -181,7 +191,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
             )}
           </button>
 
-          <button className="relative group" aria-label="Profile">
+          <button type="button" onClick={() => setShowProfilePreview(true)} className="relative group" aria-label="View profile photo">
             <MemberAvatar
               name={user?.name}
               profileImage={profileImage}
@@ -191,6 +201,17 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
           </button>
         </div>
       </div>
+
+      {showProfilePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Profile photo preview">
+          <button type="button" aria-label="Close profile photo" onClick={() => setShowProfilePreview(false)} className="absolute inset-0 cursor-default" />
+          <div className="relative z-10 flex max-h-[85vh] max-w-[min(90vw,32rem)] origin-center animate-[profile-preview-in_220ms_ease-out] flex-col items-center rounded-2xl border border-slate-600/70 bg-slate-900/95 p-4 shadow-2xl shadow-black/50">
+            <button type="button" onClick={() => setShowProfilePreview(false)} aria-label="Close profile photo" className="absolute right-3 top-3 z-10 rounded-full border border-slate-600 bg-slate-950/80 px-2.5 py-1 text-lg leading-none text-slate-300 transition hover:border-sky-400 hover:text-white">&times;</button>
+            <MemberAvatar name={user?.name} profileImage={profileImage} alt="Profile photo" className="flex max-h-[72vh] min-h-64 w-[min(76vw,28rem)] items-center justify-center overflow-hidden rounded-xl border border-sky-300/30 bg-gradient-to-br from-blue-500/20 to-purple-600/20 text-7xl font-bold text-white" imageClassName="max-h-[72vh] w-full rounded-xl object-contain" />
+            <p className="mt-3 max-w-full truncate px-8 text-sm font-medium text-slate-300">{user?.name || 'Member profile'}</p>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
