@@ -18,7 +18,7 @@ export default function IdCardPage() {
   const [selectedMemberId, setSelectedMemberId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const isYearRepresentative = user?.role === 'year_representative' || user?.role === 'yearRep';
-  const canViewAllCards = ['admin', 'vice_president', 'general_secretary', 'cultural_secretary', 'technical_secretary'].includes(user?.role || '');
+  const canViewAllCards = ['admin', 'general_secretary', 'cultural_secretary', 'technical_secretary', 'treasurer'].includes(user?.role || '');
   const canViewCardDirectory = canViewAllCards || isYearRepresentative;
   const cardMembers = canViewAllCards
     ? users
@@ -39,19 +39,21 @@ export default function IdCardPage() {
   const selectedMember = sortedMembers.find((member) => member.id === selectedMemberId) || sortedMembers[0];
   const cardMember = canViewAllCards || isYearRepresentative ? selectedMember : memberData;
   const cardPreviewUrl = idCardUrl ? toCardPreviewUrl(idCardUrl) : null;
+  const targetSocietyId = cardMember?.cse_id || user?.cseId;
 
   useEffect(() => {
     let active = true;
-    fetch('/api/membership/profile-image')
+    if (!targetSocietyId) return () => { active = false; };
+    fetch(`/api/membership/id-card?societyId=${encodeURIComponent(targetSocietyId)}`)
       .then((response) => response.ok ? response.json() : null)
-      .then((data: { profile?: { id_card?: string | null } | null } | null) => {
-        if (active) setIdCardUrl(data?.profile?.id_card || null);
+      .then((data: { idCard?: string | null } | null) => {
+        if (active) setIdCardUrl(data?.idCard || null);
       })
       .catch(() => {
         if (active) setIdCardUrl(null);
       });
     return () => { active = false; };
-  }, [user?.id]);
+  }, [targetSocietyId]);
 
   useEffect(() => {
     if (hasHydrated && (!isAuthenticated || !user)) router.push('/login');
