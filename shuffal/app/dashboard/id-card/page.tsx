@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import { useAuthStore } from '@/lib/store';
-import { useUsers } from '@/lib/hooks';
+import { useMembershipProfileImage, useUsers } from '@/lib/hooks';
 
 export default function IdCardPage() {
   const router = useRouter();
@@ -12,6 +12,7 @@ export default function IdCardPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { users } = useUsers();
+  const membershipProfileImage = useMembershipProfileImage(user?.profile_image_url);
   const [idCardUrl, setIdCardUrl] = useState<string | null>(null);
   const memberData = users.find((member) => member.id === user?.id);
   const [sortBy, setSortBy] = useState<'name' | 'cse_id' | 'year' | 'role' | 'status'>('name');
@@ -39,6 +40,7 @@ export default function IdCardPage() {
   const selectedMember = sortedMembers.find((member) => member.id === selectedMemberId) || sortedMembers[0];
   const cardMember = canViewAllCards || isYearRepresentative ? selectedMember : memberData;
   const cardPreviewUrl = idCardUrl ? toCardPreviewUrl(idCardUrl) : null;
+  const profilePhotoUrl = cardMember?.profile_image_url || (cardMember?.id === user?.id ? membershipProfileImage : null);
   const targetSocietyId = cardMember?.cse_id || user?.cseId;
 
   useEffect(() => {
@@ -109,7 +111,7 @@ export default function IdCardPage() {
               <p className="mt-4 text-sm text-slate-500">{cardMember?.email || user.email}</p>
             </div>
             <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-teal-300/40 bg-teal-300/10 text-center text-xs font-semibold text-teal-200">
-              CSE<br />SOCIETY
+              {profilePhotoUrl ? <img src={profilePhotoUrl} alt={`${cardMember?.name || user.name} profile`} className="h-full w-full object-cover" /> : <>CSE<br />SOCIETY</>}
             </div>
           </div>
         </section>
