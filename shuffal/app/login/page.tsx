@@ -161,11 +161,18 @@ export default function LoginPage() {
     setGoogleLoading(true);
 
     (window as any).google.accounts.id.prompt((notification: any) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        console.warn('[Google Login] Prompt not displayed or skipped:', notification);
-        setError('Google sign-in was cancelled or is unavailable. Please try again.');
+      const isSkipped =
+        notification?.isNotDisplayed?.() ||
+        notification?.isSkippedMoment?.() ||
+        notification?.isDismissedMoment?.();
+
+      if (isSkipped) {
+        console.warn('[Google Login] Google prompt was not displayed, skipped, or dismissed:', notification);
         setGoogleLoading(false);
+        return;
       }
+
+      setGoogleLoading(false);
     });
   };
 
