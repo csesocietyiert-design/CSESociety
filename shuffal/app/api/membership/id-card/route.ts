@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
   const { data: profile, error: profileError } = await supabase
     .from('membership')
-    .select('id_card, society_id')
+    .select('id_card, student_photograph, society_id')
     .eq('society_id', target.cse_id)
     .or(`email_address.eq.${target.email},email_address_secondary.eq.${target.email}`)
     .order('id', { ascending: true })
@@ -50,5 +50,9 @@ export async function GET(request: Request) {
     .maybeSingle();
   if (profileError) return Response.json({ error: profileError.message }, { status: 500 });
 
-  return Response.json({ idCard: profile?.id_card || null, societyId: profile?.society_id || target.cse_id });
+  return Response.json({
+    idCard: profile?.id_card || null,
+    profileImage: profile?.student_photograph || null,
+    societyId: profile?.society_id || target.cse_id,
+  });
 }

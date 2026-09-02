@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import { useAuthStore } from '@/lib/store';
 import { useMembershipProfileImage, useUsers } from '@/lib/hooks';
+import MemberAvatar from '@/components/MemberAvatar';
 
 export default function IdCardPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function IdCardPage() {
   const { users } = useUsers();
   const membershipProfileImage = useMembershipProfileImage();
   const [idCardUrl, setIdCardUrl] = useState<string | null>(null);
+  const [cardProfileImage, setCardProfileImage] = useState<string | null>(null);
   const memberData = users.find((member) => member.id === user?.id);
   const [sortBy, setSortBy] = useState<'name' | 'cse_id' | 'year' | 'role' | 'status'>('name');
   const [selectedMemberId, setSelectedMemberId] = useState('');
@@ -40,7 +42,7 @@ export default function IdCardPage() {
   const selectedMember = sortedMembers.find((member) => member.id === selectedMemberId) || sortedMembers[0];
   const cardMember = canViewAllCards || isYearRepresentative ? selectedMember : memberData;
   const cardPreviewUrl = idCardUrl ? toCardPreviewUrl(idCardUrl) : null;
-  const profilePhotoUrl = cardMember?.profile_image_url || (cardMember?.id === user?.id ? membershipProfileImage : null);
+  const profilePhotoUrl = cardProfileImage || cardMember?.profile_image_url || (cardMember?.id === user?.id ? membershipProfileImage : null);
   const targetSocietyId = cardMember?.cse_id || user?.cseId;
 
   useEffect(() => {
@@ -48,11 +50,17 @@ export default function IdCardPage() {
     if (!targetSocietyId) return () => { active = false; };
     fetch(`/api/membership/id-card?societyId=${encodeURIComponent(targetSocietyId)}`)
       .then((response) => response.ok ? response.json() : null)
-      .then((data: { idCard?: string | null } | null) => {
-        if (active) setIdCardUrl(data?.idCard || null);
+      .then((data: { idCard?: string | null; profileImage?: string | null } | null) => {
+        if (active) {
+          setIdCardUrl(data?.idCard || null);
+          setCardProfileImage(data?.profileImage || null);
+        }
       })
       .catch(() => {
-        if (active) setIdCardUrl(null);
+        if (active) {
+          setIdCardUrl(null);
+          setCardProfileImage(null);
+        }
       });
     return () => { active = false; };
   }, [targetSocietyId]);
@@ -111,7 +119,7 @@ export default function IdCardPage() {
               <p className="mt-4 text-sm text-slate-500">{cardMember?.email || user.email}</p>
             </div>
             <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-teal-300/40 bg-teal-300/10 text-center text-xs font-semibold text-teal-200">
-              {profilePhotoUrl ? <img src={profilePhotoUrl} alt={`${cardMember?.name || user.name} profile`} className="h-full w-full object-cover" /> : <>CSE<br />SOCIETY</>}
+              {profilePhotoUrl ? <MemberAvatar name={cardMember?.name || user.name} profileImage={profilePhotoUrl} className="h-full w-full" alt={`${cardMember?.name || user.name} profile`} /> : <>CSE<br />SOCIETY</>}
             </div>
           </div>
         </section>
