@@ -145,7 +145,7 @@ export default function IdCardPage() {
         <section className="rounded-lg border border-dashed border-slate-600 bg-slate-900/20 p-6 shadow-lg backdrop-blur-md">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">ID card</p>
           <div className="mt-4 flex min-h-56 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-700 bg-slate-950/30 text-sm text-slate-600">
-            {cardPreviewUrl ? <iframe src={cardPreviewUrl} title={`${cardMember?.name || user.name} ID card preview`} className="h-[32rem] w-full border-0" /> : 'ID card not available'}
+            {cardPreviewUrl ? <iframe src={cardPreviewUrl} title={`${cardMember?.name || user.name} ID card preview`} loading="lazy" className="h-[32rem] w-full border-0" /> : 'ID card not available'}
           </div>
         </section>
       </div>
