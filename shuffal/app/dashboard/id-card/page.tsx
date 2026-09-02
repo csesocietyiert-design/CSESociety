@@ -12,7 +12,7 @@ export default function IdCardPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { users } = useUsers();
-  const membershipProfileImage = useMembershipProfileImage(user?.profile_image_url);
+  const membershipProfileImage = useMembershipProfileImage();
   const [idCardUrl, setIdCardUrl] = useState<string | null>(null);
   const memberData = users.find((member) => member.id === user?.id);
   const [sortBy, setSortBy] = useState<'name' | 'cse_id' | 'year' | 'role' | 'status'>('name');
