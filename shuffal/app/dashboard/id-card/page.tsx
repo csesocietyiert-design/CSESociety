@@ -108,10 +108,8 @@ export default function IdCardPage() {
               {(cardMember?.year || user.year) && <p className="mt-1 text-sm text-slate-400">Year {cardMember?.year || user.year}</p>}
               <p className="mt-4 text-sm text-slate-500">{cardMember?.email || user.email}</p>
             </div>
-            <div className="flex min-h-64 w-full max-w-xs items-center justify-center overflow-hidden rounded-lg border border-teal-300/40 bg-teal-300/10 text-center text-xs font-semibold text-teal-200 sm:w-56">
-              {cardPreviewUrl ? <a href={idCardUrl || undefined} target="_blank" rel="noreferrer" className="block h-full w-full" aria-label="Open ID card">
-                <iframe src={cardPreviewUrl} title={`${cardMember?.name || user.name} ID card`} className="h-full min-h-64 w-full border-0" />
-              </a> : <>CSE<br />SOCIETY</>}
+            <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-teal-300/40 bg-teal-300/10 text-center text-xs font-semibold text-teal-200">
+              CSE<br />SOCIETY
             </div>
           </div>
         </section>
