@@ -188,6 +188,7 @@ export function useMembershipProfileImage(fallbackImage?: string | null) {
 }
 
 export interface MembershipProfileDetails {
+  id_card?: string | null;
   timestamp?: string | null;
   roll_number_aktu?: string | null;
   father_name?: string | null;

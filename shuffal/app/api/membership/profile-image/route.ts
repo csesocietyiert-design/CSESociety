@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
   const { data: profile, error: profileError } = await supabase
     .from('membership')
-    .select('student_photograph, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
+    .select('student_photograph, id_card, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('society_id', user.cse_id)
     .limit(1)
     .maybeSingle();
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
   const { data: secondaryEmailMatch, error: secondaryEmailError } = await supabase
     .from('membership')
-    .select('student_photograph, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
+    .select('student_photograph, id_card, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('email_address_secondary', user.email)
     .limit(1)
     .maybeSingle();
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 
   const { data: primaryEmailMatch, error: primaryEmailError } = await supabase
     .from('membership')
-    .select('student_photograph, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
+    .select('student_photograph, id_card, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('email_address', user.email)
     .limit(1)
     .maybeSingle();

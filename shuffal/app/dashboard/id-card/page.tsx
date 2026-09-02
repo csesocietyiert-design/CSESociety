@@ -12,6 +12,7 @@ export default function IdCardPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { users } = useUsers();
+  const [idCardUrl, setIdCardUrl] = useState<string | null>(null);
   const memberData = users.find((member) => member.id === user?.id);
   const [sortBy, setSortBy] = useState<'name' | 'cse_id' | 'year' | 'role' | 'status'>('name');
   const [selectedMemberId, setSelectedMemberId] = useState('');
@@ -37,6 +38,20 @@ export default function IdCardPage() {
   });
   const selectedMember = sortedMembers.find((member) => member.id === selectedMemberId) || sortedMembers[0];
   const cardMember = canViewAllCards || isYearRepresentative ? selectedMember : memberData;
+  const cardPreviewUrl = idCardUrl ? toCardPreviewUrl(idCardUrl) : null;
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/membership/profile-image')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: { profile?: { id_card?: string | null } | null } | null) => {
+        if (active) setIdCardUrl(data?.profile?.id_card || null);
+      })
+      .catch(() => {
+        if (active) setIdCardUrl(null);
+      });
+    return () => { active = false; };
+  }, [user?.id]);
 
   useEffect(() => {
     if (hasHydrated && (!isAuthenticated || !user)) router.push('/login');
@@ -91,8 +106,10 @@ export default function IdCardPage() {
               {(cardMember?.year || user.year) && <p className="mt-1 text-sm text-slate-400">Year {cardMember?.year || user.year}</p>}
               <p className="mt-4 text-sm text-slate-500">{cardMember?.email || user.email}</p>
             </div>
-            <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-teal-300/40 bg-teal-300/10 text-center text-xs font-semibold text-teal-200">
-              CSE<br />SOCIETY
+            <div className="flex min-h-64 w-full max-w-xs items-center justify-center overflow-hidden rounded-lg border border-teal-300/40 bg-teal-300/10 text-center text-xs font-semibold text-teal-200 sm:w-56">
+              {cardPreviewUrl ? <a href={idCardUrl || undefined} target="_blank" rel="noreferrer" className="block h-full w-full" aria-label="Open ID card">
+                <iframe src={cardPreviewUrl} title={`${cardMember?.name || user.name} ID card`} className="h-full min-h-64 w-full border-0" />
+              </a> : <>CSE<br />SOCIETY</>}
             </div>
           </div>
         </section>
@@ -126,12 +143,17 @@ export default function IdCardPage() {
         </section>
 
         <section className="rounded-lg border border-dashed border-slate-600 bg-slate-900/20 p-6 shadow-lg backdrop-blur-md">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Future card design</p>
-          <div className="mt-4 flex min-h-56 items-center justify-center rounded-lg border border-dashed border-slate-700 bg-slate-950/30 text-sm text-slate-600">
-            Blank ID card template
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">ID card</p>
+          <div className="mt-4 flex min-h-56 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-700 bg-slate-950/30 text-sm text-slate-600">
+            {cardPreviewUrl ? <iframe src={cardPreviewUrl} title={`${cardMember?.name || user.name} ID card preview`} className="h-[32rem] w-full border-0" /> : 'ID card not available'}
           </div>
         </section>
       </div>
     </LayoutWrapper>
   );
+}
+
+function toCardPreviewUrl(url: string) {
+  const match = url.match(/\/file\/d\/([^/]+)/);
+  return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url;
 }
