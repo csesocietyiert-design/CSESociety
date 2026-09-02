@@ -23,11 +23,12 @@ export default function IdCardPage() {
   const isYearRepresentative = user?.role === 'year_representative' || user?.role === 'yearRep';
   const canViewAllCards = ['admin', 'general_secretary', 'cultural_secretary', 'technical_secretary', 'treasurer'].includes(user?.role || '');
   const canViewCardDirectory = canViewAllCards || isYearRepresentative;
+  const approvedUsers = users.filter((member) => member.is_verified === true);
   const cardMembers = canViewAllCards
-    ? users
+    ? approvedUsers
     : isYearRepresentative
-      ? users.filter((member) => user?.year !== undefined && member.year === user.year)
-      : memberData ? [memberData] : [];
+      ? approvedUsers.filter((member) => user?.year !== undefined && member.year === user.year)
+      : memberData?.is_verified === true ? [memberData] : [];
   const sortedMembers = [...cardMembers].sort((first, second) => {
     if (sortBy === 'year') return (first.year || 0) - (second.year || 0) || first.name.localeCompare(second.name);
     if (sortBy === 'status') return Number(Boolean(second.is_verified)) - Number(Boolean(first.is_verified)) || first.name.localeCompare(second.name);

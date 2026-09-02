@@ -76,7 +76,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
   const { users, loading: usersLoading } = useUsers();
   const [membershipPhotos, setMembershipPhotos] = useState<Record<string, string>>({});
   const [randomMembers, setRandomMembers] = useState<User[]>([]);
-  const verifiedUsers = users.filter((member) => member.is_verified !== false);
+  const verifiedUsers = users.filter((member) => member.is_verified === true);
   const leadershipMembers = leadershipOrder.flatMap((role) => verifiedUsers.filter((member) => member.role.toLowerCase() === role));
   const yearRepresentatives = verifiedUsers
     .filter((member) => ['year_representative', 'yearrep'].includes(member.role.toLowerCase()) || member.role.toLowerCase().startsWith('year_rep_'))
