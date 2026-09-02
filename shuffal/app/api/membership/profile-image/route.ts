@@ -23,6 +23,8 @@ export async function GET(request: Request) {
     .from('membership')
     .select('student_photograph, id_card, timestamp, roll_number_aktu, father_name, mother_name, father_guardian_mobile_number, emergency_contact_number, mobile_number, whatsapp_number, date_of_birth, blood_group, permanent_address')
     .eq('society_id', user.cse_id)
+    .or(`email_address.eq.${user.email},email_address_secondary.eq.${user.email}`)
+    .order('id', { ascending: true })
     .limit(1)
     .maybeSingle();
   if (profileError) return Response.json({ error: profileError.message }, { status: 500 });
