@@ -74,6 +74,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
   const { announcements, loading: announcementsLoading } = useAnnouncements();
   const { notifications, loading: notificationsLoading } = useRealtimeNotifications(user.id);
   const { users, loading: usersLoading } = useUsers();
+  const [membershipPhotos, setMembershipPhotos] = useState<Record<string, string>>({});
   const [randomMembers, setRandomMembers] = useState<User[]>([]);
   const verifiedUsers = users.filter((member) => member.is_verified !== false);
   const leadershipMembers = leadershipOrder.flatMap((role) => verifiedUsers.filter((member) => member.role.toLowerCase() === role));
@@ -84,6 +85,13 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
   useEffect(() => {
     setRandomMembers(shuffleUsers(verifiedUsers.filter((member) => member.role.toLowerCase() === 'member')));
   }, [users]);
+
+  useEffect(() => {
+    fetch('/api/membership/profile-images')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: { photos?: Record<string, string> } | null) => setMembershipPhotos(data?.photos || {}))
+      .catch(() => setMembershipPhotos({}));
+  }, []);
 
   // Shuffle ordinary members once each time the fetched roster changes.
   const refreshRandomMembers = () => {
@@ -149,7 +157,10 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {[...leadershipMembers, ...yearRepresentatives].map((member) => (
                 <article key={member.id} className="rounded-lg border border-slate-700/70 bg-slate-950/50 p-4">
-                  <p className="font-semibold text-white">{member.name}</p>
+                  <div className="flex items-center gap-3">
+                    <MemberAvatar name={member.name} profileImage={member.profile_image_url || membershipPhotos[member.id]} className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-teal-300/40 bg-teal-400/10 text-sm font-semibold text-teal-200" />
+                    <p className="font-semibold text-white">{member.name}</p>
+                  </div>
                   <p className="mt-1 text-sm text-teal-300">{roleLabel(member.role)}{member.role.toLowerCase().includes('year') && member.year ? ` - Year ${member.year}` : ''}</p>
                   <p className="mt-2 text-xs text-slate-500">{member.department || 'Computer Science & Engineering'}</p>
                 </article>
@@ -158,7 +169,7 @@ export default function MemberDashboard({ user }: { user: MemberUser }) {
             {randomMembers.length > 0 && <div>
               <div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">Members</h3><button type="button" onClick={refreshRandomMembers} className="text-xs font-medium text-teal-300 hover:text-teal-200">Shuffle</button></div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {randomMembers.map((member) => <article key={member.id} className="rounded-lg border border-slate-800 bg-slate-950/30 p-4"><p className="font-medium text-white">{member.name}</p><p className="mt-1 text-xs text-slate-500">{member.department || 'Computer Science & Engineering'}{member.year ? ` - Year ${member.year}` : ''}</p></article>)}
+                {randomMembers.map((member) => <article key={member.id} className="rounded-lg border border-slate-800 bg-slate-950/30 p-4"><div className="flex items-center gap-3"><MemberAvatar name={member.name} profileImage={member.profile_image_url || membershipPhotos[member.id]} className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300" /><p className="font-medium text-white">{member.name}</p></div><p className="mt-1 text-xs text-slate-500">{member.department || 'Computer Science & Engineering'}{member.year ? ` - Year ${member.year}` : ''}</p></article>)}
               </div>
             </div>}
           </>}
