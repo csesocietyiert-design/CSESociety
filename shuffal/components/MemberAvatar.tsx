@@ -18,6 +18,7 @@ export default function MemberAvatar({
   alt,
 }: MemberAvatarProps) {
   const [failedImage, setFailedImage] = useState<string | null>(null);
+  const [loadedImage, setLoadedImage] = useState<string | null>(null);
   const firstLetter = name?.charAt(0)?.toUpperCase() || 'U';
   const displayImage = getDisplayImageUrl(profileImage);
   const usableImage = Boolean(displayImage) && failedImage !== displayImage;
@@ -30,12 +31,12 @@ export default function MemberAvatar({
         <img
           src={displayImage as string}
           alt={alt || name || 'Member profile'}
-          className={imageClassName}
+          className={`${imageClassName} transition-opacity duration-200 ${loadedImage === displayImage ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => setLoadedImage(displayImage as string)}
           onError={() => setFailedImage(displayImage as string)}
         />
-      ) : (
-        firstLetter
-      )}
+      ) : null}
+      {(firstLetter && (!usableImage || loadedImage !== displayImage)) && <span aria-hidden={usableImage}>{firstLetter}</span>}
     </div>
   );
 }
