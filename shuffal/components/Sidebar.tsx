@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import type { User } from '@/lib/store';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface SidebarProps {
@@ -15,6 +15,7 @@ interface SidebarProps {
 export default function Sidebar({ open, setOpen, user }: SidebarProps) {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
+  const pathname = usePathname();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const handleLogout = () => {
@@ -42,6 +43,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative },
     { label: 'My Year', href: '/dashboard/members', icon: 'user', show: isYearRepresentative },
     { label: 'Profile', href: '/dashboard/profile', icon: 'user', show: true },
+    { label: 'About', href: '/dashboard/description', icon: 'info', show: true },
   ];
 
   return (
@@ -77,7 +79,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
                 onMouseEnter={() => setHoveredItem(item.href)}
                 onMouseLeave={() => setHoveredItem(null)}
                 className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 transform ${
-                  hoveredItem === item.href
+                  pathname === item.href || hoveredItem === item.href
                     ? 'bg-blue-600/30 text-white scale-105'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                 }`}
@@ -120,6 +122,7 @@ function getIcon(name: string) {
     award: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v6h2.97c.5 1.25 1.42 2.31 2.58 3v2.3c.39.57.84 1.12 1.35 1.63.51.51.97 1.06 1.35 1.63h5.6c.38-.57.84-1.12 1.35-1.63.51-.51.97-1.06 1.35-1.63v-2.3c1.16-.69 2.08-1.75 2.58-3H21V7c0-1.1-.9-2-2-2zm-8 10.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>,
     'bar-chart': <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>,
     user: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>,
+    info: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth="2"/><path strokeLinecap="round" strokeWidth="2" d="M12 10v6m0-9h.01"/></svg>,
   };
   return icons[name] || <span className="w-5 h-5">•</span>;
 }

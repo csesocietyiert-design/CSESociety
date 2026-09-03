@@ -13,6 +13,11 @@ export interface User {
   admission_year?: number;
   phone?: string;
   bio?: string;
+  batch?: string;
+  linkedin_url?: string;
+  github_url?: string;
+  twitter_url?: string;
+  instagram_url?: string;
   is_verified?: boolean;
   created_at: string;
 }
