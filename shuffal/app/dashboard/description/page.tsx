@@ -10,6 +10,15 @@ import { useUsers, type User } from '@/lib/hooks';
 const executiveOrder = ['vice_president', 'treasurer', 'president', 'joint_secretary', 'executive'];
 const secretaryOrder = ['general_secretary', 'technical_secretary', 'cultural_secretary', 'secretary'];
 const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
+	'kirti singh': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/kirti-singh-8a947537a?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
+		{ label: 'Instagram', url: 'https://www.instagram.com/kirtizlens?utm_source=qr&igsi=MTk2Y3dmNGF6c2RpbA==' },
+	],
+	'ojas singh': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ojas-singh-101873419' },
+		{ label: 'GitHub', url: 'https://github.com/Ojas-09' },
+		{ label: 'Twitter', url: 'https://x.com/Ojas0907' },
+	],
 	'vibhanshu tiwari': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/vibhanshu-tiwari-a08777289/' },
 		{ label: 'GitHub', url: 'https://github.com/vibhut-iitm' },
