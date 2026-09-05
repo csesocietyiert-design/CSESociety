@@ -32,7 +32,7 @@ export default function ReportsPage() {
       router.push('/login');
       return;
     }
-    if (!['admin', 'faculty', 'executive'].includes(user.role)) {
+    if (!['admin', 'faculty', 'executive', 'general_secretary'].includes(user.role)) {
       router.push('/dashboard');
     }
   }, [hasHydrated, isAuthenticated, user, router]);
