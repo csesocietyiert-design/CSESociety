@@ -89,7 +89,7 @@ function TeamCard({ member, membershipPhoto }: { member: User; membershipPhoto?:
 	return (
 		<article className="group rounded-lg border border-slate-700/60 bg-slate-900/70 p-5 text-center shadow-lg shadow-black/10 transition duration-200 hover:-translate-y-1 hover:border-teal-400/50 hover:shadow-teal-950/20">
 			<div className="mx-auto flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-slate-700 bg-gradient-to-br from-teal-500/20 to-indigo-500/20 p-1 transition group-hover:border-teal-400/70">
-				<MemberAvatar name={member.name} profileImage={member.profile_image_url || membershipPhoto} alt={`${member.name} profile`} className="flex h-full w-full items-center justify-center overflow-hidden rounded-full text-4xl font-semibold text-teal-200" imageClassName={`h-full w-full object-cover ${member.name.trim().toLowerCase() === 'kirti singh' ? 'object-top' : ['yashashvi', 'vibhanshu tiwari'].includes(member.name.trim().toLowerCase()) ? 'object-center' : 'object-[center_20%]'}`} />
+				<MemberAvatar name={member.name} profileImage={membershipPhoto || member.profile_image_url} alt={`${member.name} profile`} className="flex h-full w-full items-center justify-center overflow-hidden rounded-full text-4xl font-semibold text-teal-200" imageClassName={`h-full w-full object-cover ${member.name.trim().toLowerCase() === 'kirti singh' ? 'object-top' : ['yashashvi', 'vibhanshu tiwari'].includes(member.name.trim().toLowerCase()) ? 'object-center' : 'object-[center_20%]'}`} />
 			</div>
 			<div className="mt-5">
 				<h3 className="text-lg font-semibold text-white">{member.name}</h3>

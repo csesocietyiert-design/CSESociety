@@ -144,7 +144,10 @@ export default function ReportsPage() {
     pdf.save(`cse-society-students-${fileDate}.pdf`);
   };
 
-  if (!hasHydrated || !isAuthenticated || !user || !['admin', 'faculty', 'executive'].includes(user.role)) {
+  const userRole = String(user?.role || '').toLowerCase();
+  const canViewReports = ['admin', 'faculty', 'executive', 'vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'secretary', 'year_representative', 'yearrep'].includes(userRole);
+
+  if (!hasHydrated || !isAuthenticated || !user || !canViewReports) {
     return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">Loading report...</div>;
   }
 

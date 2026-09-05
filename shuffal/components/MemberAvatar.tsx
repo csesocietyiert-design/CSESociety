@@ -47,7 +47,7 @@ function getDisplayImageUrl(profileImage?: string | null) {
   try {
     const url = new URL(profileImage);
     if (url.hostname === 'drive.google.com') {
-      const fileId = url.searchParams.get('id');
+      const fileId = url.searchParams.get('id') || url.pathname.match(/\/file\/d\/([^/]+)/)?.[1];
       if (fileId) return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
     }
   } catch {
