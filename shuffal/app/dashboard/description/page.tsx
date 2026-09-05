@@ -13,17 +13,41 @@ const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
 	'kirti singh': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/kirti-singh-8a947537a?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
 		{ label: 'Instagram', url: 'https://www.instagram.com/kirtizlens?utm_source=qr&igsi=MTk2Y3dmNGF6c2RpbA==' },
+		{ label: 'Email', url: 'mailto:kirtisinghaps121@gmail.com' },
 	],
 	'ojas singh': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ojas-singh-101873419' },
 		{ label: 'GitHub', url: 'https://github.com/Ojas-09' },
-		{ label: 'Twitter', url: 'https://x.com/Ojas0907' },
+		{ label: 'X (Twitter)', url: 'https://x.com/Ojas0907' },
+		{ label: 'Email', url: 'mailto:ojas0907singh@gmail.com' },
 	],
 	'vibhanshu tiwari': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/vibhanshu-tiwari-a08777289/' },
 		{ label: 'GitHub', url: 'https://github.com/vibhut-iitm' },
-		{ label: 'Twitter', url: 'https://x.com/VibhanshuT2482' },
+		{ label: 'X (Twitter)', url: 'https://x.com/VibhanshuT2482' },
+		{ label: 'WhatsApp', url: 'https://wa.me/918273993303' },
+		{ label: 'Email', url: 'mailto:23f2003053@ds.study.iitm.ac.in' },
 		{ label: 'Portfolio', url: 'https://vbhtportfolio.netlify.app/' },
+	],
+	'aditya singh': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/aditya-singh-07a912433?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
+		{ label: 'GitHub', url: 'https://github.com/adityasingh07252507' },
+		{ label: 'Instagram', url: 'https://www.instagram.com/adityasing_07_25?igsi=YnIxcWxqNTRpbXNs' },
+		{ label: 'Email', url: 'mailto:ss5231875@gmail.com' },
+	],
+	'sarthak singh': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/sarthak-singh-338609328?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
+		{ label: 'GitHub', url: 'https://github.com/sarthaksingh638' },
+		{ label: 'Email', url: 'mailto:sarthaksingh94179@gmail.com' },
+	],
+	'ayush': [
+		{ label: 'Email', url: 'mailto:ayush89p87@gmail.com' },
+	],
+	'pushpendra maury': [
+		{ label: 'Email', url: 'mailto:mauryapushpendra6@gmail.com' },
+	],
+	'yash kumar': [
+		{ label: 'Email', url: 'mailto:yashkumar8497@gmail.com' },
 	],
 };
 
@@ -59,6 +83,7 @@ function TeamCard({ member, membershipPhoto }: { member: User; membershipPhoto?:
 		{ label: 'Twitter', url: member.twitter_url },
 		{ label: 'Instagram', url: member.instagram_url },
 		...(teamSocialLinks[member.name.trim().toLowerCase()] || []),
+		...(member.email ? [{ label: 'Email', url: `mailto:${member.email}` }] : []),
 	].filter((link): link is { label: string; url: string } => Boolean(link.url));
 
 	return (

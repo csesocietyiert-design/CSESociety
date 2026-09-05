@@ -43,6 +43,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative },
     { label: 'My Year', href: '/dashboard/members', icon: 'user', show: isYearRepresentative },
     { label: 'Profile', href: '/dashboard/profile', icon: 'user', show: true },
+    { label: 'Academic', href: '/dashboard/academic', icon: 'academic', show: true },
     { label: 'About', href: '/dashboard/description', icon: 'info', show: true },
   ];
 
@@ -123,6 +124,7 @@ function getIcon(name: string) {
     'bar-chart': <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>,
     user: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>,
     info: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth="2"/><path strokeLinecap="round" strokeWidth="2" d="M12 10v6m0-9h.01"/></svg>,
+    academic: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7.5 12 3l9 4.5L12 12 3 7.5Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9.2V15c3.3 2.5 8.7 2.5 12 0V9.2M21 8v6"/></svg>,
   };
   return icons[name] || <span className="w-5 h-5">•</span>;
 }
