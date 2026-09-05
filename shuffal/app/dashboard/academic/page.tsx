@@ -17,7 +17,7 @@ export default function AcademicPage() {
     event.preventDefault();
     if (password === '1234') {
       setError('');
-      window.location.assign('https://study.aktubrand.online/');
+      window.open('https://study.aktubrand.online/', '_blank', 'noopener,noreferrer');
       return;
     }
     setError('Incorrect password.');
@@ -48,7 +48,7 @@ export default function AcademicPage() {
             />
           </label>
           {error && <p className="mt-3 text-sm text-rose-300" role="alert">{error}</p>}
-          <button type="submit" className="mt-5 w-full rounded-lg bg-teal-500 px-4 py-2.5 font-semibold text-slate-950 hover:bg-teal-400">Verify</button>
+          <button type="submit" className="mt-5 w-full rounded-lg bg-teal-500 px-4 py-2.5 font-semibold text-slate-950 hover:bg-teal-400">Continue</button>
         </form>
       </main>
     </LayoutWrapper>
