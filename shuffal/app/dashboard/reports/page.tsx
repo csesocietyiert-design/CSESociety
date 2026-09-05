@@ -32,7 +32,13 @@ export default function ReportsPage() {
       router.push('/login');
       return;
     }
-    if (!['admin', 'faculty', 'executive', 'general_secretary'].includes(user.role)) {
+    const userRole = String(user.role || '').toLowerCase();
+    const isFacultyAdmin = userRole === 'admin' || userRole === 'faculty';
+    const isExecutive = userRole === 'executive' || userRole === 'vice_president' || userRole === 'general_secretary';
+    const isSecretary = userRole === 'technical_secretary' || userRole === 'cultural_secretary' || userRole === 'secretary';
+    const isYearRepresentative = userRole === 'year_representative' || userRole === 'yearrep';
+    
+    if (!isFacultyAdmin && !isExecutive && !isSecretary && !isYearRepresentative) {
       router.push('/dashboard');
     }
   }, [hasHydrated, isAuthenticated, user, router]);
