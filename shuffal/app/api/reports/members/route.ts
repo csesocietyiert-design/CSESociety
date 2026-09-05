@@ -17,7 +17,8 @@ export async function GET(request: Request) {
     .maybeSingle();
 
   if (userError) return Response.json({ error: userError.message }, { status: 500 });
-  if (!user || !['admin', 'faculty', 'executive'].includes(user.role)) {
+  const allowedRoles = ['admin', 'faculty', 'executive', 'vice_president', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'secretary', 'year_representative', 'yearrep'];
+  if (!user || !allowedRoles.includes(String(user.role || '').toLowerCase())) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
