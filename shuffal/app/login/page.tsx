@@ -146,6 +146,11 @@ export default function LoginPage() {
   const handleGoogleClick = async () => {
     setError('');
 
+    if (!identifier.trim()) {
+      setError('Enter your CSE ID before continuing with Google.');
+      return;
+    }
+
     if (!GOOGLE_CLIENT_ID) {
       console.error('[Google Login] Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID before prompt activation.');
       setError('Google Sign-In is not configured for this site.');
