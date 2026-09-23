@@ -47,15 +47,19 @@ export default function AdminDashboard({ user }: any) {
   });
 
   useEffect(() => {
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+
     const fetchStats = async () => {
       try {
         if (!supabase) return;
 
-        const usersResult = await supabase.from('users').select('id', { count: 'exact', head: true });
-        const eventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'approved');
-        const pendingResult = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false);
-        const pendingEventsResult = await supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending');
-        const certificatesResult = await supabase.from('certificates').select('id', { count: 'exact', head: true });
+        const [usersResult, eventsResult, pendingResult, pendingEventsResult, certificatesResult] = await Promise.all([
+          supabase.from('users').select('id', { count: 'exact', head: true }),
+          supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'approved'),
+          supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_verified', false),
+          supabase.from('events').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending'),
+          supabase.from('certificates').select('id', { count: 'exact', head: true }),
+        ]);
 
         setPendingCount(pendingResult.count || 0);
         setStats({
@@ -70,6 +74,11 @@ export default function AdminDashboard({ user }: any) {
       }
     };
 
+    const scheduleStatsRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => { void fetchStats(); }, 250);
+    };
+
     fetchStats();
 
     // Set up real-time subscriptions to update stats when data changes
@@ -81,7 +90,7 @@ export default function AdminDashboard({ user }: any) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'certificates' },
         () => {
-          fetchStats();
+          scheduleStatsRefresh();
         }
       )
       .subscribe();
@@ -92,7 +101,7 @@ export default function AdminDashboard({ user }: any) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users' },
         () => {
-          fetchStats();
+          scheduleStatsRefresh();
         }
       )
       .subscribe();
@@ -103,13 +112,14 @@ export default function AdminDashboard({ user }: any) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'events' },
         () => {
-          fetchStats();
+          scheduleStatsRefresh();
         }
       )
       .subscribe();
 
     // Cleanup subscriptions on unmount
     return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
       certificatesSubscription.unsubscribe();
       usersSubscription.unsubscribe();
       eventsSubscription.unsubscribe();

@@ -30,8 +30,8 @@ export default function LayoutWrapper({ user, children }: LayoutWrapperProps) {
         <div className="flex-1 overflow-y-auto">
           <div className="relative">
             <div className="fixed inset-0 pointer-events-none">
-              <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full filter blur-3xl opacity-20 mix-blend-overlay"></div>
-              <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl opacity-20 mix-blend-overlay"></div>
+              <div className="absolute top-0 left-0 hidden h-96 w-96 rounded-full bg-blue-500/10 opacity-20 mix-blend-overlay blur-3xl md:block"></div>
+              <div className="absolute bottom-0 right-0 hidden h-96 w-96 rounded-full bg-purple-500/10 opacity-20 mix-blend-overlay blur-3xl md:block"></div>
             </div>
             <div className="relative z-10 p-6">
               {children}

@@ -32,6 +32,8 @@ export default function MemberAvatar({
           src={displayImage as string}
           alt={alt || name || 'Member profile'}
           className={`${imageClassName} transition-opacity duration-200 ${loadedImage === displayImage ? 'opacity-100' : 'opacity-0'}`}
+          loading="lazy"
+          decoding="async"
           onLoad={() => setLoadedImage(displayImage as string)}
           onError={() => setFailedImage(displayImage as string)}
         />
