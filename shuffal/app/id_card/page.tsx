@@ -29,12 +29,12 @@ export default async function PublicIdCardPage({ searchParams }: PublicIdCardPag
         ) : !cardUrl ? (
           <StatusMessage message="This ID card is unavailable or the Society ID is not valid." error />
         ) : (
-          <div className="flex flex-1 flex-col p-2 sm:p-5">
-            <div className="flex flex-1 justify-center overflow-hidden rounded-xl border border-slate-700/80 bg-black/30 shadow-inner">
+          <div className="w-full p-2 sm:p-5">
+            <div className="mx-auto aspect-[1.59/1] w-full max-w-4xl overflow-hidden rounded-xl border border-slate-700/80 bg-black/30 shadow-inner">
               <iframe
                 src={toCardPreviewUrl(cardUrl)}
                 title={`${societyId} CSE Society ID card`}
-                className="h-[calc(100vh-10rem)] min-h-[34rem] w-full border-0 sm:h-[calc(100vh-13rem)] sm:min-h-[42rem]"
+                className="h-full w-full border-0"
                 loading="eager"
                 allow="autoplay"
               />
