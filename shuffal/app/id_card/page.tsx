@@ -1,93 +1,72 @@
-'use client';
+import { createClient } from '@supabase/supabase-js';
 
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+export const dynamic = 'force-dynamic';
 
-interface PublicMember {
-  name: string;
-  societyId: string;
-  department: string;
-  year: number | null;
-  profileImage: string | null;
-  idCard: string | null;
-  verified: boolean;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+interface PublicIdCardPageProps {
+  searchParams: Promise<{ id?: string }>;
 }
 
-function PublicIdCard() {
-  const searchParams = useSearchParams();
-  const societyId = searchParams.get('id')?.trim() || '';
-  const [member, setMember] = useState<PublicMember | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!societyId) return;
-
-    fetch(`/api/public/id-card?id=${encodeURIComponent(societyId)}`)
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Member not found');
-        return data as PublicMember;
-      })
-      .then(setMember)
-      .catch((requestError: Error) => setError(requestError.message))
-      .finally(() => setLoading(false));
-  }, [societyId]);
+export default async function PublicIdCardPage({ searchParams }: PublicIdCardPageProps) {
+  const societyId = (await searchParams).id?.trim() || '';
+  const cardUrl = societyId ? await findCardUrl(societyId) : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10 text-white">
-      <section className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-        <div className="border-b border-slate-700 pb-5 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-teal-300">CSE Society</p>
-          <h1 className="mt-2 text-2xl font-bold">Member ID Card</h1>
-          <p className="mt-1 text-sm text-slate-400">Public membership verification</p>
-        </div>
+    <main className="min-h-screen bg-slate-950 px-3 py-4 text-white sm:px-6 sm:py-8">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-700/70 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/50 shadow-2xl sm:min-h-[calc(100vh-4rem)]">
+        <header className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-blue-600/20 via-slate-900/40 to-teal-500/10 px-5 py-4 sm:px-7">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-teal-300 sm:text-xs">CSE Society</p>
+            <h1 className="mt-1 text-lg font-bold sm:text-2xl">Digital ID Card</h1>
+          </div>
+          {societyId && <span className="rounded-full border border-teal-300/30 bg-teal-300/10 px-3 py-1 font-mono text-xs text-teal-200">{societyId}</span>}
+        </header>
 
-        {loading && <p className="py-12 text-center text-sm text-slate-400">Loading member card...</p>}
-        {!loading && (error || !societyId) && <p className="py-12 text-center text-sm text-rose-300">{error || 'No Society ID was provided.'}</p>}
-        {!loading && member && (
-          <div className="pt-6 text-center">
-            <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-xl border border-teal-300/40 bg-teal-300/10 text-xs font-semibold text-teal-200">
-              {member.profileImage ? <img src={toImageUrl(member.profileImage)} alt={`${member.name} profile`} className="h-full w-full object-cover" /> : <>CSE<br />SOCIETY</>}
+        {!societyId ? (
+          <StatusMessage message="No Society ID was provided." />
+        ) : !cardUrl ? (
+          <StatusMessage message="This ID card is unavailable or the Society ID is not valid." error />
+        ) : (
+          <div className="flex flex-1 flex-col p-2 sm:p-5">
+            <div className="flex flex-1 justify-center overflow-hidden rounded-xl border border-slate-700/80 bg-black/30 shadow-inner">
+              <iframe
+                src={toCardPreviewUrl(cardUrl)}
+                title={`${societyId} CSE Society ID card`}
+                className="h-[calc(100vh-10rem)] min-h-[34rem] w-full border-0 sm:h-[calc(100vh-13rem)] sm:min-h-[42rem]"
+                loading="eager"
+                allow="autoplay"
+              />
             </div>
-            <h2 className="mt-5 text-2xl font-bold">{member.name}</h2>
-            <p className="mt-2 font-mono text-lg text-teal-300">{member.societyId}</p>
-            <p className="mt-4 text-sm text-slate-300">{member.department}</p>
-            {member.year && <p className="mt-1 text-sm text-slate-400">Year {member.year}</p>}
-            <div className="mt-6 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-300">
-              Verified CSE Society Member
-            </div>
-            {member.idCard && (
-              <div className="mt-6 overflow-hidden rounded-xl border border-slate-700 bg-slate-950">
-                <iframe
-                  src={toCardPreviewUrl(member.idCard)}
-                  title={`${member.name} CSE Society ID card`}
-                  className="h-[32rem] w-full border-0"
-                  loading="lazy"
-                />
-              </div>
-            )}
+            <a href={cardUrl} target="_blank" rel="noreferrer" className="mx-auto mt-3 rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-2 text-center text-xs font-medium text-slate-300 transition hover:border-teal-400/60 hover:text-white">
+              Open card in a new tab
+            </a>
           </div>
         )}
-      </section>
+      </div>
     </main>
   );
 }
 
-export default function PublicIdCardPage() {
-  return (
-    <Suspense fallback={<main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-400">Loading member card...</main>}>
-      <PublicIdCard />
-    </Suspense>
-  );
-}
-
-function toImageUrl(url: string) {
-  const match = url.match(/\/file\/d\/([^/]+)/);
-  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+async function findCardUrl(societyId: string) {
+  if (!supabaseUrl || !serviceRoleKey) return null;
+  const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const [memberResult, profileResult] = await Promise.all([
+    supabase.from('users').select('cse_id, is_verified').eq('cse_id', societyId).maybeSingle(),
+    supabase.from('membership').select('id_card').eq('society_id', societyId).not('id_card', 'is', null).order('id', { ascending: true }).limit(1).maybeSingle(),
+  ]);
+  const { data: member } = memberResult;
+  if (!member || member.is_verified === false) return null;
+  const { data: profile } = profileResult;
+  return profile?.id_card || null;
 }
 
 function toCardPreviewUrl(url: string) {
   const match = url.match(/\/file\/d\/([^/]+)/);
   return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url;
+}
+
+function StatusMessage({ message, error = false }: { message: string; error?: boolean }) {
+  return <div className={`flex flex-1 items-center justify-center px-6 py-20 text-center text-sm ${error ? 'text-rose-300' : 'text-slate-400'}`}>{message}</div>;
 }
