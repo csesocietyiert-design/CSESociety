@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +18,14 @@ export default async function PublicIdCardPage({ searchParams }: PublicIdCardPag
     <main className="min-h-screen bg-slate-950 px-3 py-4 text-white sm:px-6 sm:py-8">
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-700/70 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/50 shadow-2xl sm:min-h-[calc(100vh-4rem)]">
         <header className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-blue-600/20 via-slate-900/40 to-teal-500/10 px-5 py-4 sm:px-7">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-teal-300 sm:text-xs">CSE Society</p>
-            <h1 className="mt-1 text-lg font-bold sm:text-2xl">Digital ID Card</h1>
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-teal-300/40 bg-white/95 shadow-lg shadow-blue-950/40 sm:h-14 sm:w-14">
+              <Image src="/logo.png" alt="CSE Society logo" width={56} height={56} className="h-full w-full object-cover" priority />
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-teal-300 sm:text-xs">CSE Society, IERT</p>
+              <h1 className="mt-1 text-lg font-bold sm:text-2xl">Digital ID Card</h1>
+            </div>
           </div>
           {societyId && <span className="rounded-full border border-teal-300/30 bg-teal-300/10 px-3 py-1 font-mono text-xs text-teal-200">{societyId}</span>}
         </header>
@@ -39,9 +45,12 @@ export default async function PublicIdCardPage({ searchParams }: PublicIdCardPag
                 allow="autoplay"
               />
             </div>
-            <a href={cardUrl} target="_blank" rel="noreferrer" className="mx-auto mt-3 rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-2 text-center text-xs font-medium text-slate-300 transition hover:border-teal-400/60 hover:text-white">
-              Open card in a new tab
-            </a>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-[11px] text-slate-500">
+              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Verified Society ID</span>
+              <a href={cardUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 font-medium text-slate-300 transition hover:border-teal-400/60 hover:text-white">
+                Open full card
+              </a>
+            </div>
           </div>
         )}
       </div>
