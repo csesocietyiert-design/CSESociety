@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRealtimeNotifications, sendNotification } from '@/lib/hooks';
 import { useUsers } from '@/lib/hooks';
+import MessageCenter from '@/components/MessageCenter';
 
 export default function NotificationsPanel({ user }: any) {
   const { notifications, loading, markAllAsRead } = useRealtimeNotifications(user?.id);
@@ -162,6 +163,7 @@ export default function NotificationsPanel({ user }: any) {
 
   return (
     <div className="space-y-6">
+      <MessageCenter user={{ id: user?.id || '', role: user?.role }} />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-white">Notifications</h2>
