@@ -497,6 +497,67 @@ export function usePendingApprovals() {
   return { pendingUsers, loading, removePendingUser };
 }
 
+type NotificationStore = {
+  notifications: Notification[];
+  listeners: Set<(notifications: Notification[]) => void>;
+  loading: boolean;
+  timer?: number;
+  request?: Promise<void>;
+};
+
+const notificationStores = new Map<string, NotificationStore>();
+
+function getNotificationStore(userId: string) {
+  let store = notificationStores.get(userId);
+  if (!store) {
+    store = { notifications: [], listeners: new Set(), loading: true };
+    notificationStores.set(userId, store);
+  }
+  return store;
+}
+
+async function refreshNotifications(userId: string, store: NotificationStore) {
+  if (store.request) return store.request;
+
+  store.request = (async () => {
+    try {
+      const response = await fetch('/api/notifications');
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notifications');
+      store.notifications = payload.notifications || [];
+      store.listeners.forEach((listener) => listener(store.notifications));
+    } catch (err) {
+      console.error('Error fetching initial notifications:', err);
+    } finally {
+      store.loading = false;
+      store.request = undefined;
+    }
+  })();
+
+  return store.request;
+}
+
+function subscribeToNotifications(userId: string, listener: (notifications: Notification[]) => void) {
+  const store = getNotificationStore(userId);
+  store.listeners.add(listener);
+  void refreshNotifications(userId, store);
+  if (!store.timer) store.timer = window.setInterval(() => void refreshNotifications(userId, store), 30000);
+
+  return () => {
+    store.listeners.delete(listener);
+    if (store.listeners.size === 0 && store.timer) {
+      window.clearInterval(store.timer);
+      store.timer = undefined;
+    }
+  };
+}
+
+function markStoredNotificationsAsRead(userId: string) {
+  const store = getNotificationStore(userId);
+  store.notifications = store.notifications.map((notification) => ({ ...notification, is_read: true }));
+  store.listeners.forEach((listener) => listener(store.notifications));
+}
+
 export function useRealtimeNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -504,34 +565,16 @@ export function useRealtimeNotifications(userId: string) {
   const markAllAsRead = async () => {
     if (!userId) return;
     const success = await markNotificationsAsRead(userId);
-    if (success) {
-      setNotifications((currentNotifications) => currentNotifications.map((notification) => ({ ...notification, is_read: true })));
-    }
+    if (success) markStoredNotificationsAsRead(userId);
   };
 
   useEffect(() => {
     if (!userId) return;
-
-    const fetchInitial = async () => {
-      try {
-        const response = await fetch('/api/notifications');
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload?.error || 'Failed to fetch notifications');
-        setNotifications(payload.notifications || []);
-      } catch (err) {
-        console.error('Error fetching initial notifications:', err);
-      } finally {
-        setLoading(false);
-      }
+    const listener = (nextNotifications: Notification[]) => {
+      setNotifications(nextNotifications);
+      setLoading(false);
     };
-
-    fetchInitial();
-
-    const refreshInterval = window.setInterval(fetchInitial, 30000);
-
-    return () => {
-      window.clearInterval(refreshInterval);
-    };
+    return subscribeToNotifications(userId, listener);
   }, [userId]);
 
   return { notifications, loading, markAllAsRead };

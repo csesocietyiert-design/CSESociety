@@ -90,7 +90,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('notifications')
-      .select('*')
+      .select('id, user_id, sender_id, recipient_type, target_role, target_year, recipient_count, is_anonymous, title, message, type, is_read, created_at')
       .order('created_at', { ascending: false });
 
     query = query.or(`user_id.eq.${resolvedUserId},sender_id.eq.${resolvedUserId}`);
