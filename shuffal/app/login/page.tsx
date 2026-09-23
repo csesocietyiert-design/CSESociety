@@ -108,7 +108,6 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           credential,
-          identifier,
         }),
       });
 
@@ -145,11 +144,6 @@ export default function LoginPage() {
 
   const handleGoogleClick = async () => {
     setError('');
-
-    if (!identifier.trim()) {
-      setError('Enter your CSE ID before continuing with Google.');
-      return;
-    }
 
     if (!GOOGLE_CLIENT_ID) {
       console.error('[Google Login] Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID before prompt activation.');

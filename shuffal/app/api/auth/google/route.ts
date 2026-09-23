@@ -18,7 +18,6 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const credential = typeof body?.credential === 'string' ? body.credential.trim() : '';
-    const identifier = typeof body?.identifier === 'string' ? body.identifier.trim() : '';
 
     if (!credential) {
       return Response.json(
@@ -68,20 +67,6 @@ export async function POST(request: Request) {
       return Response.json(
         { error: 'Your account is pending approval. Please wait for admin verification.' },
         { status: 403 }
-      );
-    }
-
-    if (!identifier) {
-      return Response.json(
-        { error: 'Enter your CSE ID before continuing with Google.' },
-        { status: 400 }
-      );
-    }
-
-    if (identifier.toLowerCase() !== String(data.cse_id || '').trim().toLowerCase()) {
-      return Response.json(
-        { error: 'The CSE ID does not match this Google account.' },
-        { status: 401 }
       );
     }
 
