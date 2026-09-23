@@ -29,6 +29,9 @@ export default function RootLayout({ children }: LayoutProps) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <link rel="preconnect" href="https://accounts.google.com" />
+        <link rel="preconnect" href="https://www.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://accounts.google.com" />
         <script
           dangerouslySetInnerHTML={{
             __html: "try { var theme = localStorage.getItem('cse-theme'); var hour = new Date().getHours(); var isLight = theme === 'light' || (theme === 'auto' && hour >= 6 && hour < 18); document.documentElement.dataset.theme = isLight ? 'light' : 'dark'; } catch (error) {}",
