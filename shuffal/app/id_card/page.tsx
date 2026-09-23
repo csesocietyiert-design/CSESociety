@@ -9,6 +9,7 @@ interface PublicMember {
   department: string;
   year: number | null;
   profileImage: string | null;
+  idCard: string | null;
   verified: boolean;
 }
 
@@ -56,6 +57,16 @@ function PublicIdCard() {
             <div className="mt-6 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-300">
               Verified CSE Society Member
             </div>
+            {member.idCard && (
+              <div className="mt-6 overflow-hidden rounded-xl border border-slate-700 bg-slate-950">
+                <iframe
+                  src={toCardPreviewUrl(member.idCard)}
+                  title={`${member.name} CSE Society ID card`}
+                  className="h-[32rem] w-full border-0"
+                  loading="lazy"
+                />
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -74,4 +85,9 @@ export default function PublicIdCardPage() {
 function toImageUrl(url: string) {
   const match = url.match(/\/file\/d\/([^/]+)/);
   return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+}
+
+function toCardPreviewUrl(url: string) {
+  const match = url.match(/\/file\/d\/([^/]+)/);
+  return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url;
 }

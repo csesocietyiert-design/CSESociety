@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   const { data: profile, error: profileError } = await supabase
     .from('membership')
-    .select('student_photograph')
+    .select('student_photograph, id_card')
     .eq('society_id', member.cse_id)
     .or(`email_address.eq.${member.email},email_address_secondary.eq.${member.email}`)
     .order('id', { ascending: true })
@@ -42,6 +42,7 @@ export async function GET(request: Request) {
     department: member.department || 'Computer Science & Engineering',
     year: member.year || null,
     profileImage: profile?.student_photograph || null,
+    idCard: profile?.id_card || null,
     verified: true,
   });
 }
