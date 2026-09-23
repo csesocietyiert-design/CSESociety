@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
+import PublicCardGate from '@/components/PublicCardGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,23 +36,7 @@ export default async function PublicIdCardPage({ searchParams }: PublicIdCardPag
         ) : !cardUrl ? (
           <StatusMessage message="This ID card is unavailable or the Society ID is not valid." error />
         ) : (
-          <div className="w-full p-2 sm:p-5">
-            <div className="mx-auto aspect-[1.59/1] w-full max-w-4xl overflow-hidden rounded-xl border border-slate-700/80 bg-black/30 shadow-inner">
-              <iframe
-                src={toCardPreviewUrl(cardUrl)}
-                title={`${societyId} CSE Society ID card`}
-                className="h-full w-full border-0"
-                loading="eager"
-                allow="autoplay"
-              />
-            </div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-[11px] text-slate-500">
-              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Verified Society ID</span>
-              <a href={cardUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-1.5 font-medium text-slate-300 transition hover:border-teal-400/60 hover:text-white">
-                Open full card
-              </a>
-            </div>
-          </div>
+          <PublicCardGate cardUrl={cardUrl} societyId={societyId} />
         )}
       </div>
     </main>
@@ -69,11 +54,6 @@ async function findCardUrl(societyId: string) {
   if (!member || member.is_verified === false) return null;
   const { data: profile } = profileResult;
   return profile?.id_card || null;
-}
-
-function toCardPreviewUrl(url: string) {
-  const match = url.match(/\/file\/d\/([^/]+)/);
-  return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url;
 }
 
 function StatusMessage({ message, error = false }: { message: string; error?: boolean }) {
