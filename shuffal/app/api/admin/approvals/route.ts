@@ -80,3 +80,44 @@ export async function POST(request: Request) {
     return Response.json({ error: error instanceof Error ? error.message : 'Member approval failed' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { userIds: requestedUserIds, adminId } = await request.json();
+    const userIds = Array.isArray(requestedUserIds)
+      ? [...new Set(requestedUserIds.filter((id): id is string => typeof id === 'string' && id.trim().length > 0))]
+      : [];
+    const supabase = getSupabase();
+
+    if (!supabase) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
+    if (userIds.length === 0 || !adminId) {
+      return Response.json({ error: 'Pending member IDs and admin ID are required' }, { status: 400 });
+    }
+
+    const admin = await findAdmin(supabase, String(adminId));
+    if (!admin || !['admin', 'faculty'].includes(String(admin.role).toLowerCase()) || admin.is_verified === false) {
+      return Response.json({ error: 'Only a verified admin or faculty user can remove pending members' }, { status: 403 });
+    }
+
+    const { data: deletedMembers, error: deleteError } = await supabase
+      .from('users')
+      .delete()
+      .in('id', userIds)
+      .eq('is_verified', false)
+      .select('id');
+
+    if (deleteError) throw deleteError;
+
+    const deletedIds = (deletedMembers || []).map((member) => member.id);
+    if (deletedIds.length === 0) {
+      return Response.json({ error: 'No pending accounts were found to remove' }, { status: 404 });
+    }
+
+    const deletedIdSet = new Set(deletedIds);
+    const skippedIds = userIds.filter((id) => !deletedIdSet.has(id));
+    return Response.json({ success: true, deletedIds, skippedIds });
+  } catch (error) {
+    console.error('Pending member removal error:', error);
+    return Response.json({ error: error instanceof Error ? error.message : 'Pending member removal failed' }, { status: 500 });
+  }
+}

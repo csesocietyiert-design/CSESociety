@@ -294,6 +294,13 @@ export default function LoginPage() {
             <span>{googleLoading ? 'Connecting...' : 'Continue with Google'}</span>
           </button>
 
+          <p className="mt-5 text-center text-xs sm:text-sm text-slate-300">
+            New to CSE Society?{' '}
+            <Link href="/register" className="font-semibold text-[#6bb8ff] hover:text-white">
+              Register an account
+            </Link>
+          </p>
+
         </div>
 
         {/* Mobile Announcements - Shows below the card on mobile */}

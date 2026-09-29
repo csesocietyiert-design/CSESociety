@@ -16,6 +16,10 @@ type PendingEvent = {
 export default function PendingApprovalsPage({ user }: any) {
   const { pendingUsers, loading, removePendingUser } = usePendingApprovals();
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ userIds: string[]; label: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteNotice, setDeleteNotice] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [approvalConfirm, setApprovalConfirm] = useState<any>(null);
@@ -119,6 +123,42 @@ export default function PendingApprovalsPage({ user }: any) {
     setVerifying(null);
   };
 
+  const requestRemoval = (userIds: string[], label = '') => {
+    setDeleteError('');
+    setDeleteNotice('');
+    setDeleteConfirm({ userIds, label });
+  };
+
+  const confirmRemoval = async () => {
+    if (!deleteConfirm) return;
+
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const response = await fetch('/api/admin/approvals', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: deleteConfirm.userIds, adminId: user?.id }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Could not remove pending accounts');
+
+      const deletedIds: string[] = payload.deletedIds || deleteConfirm.userIds;
+      deletedIds.forEach(removePendingUser);
+      setDeleteNotice(
+        `${deletedIds.length} pending account${deletedIds.length === 1 ? '' : 's'} removed.` +
+        (payload.skippedIds?.length ? ` ${payload.skippedIds.length} account${payload.skippedIds.length === 1 ? ' was' : 's were'} no longer pending and left unchanged.` : '')
+      );
+      setDeleteConfirm(null);
+      setShowDetails(false);
+      setSelectedUser(null);
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Could not remove pending accounts');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleSelectUser = (u: any) => {
     setSelectedUser(u);
     setShowDetails(true);
@@ -161,10 +201,24 @@ export default function PendingApprovalsPage({ user }: any) {
           <h2 className="text-3xl font-bold text-white">Pending Approvals</h2>
           <p className="text-slate-400 mt-2">Verify new member registrations</p>
         </div>
-        <div className="px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-          <p className="text-yellow-400 font-semibold">{filteredUsers.length} Pending</p>
+        <div className="flex items-center gap-3">
+          {pendingUsers.length > 0 && (
+            <button
+              type="button"
+              onClick={() => requestRemoval(pendingUsers.map((pendingUser) => pendingUser.id))}
+              disabled={deleting}
+              className="border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 transition hover:border-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+            >
+              Remove all pending
+            </button>
+          )}
+          <div className="px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+            <p className="text-yellow-400 font-semibold">{filteredUsers.length} Pending</p>
+          </div>
         </div>
       </div>
+
+      {deleteNotice && <p role="status" className="border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{deleteNotice}</p>}
 
       {/* Search Bar */}
       <div className="relative">
@@ -221,6 +275,17 @@ export default function PendingApprovalsPage({ user }: any) {
                 className="w-full mt-4 px-3 py-2 bg-gradient-to-r from-white via-emerald-50 to-green-200 hover:from-emerald-50 hover:via-emerald-100 hover:to-green-300 disabled:opacity-50 text-emerald-800 rounded-lg text-sm font-semibold shadow-sm shadow-emerald-200/50 transition border border-emerald-200"
               >
                 {verifying === u.id ? 'Approving...' : 'Approve'}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  requestRemoval([u.id], u.name);
+                }}
+                disabled={deleting}
+                className="w-full mt-2 px-3 py-2 border border-rose-400/40 bg-rose-500/10 text-rose-300 rounded-lg text-sm font-semibold transition hover:border-rose-300 hover:bg-rose-500/20 disabled:opacity-50"
+              >
+                Remove account
               </button>
             </div>
           ))}
@@ -345,6 +410,42 @@ export default function PendingApprovalsPage({ user }: any) {
             >
               Done
             </button>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-xl border border-rose-400/40 bg-slate-900 p-6 sm:p-8">
+            <h3 className="text-xl font-bold text-white">
+              Remove {deleteConfirm.userIds.length === 1 ? 'pending account?' : 'all pending accounts?'}
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              {deleteConfirm.label
+                ? <>Remove <span className="font-semibold text-rose-300">{deleteConfirm.label}</span> from pending approvals?</>
+                : `This will remove ${deleteConfirm.userIds.length} pending member account${deleteConfirm.userIds.length === 1 ? '' : 's'}.`}
+              {' '}Only accounts that are still pending will be removed.
+            </p>
+            <p className="mt-3 text-xs text-slate-400">This action cannot be undone.</p>
+            {deleteError && <p role="alert" className="mt-4 border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{deleteError}</p>}
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={confirmRemoval}
+                disabled={deleting}
+                className="flex-1 bg-rose-500 px-4 py-3 font-semibold text-white transition hover:bg-rose-400 disabled:opacity-50"
+              >
+                {deleting ? 'Removing...' : 'Confirm removal'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deleting}
+                className="flex-1 border border-slate-600 px-4 py-3 text-slate-300 transition hover:border-slate-400 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
