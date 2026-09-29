@@ -182,7 +182,11 @@ export default function LoginPage() {
     >
       {/* Top Dark Strip */}
       <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
-        <div className="flex items-center gap-3 sm:gap-4">
+        <a
+          href="/"
+          aria-label="Go to CSE Society home"
+          className="flex items-center gap-3 sm:gap-4 rounded-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+        >
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
             <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
           </div>
@@ -190,7 +194,7 @@ export default function LoginPage() {
             <h1 className="text-base sm:text-xl font-bold text-white leading-tight">CSE Society</h1>
             <p className="text-xs text-slate-400">IERT Portal</p>
           </div>
-        </div>
+        </a>
       </div>
 
       <div className="blob-container">
@@ -204,7 +208,13 @@ export default function LoginPage() {
         {/* Left - Login Card */}
         <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border backdrop-blur-sm order-1 md:order-1 relative pt-24 sm:pt-32 md:pt-40 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
           <div className="absolute -top-16 sm:-top-24 md:-top-32 left-1/2 transform -translate-x-1/2 flex justify-center">
-            <Image src="/logo.png" alt="CSE Society Logo" width={140} height={140} className="h-32 sm:h-40 md:h-48 w-32 sm:w-40 md:w-48 object-contain" priority />
+            <a
+              href="/"
+              aria-label="Go to CSE Society home"
+              className="block rounded-full transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              <Image src="/logo.png" alt="CSE Society Logo" width={140} height={140} className="h-32 sm:h-40 md:h-48 w-32 sm:w-40 md:w-48 object-contain" priority />
+            </a>
           </div>
 
           <div className="mb-4 sm:mb-6 md:mb-8 text-center">
