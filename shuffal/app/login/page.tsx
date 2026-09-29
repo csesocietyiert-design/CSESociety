@@ -314,9 +314,9 @@ export default function LoginPage() {
               Registration Deadline for 2026 session
             </p>
             <div className="space-y-1 text-xs sm:text-sm text-white/90">
-              <p>Form release date: 14 Aug 2026</p>
-              <p>Deadline: 25 August 2026</p>
-              <p>Verification: 26 August 2026</p>
+              <p>Form release date: 29 Sep 2026</p>
+              <p>Deadline: Sunday, 4 Oct 2026, 11:59 PM</p>
+              <p>Verification: 5 Oct 2026</p>
             </div>
           </div>
         </div>
@@ -335,9 +335,9 @@ export default function LoginPage() {
                   Registration Deadline for 2026 session
                 </p>
                 <div className="mt-2 space-y-1 text-xs sm:text-sm md:text-[1.15rem] leading-relaxed text-white/90">
-                  <p>Form release date: 14 Aug 2026</p>
-                  <p>Deadline: 25 August 2026</p>
-                  <p>Verification: 26 August 2026</p>
+                  <p>Form release date: 29 Sep 2026</p>
+                  <p>Deadline: Sunday, 4 Oct 2026, 11:59 PM</p>
+                  <p>Verification: 5 Oct 2026</p>
                 </div>
               </div>
             </div>
