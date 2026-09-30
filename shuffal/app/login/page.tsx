@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
-import Link from 'next/link';
 import Image from 'next/image';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -306,9 +305,9 @@ export default function LoginPage() {
 
           <p className="mt-5 text-center text-xs sm:text-sm text-slate-300">
             New to CSE Society?{' '}
-            <Link href="/register" className="font-semibold text-[#6bb8ff] hover:text-white">
+            <a href="/register" className="relative z-10 inline-block py-1 font-semibold text-[#6bb8ff] hover:text-white">
               Register an account
-            </Link>
+            </a>
           </p>
 
         </div>
@@ -325,7 +324,7 @@ export default function LoginPage() {
             </p>
             <div className="space-y-1 text-xs sm:text-sm text-white/90">
               <p>Form release date: 29 Sep 2026</p>
-              <p>Deadline: Sunday, 4 Oct 2026, 11:59 PM</p>
+              <p>Deadline: Saturday, 3 Oct 2026, 11:59 PM</p>
               <p>Verification: 5 Oct 2026</p>
             </div>
           </div>
@@ -346,7 +345,7 @@ export default function LoginPage() {
                 </p>
                 <div className="mt-2 space-y-1 text-xs sm:text-sm md:text-[1.15rem] leading-relaxed text-white/90">
                   <p>Form release date: 29 Sep 2026</p>
-                  <p>Deadline: Sunday, 4 Oct 2026, 11:59 PM</p>
+                  <p>Deadline: Saturday, 3 Oct 2026, 11:59 PM</p>
                   <p>Verification: 5 Oct 2026</p>
                 </div>
               </div>

@@ -3,20 +3,6 @@ import { getSessionUserId } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const viewerRoles = new Set([
-  'admin',
-  'faculty',
-  'executive',
-  'vice_president',
-  'general_secretary',
-  'technical_secretary',
-  'cultural_secretary',
-  'secretary',
-  'treasurer',
-  'year_representative',
-  'yearRep',
-]);
-
 function getClient() {
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -29,8 +15,8 @@ async function getRequester(request: Request) {
   const supabase = getClient();
   const { data: user, error } = await supabase.from('users').select('id, role, is_verified').eq('id', userId).maybeSingle();
   if (error) throw error;
-  const role = String(user?.role || '').trim();
-  if (!user || user.is_verified === false || !viewerRoles.has(role)) {
+  const role = String(user?.role || '').trim().toLowerCase();
+  if (!user || user.is_verified === false) {
     return { error: Response.json({ error: 'You do not have access to society funds' }, { status: 403 }) };
   }
   return { supabase, user: { ...user, role } };
@@ -47,7 +33,7 @@ export async function GET(request: Request) {
     if ('error' in requester) return requester.error;
     const { data, error } = await requester.supabase
       .from('finance_entries')
-      .select('id, entry_type, title, amount, event_name, entry_date, description, created_by, approval_status, approved_by, approved_at, created_at')
+      .select('id, entry_type, title, amount, event_name, entry_date, description, details, bill_link, created_by, approval_status, approved_by, approved_at, created_at')
       .order('entry_date', { ascending: false })
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -79,6 +65,8 @@ export async function POST(request: Request) {
     const eventName = typeof body?.eventName === 'string' ? body.eventName.trim() : '';
     const entryDate = typeof body?.entryDate === 'string' ? body.entryDate : '';
     const description = typeof body?.description === 'string' ? body.description.trim() : '';
+    const details = typeof body?.details === 'string' ? body.details.trim() : '';
+    const billLink = typeof body?.billLink === 'string' ? body.billLink.trim() : '';
 
     if (!entryType || !title || !Number.isFinite(amount) || amount <= 0 || !entryDate) {
       return Response.json({ error: 'Type, title, positive amount, and date are required' }, { status: 400 });
@@ -91,6 +79,8 @@ export async function POST(request: Request) {
       event_name: eventName || null,
       entry_date: entryDate,
       description: description || null,
+      details: details || null,
+      bill_link: billLink || null,
       created_by: requester.user.id,
     }).select('*').single();
     if (error) throw error;

@@ -10,6 +10,8 @@ type FinanceEntry = {
   event_name?: string | null;
   entry_date: string;
   description?: string | null;
+  details?: string | null;
+  bill_link?: string | null;
   approval_status: 'pending' | 'approved';
 };
 
@@ -20,6 +22,8 @@ type FinanceForm = {
   eventName: string;
   entryDate: string;
   description: string;
+  details: string;
+  billLink: string;
 };
 
 const initialForm: FinanceForm = {
@@ -29,6 +33,8 @@ const initialForm: FinanceForm = {
   eventName: '',
   entryDate: new Date().toISOString().split('T')[0],
   description: '',
+  details: '',
+  billLink: '',
 };
 
 const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
@@ -190,6 +196,8 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
           <input value={form.eventName} onChange={(event) => setForm({ ...form, eventName: event.target.value })} placeholder="Event name (for expenses)" className="rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400" />
           <input required type="date" value={form.entryDate} onChange={(event) => setForm({ ...form, entryDate: event.target.value })} className="rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400" aria-label="Entry date" />
           <input value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Short note (optional)" className="rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400" />
+          <textarea value={form.details} onChange={(event) => setForm({ ...form, details: event.target.value })} placeholder="About / information" rows={2} className="rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400 sm:col-span-2" />
+          <input type="url" value={form.billLink} onChange={(event) => setForm({ ...form, billLink: event.target.value })} placeholder="Google Drive bill link (optional)" className="rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400" />
         </div>
         {error && <p className="mt-4 text-sm text-rose-300">{error}</p>}
         <button disabled={saving} type="submit" className="mt-5 rounded-lg bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 disabled:opacity-50">{saving ? 'Saving...' : 'Save entry'}</button>
