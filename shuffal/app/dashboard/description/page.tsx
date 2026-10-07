@@ -41,7 +41,13 @@ const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
 		{ label: 'Email', url: 'mailto:sarthaksingh94179@gmail.com' },
 	],
 	'ayush': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayush-patel-473593385?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
+		{ label: 'GitHub', url: 'https://github.com/AyushPatel-codes' },
 		{ label: 'Email', url: 'mailto:ayush89p87@gmail.com' },
+	],
+	'ayush patel': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayush-patel-473593385?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
+		{ label: 'GitHub', url: 'https://github.com/AyushPatel-codes' },
 	],
 	'pushpendra maury': [
 		{ label: 'Email', url: 'mailto:mauryapushpendra6@gmail.com' },
