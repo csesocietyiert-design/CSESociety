@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PortalFooter from '@/components/PortalFooter';
 
 export default function PendingVerificationPage() {
   useEffect(() => {
@@ -16,7 +17,7 @@ export default function PendingVerificationPage() {
 
   return (
     <div
-      className="auth-page min-h-screen relative overflow-hidden"
+      className="auth-page relative flex min-h-screen flex-col overflow-x-hidden"
     >
       {/* Top Dark Strip */}
       <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
@@ -38,7 +39,7 @@ export default function PendingVerificationPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-20 sm:pt-[90px]">
+      <div className="relative z-10 mx-auto flex flex-1 items-center justify-center px-4 pt-20 sm:px-6 sm:pt-[90px]">
         {/* Pending Verification Card */}
         <div className="auth-card w-[90%] sm:w-full max-w-full sm:max-w-[500px] rounded-[20px] border p-6 sm:p-8 backdrop-blur-sm text-center">
           <div className="mb-6 flex justify-center">
@@ -79,6 +80,7 @@ export default function PendingVerificationPage() {
           </div>
         </div>
       </div>
+      <PortalFooter />
     </div>
   );
 }

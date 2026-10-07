@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import PortalLegalBar from "@/components/PortalLegalBar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: LayoutProps) {
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-slate-950">{children}</body>
+      <body className="min-h-full flex flex-col bg-slate-950">
+        {children}
+        <PortalLegalBar />
+      </body>
     </html>
   );
 }

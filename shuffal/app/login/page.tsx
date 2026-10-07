@@ -4,8 +4,33 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import Image from 'next/image';
+import PortalFooter from '@/components/PortalFooter';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+const upcomingEvents = [
+  {
+    date: 'Saturday, 10 October 2026',
+    title: 'Society Induction & Tech Talk',
+    description: 'Welcome meet with Git/GitHub and open-source setup for 1st and 2nd year students.',
+    venue: 'PPT Hall',
+    budget: '₹1,000',
+  },
+  {
+    date: 'Saturday, 31 October 2026',
+    title: 'Inter-Branch Chess & E-sport Championship',
+    description: 'Swiss-league tournament with trophies and certificates.',
+    venue: 'Auditorium',
+    budget: '₹4,000',
+  },
+  {
+    date: 'Saturday, 7 November 2026',
+    title: 'Winter Code-Rush',
+    description: 'A 4-hour HackerRank algorithm contest focused on DSA.',
+    venue: 'Computer Lab',
+    budget: '₹4,000',
+  },
+] as const;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -177,7 +202,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="auth-page min-h-screen relative overflow-y-auto"
+      className="auth-page relative flex min-h-screen flex-col overflow-x-hidden"
     >
       {/* Top Dark Strip */}
       <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
@@ -203,7 +228,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex flex-col md:flex-row min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center gap-7 sm:gap-8 md:gap-12 lg:gap-48 px-3 sm:px-4 md:px-6 py-8 sm:py-12 pt-48 sm:pt-[200px] md:pt-[180px]">
+      <div className="relative z-10 mx-auto flex flex-1 flex-col items-center justify-center gap-7 px-3 py-8 pt-48 sm:gap-8 sm:px-4 sm:py-12 sm:pt-[200px] md:flex-row md:gap-12 md:px-6 md:pt-[180px] lg:gap-48">
         {/* Left - Login Card */}
         <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border backdrop-blur-sm order-1 md:order-1 relative pt-24 sm:pt-32 md:pt-40 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
           <div className="absolute -top-16 sm:-top-24 md:-top-32 left-1/2 transform -translate-x-1/2 flex justify-center">
@@ -318,15 +343,15 @@ export default function LoginPage() {
             Latest Updates /<br />
             Announcements
           </h2>
-          <div className="space-y-3">
-            <p className="text-xs sm:text-sm font-medium text-white">
-              Registration Deadline for 2026 session
-            </p>
-            <div className="space-y-1 text-xs sm:text-sm text-white/90">
-              <p>Form release date: 29 Sep 2026</p>
-              <p>Deadline: Saturday, 3 Oct 2026, 11:59 PM</p>
-              <p>Verification: 5 Oct 2026</p>
-            </div>
+          <div className="space-y-4">
+            {upcomingEvents.map((event) => (
+              <article key={event.title} className="rounded-md bg-white px-3 py-3 text-slate-700 shadow-sm">
+                <p className="text-[10px] font-semibold uppercase text-slate-500">{event.date}</p>
+                <h3 className="mt-1 text-xs font-semibold text-slate-900">{event.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-slate-700">{event.description}</p>
+                <p className="mt-1 text-[10px] text-slate-600">{event.venue} · Planned budget {event.budget}</p>
+              </article>
+            ))}
           </div>
         </div>
 
@@ -338,21 +363,20 @@ export default function LoginPage() {
               Announcements
             </h2>
 
-            <div className="space-y-4 text-white/90">
-              <div className="mt-2">
-                <p className="text-sm sm:text-base md:text-[1.15rem] font-medium text-white">
-                  Registration Deadline for 2026 session
-                </p>
-                <div className="mt-2 space-y-1 text-xs sm:text-sm md:text-[1.15rem] leading-relaxed text-white/90">
-                  <p>Form release date: 29 Sep 2026</p>
-                  <p>Deadline: Saturday, 3 Oct 2026, 11:59 PM</p>
-                  <p>Verification: 5 Oct 2026</p>
-                </div>
-              </div>
+            <div className="space-y-5 text-white/90">
+              {upcomingEvents.map((event) => (
+                <article key={event.title} className="rounded-md bg-white px-4 py-3 text-slate-700 shadow-sm">
+                  <p className="text-xs font-semibold uppercase text-slate-500">{event.date}</p>
+                  <h3 className="mt-1 text-sm font-semibold text-slate-900 sm:text-base">{event.title}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-700 sm:text-sm">{event.description}</p>
+                  <p className="mt-1 text-xs text-slate-600">{event.venue} · Planned budget {event.budget}</p>
+                </article>
+              ))}
             </div>
           </div>
         </div>
       </div>
+      <PortalFooter />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import Link from 'next/link';
 import Image from 'next/image';
+import PortalFooter from '@/components/PortalFooter';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function RegisterPage() {
 
   return (
     <div
-      className="auth-page min-h-screen relative overflow-hidden"
+      className="auth-page relative flex min-h-screen flex-col overflow-x-hidden"
     >
       {/* Top Dark Strip */}
       <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
@@ -92,7 +93,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-70px)] max-w-[1360px] items-center justify-center px-4 sm:px-6 pt-16 sm:pt-[70px]">
+      <div className="relative z-10 mx-auto flex flex-1 items-center justify-center px-4 pt-16 sm:px-6 sm:pt-[70px]">
         {/* Registration Card */}
         <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border p-5 sm:p-6 md:p-8 backdrop-blur-sm">
           <div className="mb-5 flex justify-center">
@@ -234,6 +235,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      <PortalFooter />
     </div>
   );
 }
