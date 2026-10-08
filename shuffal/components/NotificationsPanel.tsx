@@ -5,6 +5,8 @@ import { useRealtimeNotifications, sendNotification } from '@/lib/hooks';
 import { useUsers } from '@/lib/hooks';
 import MessageCenter from '@/components/MessageCenter';
 
+type NotificationRecipientType = 'all' | 'role' | 'year_representative' | 'own_year' | 'specific' | 'first_second_year_core';
+
 export default function NotificationsPanel({ user }: any) {
   const { notifications, loading, markAllAsRead } = useRealtimeNotifications(user?.id);
   const { users } = useUsers();
@@ -19,7 +21,7 @@ export default function NotificationsPanel({ user }: any) {
   const [sendData, setSendData] = useState({
     title: '',
     message: '',
-    recipientType: 'specific' as 'all' | 'role' | 'year_representative' | 'own_year' | 'specific',
+    recipientType: 'specific' as NotificationRecipientType,
     selectedRole: '',
     selectedYear: '',
     selectedMemberId: '',
@@ -60,6 +62,7 @@ export default function NotificationsPanel({ user }: any) {
   const recipientLabel = (notification: typeof notifications[number]) => {
     if (!notification.sent_by_me && notification.sender_id !== user?.id) return 'Received';
     if (notification.recipient_type === 'all') return `All Members (${notification.recipient_count || 1})`;
+    if (notification.recipient_type === 'first_second_year_core') return `1st & 2nd Year + Core Members (${notification.recipient_count || 1})`;
     if (notification.recipient_type === 'role') return roleLabels[notification.target_role || ''] || 'Selected Role';
     if (notification.recipient_type === 'year_representative') return `Year ${notification.target_year || ''} Representatives`;
     return users.find((member) => member.id === notification.user_id)?.cse_id || 'Specific Member';
@@ -114,9 +117,11 @@ export default function NotificationsPanel({ user }: any) {
           return;
         }
         recipientIds = [selectedUser.id];
+      } else if (sendData.recipientType === 'first_second_year_core') {
+        recipientIds = [];
       }
 
-      if (recipientIds.length === 0 && messageMode !== 'anonymous') {
+      if (recipientIds.length === 0 && messageMode !== 'anonymous' && sendData.recipientType !== 'first_second_year_core') {
         setSendError('No recipients found');
         setIsSending(false);
         return;
@@ -339,7 +344,7 @@ export default function NotificationsPanel({ user }: any) {
                 onChange={(e) =>
                   setSendData({
                     ...sendData,
-                    recipientType: e.target.value as any,
+                    recipientType: e.target.value as NotificationRecipientType,
                     selectedRole: '',
                     selectedYear: '',
                     selectedMemberId: '',
@@ -350,10 +355,16 @@ export default function NotificationsPanel({ user }: any) {
               >
                 <option value="specific">Specific Member</option>
                 {isAdmin && <option value="all">All Members</option>}
+                {isAdmin && <option value="first_second_year_core">1st &amp; 2nd Year + Core Members (excludes 3rd &amp; 4th)</option>}
                 {isYearRepresentative && <option value="own_year">My Year Members</option>}
                   <option value="role">Society Role</option>
                   <option value="year_representative">Year Representative</option>
               </select>
+              {sendData.recipientType === 'first_second_year_core' && (
+                <p className="mt-2 text-sm text-amber-200">
+                  Only verified accounts marked as 1st or 2nd year will receive this. All 3rd- and 4th-year accounts, plus accounts with an unknown year, are excluded.
+                </p>
+              )}
             </div>}
 
             {messageMode === 'normal' && sendData.recipientType === 'role' && (

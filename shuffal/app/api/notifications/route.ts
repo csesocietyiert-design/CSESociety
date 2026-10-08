@@ -68,7 +68,6 @@ const notificationTeamRoles = new Set([
   'year_representative',
   'yearRep',
 ]);
-
 export async function GET(request: Request) {
   try {
     if (!supabaseUrl || !serviceRoleKey) {
@@ -183,7 +182,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!Array.isArray(recipientIds) || (recipientIds.length === 0 && !isAnonymous && recipientType !== 'own_year')) {
+    if (!Array.isArray(recipientIds) || (recipientIds.length === 0 && !isAnonymous && recipientType !== 'own_year' && recipientType !== 'first_second_year_core')) {
       return Response.json(
         { error: 'At least one recipient is required' },
         { status: 400 }
@@ -255,6 +254,60 @@ export async function POST(request: Request) {
       resolvedRecipientIds = (yearMembers || []).map((member) => member.id);
     }
 
+    let validSenderId: string | null = null;
+    let senderRole = '';
+    if (senderId) {
+      const { data: senderUser, error: senderCheckError } = await supabase
+        .from('users')
+        .select('id, role, is_verified')
+        .eq('id', senderId)
+        .maybeSingle();
+
+      if (!senderCheckError && senderUser?.id && senderUser.is_verified !== false && (notificationTeamRoles.has(senderUser.role) || senderUser.role === 'member' || (isAnonymous && senderUser.role !== 'admin'))) {
+        validSenderId = senderUser.id;
+        senderRole = senderUser.role;
+      }
+    }
+
+    if (!validSenderId) {
+      return Response.json({ error: 'Only verified society team members can send notifications.' }, { status: 403 });
+    }
+    if (recipientType === 'first_second_year_core') {
+      if (senderRole !== 'admin') {
+        return Response.json({ error: 'Only admins can message first- and second-year members and core members.' }, { status: 403 });
+      }
+
+      const { data: eligibleUsers, error: eligibleUsersError } = await supabase
+        .from('users')
+        .select('id')
+        .in('year', [1, 2])
+        .eq('is_verified', true);
+      if (eligibleUsersError) throw eligibleUsersError;
+
+      resolvedRecipientIds = (eligibleUsers || []).map((recipient) => recipient.id);
+      if (resolvedRecipientIds.length === 0) {
+        return Response.json({ error: 'No verified first- or second-year members were found.' }, { status: 400 });
+      }
+    }
+    if (isAnonymous && senderRole === 'admin') {
+      return Response.json({ error: 'Admins cannot send anonymous mail.' }, { status: 403 });
+    }
+    if (senderRole === 'member' && !isAnonymous) {
+      return Response.json({ error: 'Members can only send anonymous messages.' }, { status: 403 });
+    }
+    if (isAnonymous) {
+      const { data: recipientUsersForAnonymous, error: recipientRoleError } = await supabase
+        .from('users')
+        .select('id, role, is_verified')
+        .in('id', resolvedRecipientIds);
+      if (recipientRoleError) throw recipientRoleError;
+      const allRecipientsAreAdmins = (recipientUsersForAnonymous || []).length === resolvedRecipientIds.length && (recipientUsersForAnonymous || []).every((recipientUser) => recipientUser.role === 'admin' && recipientUser.is_verified !== false);
+      if (!allRecipientsAreAdmins) return Response.json({ error: 'Anonymous Mails can only be sent to verified admins.' }, { status: 403 });
+    }
+    if (recipientType === 'all' && senderRole !== 'admin') {
+      return Response.json({ error: 'Only the admin can send notifications to all society members.' }, { status: 403 });
+    }
+
     const { data: recipientUsers, error: recipientCheckError } = await supabase
       .from('users')
       .select('id')
@@ -279,43 +332,6 @@ export async function POST(request: Request) {
         },
         { status: 400 }
       );
-    }
-
-    let validSenderId: string | null = null;
-    let senderRole = '';
-    if (senderId) {
-      const { data: senderUser, error: senderCheckError } = await supabase
-        .from('users')
-        .select('id, role, is_verified')
-        .eq('id', senderId)
-        .maybeSingle();
-
-      if (!senderCheckError && senderUser?.id && senderUser.is_verified !== false && (notificationTeamRoles.has(senderUser.role) || senderUser.role === 'member' || (isAnonymous && senderUser.role !== 'admin'))) {
-        validSenderId = senderUser.id;
-        senderRole = senderUser.role;
-      }
-    }
-
-    if (!validSenderId) {
-      return Response.json({ error: 'Only verified society team members can send notifications.' }, { status: 403 });
-    }
-    if (isAnonymous && senderRole === 'admin') {
-      return Response.json({ error: 'Admins cannot send anonymous mail.' }, { status: 403 });
-    }
-    if (senderRole === 'member' && !isAnonymous) {
-      return Response.json({ error: 'Members can only send anonymous messages.' }, { status: 403 });
-    }
-    if (isAnonymous) {
-      const { data: recipientUsersForAnonymous, error: recipientRoleError } = await supabase
-        .from('users')
-        .select('id, role, is_verified')
-        .in('id', resolvedRecipientIds);
-      if (recipientRoleError) throw recipientRoleError;
-      const allRecipientsAreAdmins = (recipientUsersForAnonymous || []).length === resolvedRecipientIds.length && (recipientUsersForAnonymous || []).every((recipientUser) => recipientUser.role === 'admin' && recipientUser.is_verified !== false);
-      if (!allRecipientsAreAdmins) return Response.json({ error: 'Anonymous Mails can only be sent to verified admins.' }, { status: 403 });
-    }
-    if (recipientType === 'all' && senderRole !== 'admin') {
-      return Response.json({ error: 'Only the admin can send notifications to all society members.' }, { status: 403 });
     }
 
     const notificationsToCreate = resolvedRecipientIds.map((recipientId: string) => ({

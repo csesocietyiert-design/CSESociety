@@ -658,14 +658,14 @@ export async function sendNotification(
   title: string,
   message: string,
   senderId: string,
-  recipientType: 'all' | 'role' | 'year_representative' | 'own_year' | 'specific',
+  recipientType: 'all' | 'role' | 'year_representative' | 'own_year' | 'specific' | 'first_second_year_core',
   recipientIds?: string[],
   targetRole?: string,
   targetYear?: number,
   isAnonymous = false
 ) {
   try {
-    if ((!recipientIds || recipientIds.length === 0) && !isAnonymous) return false;
+    if ((!recipientIds || recipientIds.length === 0) && !isAnonymous && recipientType !== 'first_second_year_core') return false;
 
     const response = await fetch('/api/notifications', {
       method: 'POST',
