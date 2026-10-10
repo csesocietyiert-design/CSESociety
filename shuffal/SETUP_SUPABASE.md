@@ -86,6 +86,18 @@ Example: `23F0101` means:
 - `sequence_num`: Latest sequence number for that year
 - `last_updated`: Timestamp of last ID generation
 
+## Attendance Management
+
+1. In the Supabase SQL Editor, run `supabase/migrations/028_create_attendance_tables.sql` after the existing `users` table migrations.
+2. Run `supabase/migrations/029_add_attendance_approval.sql` to add the admin approval workflow.
+3. Run `supabase/migrations/030_allow_admin_manual_attendance.sql` to allow admin manual check-ins.
+4. Sign in to the portal and open `/dashboard/attendance` to view sessions. General, Cultural, and Technical Secretaries can create or edit pending sessions and mark attendance with the QR scanner; an admin approves or deletes sessions and can manually mark attendance; other authenticated users have read-only access.
+5. Once an admin approves a session, its event name and date cannot be edited by anyone. Only an admin can delete the session.
+6. Open a session card to scan a member QR code or enter their Society ID manually. The QR code should contain the Society ID as plain text, as JSON using `societyId`/`cseId`, or as a URL query parameter using `societyId`/`cseId`.
+7. Session attendee lists refresh automatically while open. Duplicate check-ins for the same member and session are rejected.
+
+The API verifies the signed `cse_session` cookie and looks up the user role in `users`; it does not trust a role or user ID submitted by the browser. Attendance endpoints require `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to be configured.
+
 ## Security Features
 
 ✓ Passwords are hashed using PBKDF2 with salt

@@ -36,6 +36,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Notifications', href: '/dashboard/notifications', icon: 'bell', show: !isTreasurer },
     { label: 'Approvals', href: '/dashboard/approvals', icon: 'award', show: isFacultyAdmin },
     { label: 'Certificates', href: '/dashboard/certificates', icon: 'award', show: true },
+    { label: 'Attendance', href: '/dashboard/attendance', icon: 'calendar', show: true },
     { label: 'ID Card', href: '/dashboard/id-card', icon: 'user', show: true },
     { label: 'Resources', href: '/dashboard/resources', icon: 'bar-chart', show: true },
     { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: true },
@@ -79,7 +80,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
                 onMouseEnter={() => setHoveredItem(item.href)}
                 onMouseLeave={() => setHoveredItem(null)}
                 className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 transform ${
-                  pathname === item.href || hoveredItem === item.href
+                  pathname === item.href || pathname.startsWith(`${item.href}/`) || hoveredItem === item.href
                     ? 'bg-blue-600/30 text-white scale-105'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                 }`}
