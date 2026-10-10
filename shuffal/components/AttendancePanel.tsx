@@ -34,6 +34,7 @@ export default function AttendancePanel() {
   const isAdmin = user?.role === adminRole;
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionSessionId, setActionSessionId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -48,9 +49,11 @@ export default function AttendancePanel() {
       if (!response.ok) throw new Error(await getError(response, 'Failed to load attendance sessions'));
       const data = await response.json() as { sessions: AttendanceSession[] };
       setSessions(data.sessions);
+      setLoadFailed(false);
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Failed to load attendance sessions');
+      console.error('Error loading attendance sessions:', loadError);
+      setLoadFailed(true);
     } finally {
       setIsLoading(false);
     }
@@ -163,6 +166,19 @@ export default function AttendancePanel() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {isLoading ? (
           <p className="col-span-full py-10 text-center text-slate-400">Loading attendance sessions...</p>
+        ) : loadFailed ? (
+          <div className="col-span-full flex justify-center py-10">
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                void loadSessions();
+              }}
+              className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-blue-400/60 hover:text-white"
+            >
+              Reload attendance sessions
+            </button>
+          </div>
         ) : sessions.length ? sessions.map((session) => (
           <article
             key={session.id}
