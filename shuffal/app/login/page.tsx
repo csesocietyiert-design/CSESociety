@@ -10,24 +10,24 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 const upcomingEvents = [
   {
-    date: 'Saturday, 10 October 2026',
-    title: 'Society Induction & Tech Talk',
-    description: 'Welcome meet with Git/GitHub and open-source setup for 1st and 2nd year students.',
-    venue: 'PPT Hall',
-    budget: '₹1,000',
-  },
-  {
+    number: 2,
     date: 'Saturday, 31 October 2026',
-    title: 'Inter-Branch Chess & E-sport Championship',
-    description: 'Swiss-league tournament with trophies and certificates.',
-    venue: 'Auditorium',
+    title: 'Inter-Branch Chess Championship / E-sport Championship',
+    category: 'Sports',
     budget: '₹4,000',
   },
   {
+    number: 3,
     date: 'Saturday, 7 November 2026',
     title: 'Winter Code-Rush',
-    description: 'A 4-hour HackerRank algorithm contest focused on DSA.',
-    venue: 'Computer Lab',
+    category: 'Technical',
+    budget: '₹4,000',
+  },
+  {
+    number: 4,
+    date: 'Saturday, 13 February 2027',
+    title: 'Table Tennis Smash Tournament / E-sports Championship',
+    category: 'Sports',
     budget: '₹4,000',
   },
 ] as const;
@@ -346,10 +346,9 @@ export default function LoginPage() {
           <div className="space-y-4">
             {upcomingEvents.map((event) => (
               <article key={event.title} className="rounded-md bg-white px-3 py-3 text-slate-700 shadow-sm">
-                <p className="text-[10px] font-semibold uppercase text-slate-500">{event.date}</p>
+                <p className="text-[10px] font-semibold uppercase text-slate-500">{event.number} · {event.date}</p>
                 <h3 className="mt-1 text-xs font-semibold text-slate-900">{event.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-slate-700">{event.description}</p>
-                <p className="mt-1 text-[10px] text-slate-600">{event.venue} · Planned budget {event.budget}</p>
+                <p className="mt-1 text-[10px] text-slate-600">{event.category} · {event.budget}</p>
               </article>
             ))}
           </div>
@@ -366,10 +365,9 @@ export default function LoginPage() {
             <div className="space-y-5 text-white/90">
               {upcomingEvents.map((event) => (
                 <article key={event.title} className="rounded-md bg-white px-4 py-3 text-slate-700 shadow-sm">
-                  <p className="text-xs font-semibold uppercase text-slate-500">{event.date}</p>
+                  <p className="text-xs font-semibold uppercase text-slate-500">{event.number} · {event.date}</p>
                   <h3 className="mt-1 text-sm font-semibold text-slate-900 sm:text-base">{event.title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-700 sm:text-sm">{event.description}</p>
-                  <p className="mt-1 text-xs text-slate-600">{event.venue} · Planned budget {event.budget}</p>
+                  <p className="mt-1 text-xs text-slate-600">{event.category} · {event.budget}</p>
                 </article>
               ))}
             </div>
