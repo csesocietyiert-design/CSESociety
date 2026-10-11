@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAttendanceActor } from '@/lib/attendance-auth';
+import { canManageAttendance, getAttendanceActor } from '@/lib/attendance-auth';
 import { parseSocietyId, recordAttendance } from '@/lib/attendance-checkin';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -7,8 +7,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function POST(request: Request, { params }: RouteContext) {
   const { actor, error: authError } = await getAttendanceActor(request);
   if (authError) return authError;
-  if (actor.role !== 'admin') {
-    return NextResponse.json({ error: 'Only an admin can manually mark attendance' }, { status: 403 });
+  if (actor.role !== 'admin' && !canManageAttendance(actor.role)) {
+    return NextResponse.json({ error: 'Only an admin or attendance secretary can manually mark attendance' }, { status: 403 });
   }
 
   let body: { societyId?: unknown };

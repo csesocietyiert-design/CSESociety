@@ -90,8 +90,10 @@ function QrScanner({ onScan, onError }: { onScan: (value: string) => void; onErr
 
 export default function AttendanceSessionPanel({ sessionId }: { sessionId: string }) {
   const user = useAuthStore((state) => state.user);
-  const canManage = Boolean(user && managerRoles.has(user.role));
-  const isAdmin = user?.role === adminRole;
+  const role = user?.role.toLowerCase();
+  const canManage = Boolean(role && managerRoles.has(role));
+  const isAdmin = role === adminRole;
+  const canManualCheckIn = canManage || isAdmin;
   const [session, setSession] = useState<AttendanceSession | null>(null);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -127,7 +129,7 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
   }, [loadSession]);
 
   const submitCheckIn = useCallback(async (endpoint: 'scan' | 'manual', value: string) => {
-    if ((endpoint === 'scan' && !canManage) || (endpoint === 'manual' && !isAdmin) || processingScan.current) return;
+    if ((endpoint === 'scan' && !canManage) || (endpoint === 'manual' && !canManualCheckIn) || processingScan.current) return;
     if (endpoint === 'scan' && lastScan.current?.value === value && Date.now() - lastScan.current.at < 5000) return;
     processingScan.current = true;
     if (endpoint === 'scan') lastScan.current = { value, at: Date.now() };
@@ -152,7 +154,7 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
       setScanBusy(false);
       window.setTimeout(() => { processingScan.current = false; }, 1200);
     }
-  }, [canManage, isAdmin, sessionId]);
+  }, [canManage, canManualCheckIn, sessionId]);
 
   const markAttendanceFromQr = useCallback((qrCode: string) => {
     if (canManage) void submitCheckIn('scan', qrCode);
@@ -160,7 +162,7 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
 
   const handleManualSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (manualCode.trim() && isAdmin) void submitCheckIn('manual', manualCode.trim());
+    if (manualCode.trim() && canManualCheckIn) void submitCheckIn('manual', manualCode.trim());
   };
 
   if (isLoading) {
@@ -217,10 +219,10 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
             </div>
           </div>
           )}
-          {isAdmin && (
+          {canManualCheckIn && (
           <div className="rounded-2xl border border-slate-700/70 bg-slate-900/60 p-5">
             <h2 className="text-lg font-semibold text-white">Manual check-in</h2>
-            <p className="mt-1 text-sm text-slate-400">Admin-only check-in for cases where scanning is unavailable.</p>
+            <p className="mt-1 text-sm text-slate-400">Enter a member&apos;s Society ID when QR scanning is unavailable.</p>
             <form onSubmit={handleManualSubmit} className="mt-5 space-y-3">
               <label className="block text-sm font-medium text-slate-200">
                 Society ID
