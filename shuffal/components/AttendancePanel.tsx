@@ -35,6 +35,7 @@ export default function AttendancePanel() {
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [actionSessionId, setActionSessionId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -50,10 +51,12 @@ export default function AttendancePanel() {
       const data = await response.json() as { sessions: AttendanceSession[] };
       setSessions(data.sessions);
       setLoadFailed(false);
+      setLoadError(null);
       setError(null);
-    } catch (loadError) {
-      console.error('Error loading attendance sessions:', loadError);
+    } catch (failure) {
+      console.error('Error loading attendance sessions:', failure);
       setLoadFailed(true);
+      setLoadError(failure instanceof Error ? failure.message : 'Failed to load attendance sessions');
     } finally {
       setIsLoading(false);
     }
@@ -167,7 +170,8 @@ export default function AttendancePanel() {
         {isLoading ? (
           <p className="col-span-full py-10 text-center text-slate-400">Loading attendance sessions...</p>
         ) : loadFailed ? (
-          <div className="col-span-full flex justify-center py-10">
+          <div className="col-span-full flex flex-col items-center gap-3 py-10">
+            <p role="alert" className="text-center text-sm text-red-300">{loadError}</p>
             <button
               type="button"
               onClick={() => {

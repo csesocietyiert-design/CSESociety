@@ -82,7 +82,7 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
 
   const eventCards = useMemo(() => {
     const grouped = new Map<string, { name: string; spent: number; entries: number }>();
-    entries.filter((entry) => entry.entry_type === 'expense' && entry.event_name).forEach((entry) => {
+    entries.filter((entry) => entry.approval_status === 'approved' && entry.entry_type === 'expense' && entry.event_name).forEach((entry) => {
       const name = entry.event_name!.trim();
       const current = grouped.get(name) || { name, spent: 0, entries: 0 };
       current.spent += Number(entry.amount);
