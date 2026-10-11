@@ -13,7 +13,6 @@ const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
 	'kirti singh': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/kirti-singh-8a947537a?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
 		{ label: 'Instagram', url: 'https://www.instagram.com/kirtizlens?utm_source=qr&igsi=MTk2Y3dmNGF6c2RpbA==' },
-		{ label: 'Email', url: 'mailto:kirtisinghaps121@gmail.com' },
 	],
 	'ojas singh': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ojas-singh-101873419' },

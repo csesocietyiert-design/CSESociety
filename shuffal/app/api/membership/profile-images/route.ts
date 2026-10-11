@@ -20,10 +20,10 @@ export async function GET(request: Request) {
 
   const photos: Record<string, string> = {};
   for (const user of users || []) {
-    const email = user.email.toLowerCase();
+    const email = user.email.trim().toLowerCase();
     const membership = (memberships || []).find((candidate) =>
-      candidate.society_id === user.cse_id
-      && (candidate.email_address?.toLowerCase() === email || candidate.email_address_secondary?.toLowerCase() === email)
+      (!candidate.society_id?.trim() || candidate.society_id.trim() === user.cse_id.trim())
+      && (candidate.email_address?.trim().toLowerCase() === email || candidate.email_address_secondary?.trim().toLowerCase() === email)
       && candidate.student_photograph,
     );
     if (membership?.student_photograph) photos[user.id] = membership.student_photograph;
