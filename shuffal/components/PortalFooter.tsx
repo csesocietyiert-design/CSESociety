@@ -31,7 +31,7 @@ export default function PortalFooter() {
           </p>
           <address className="mt-3 space-y-2 text-sm not-italic text-slate-400">
             <p><span className="mr-2 text-amber-400">Phone</span><a className="transition hover:text-white" href="tel:+9153226597135">+91-532-2659-7135</a></p>
-            <p><span className="mr-2 text-amber-400">Email</span><a className="transition hover:text-white" href="mailto:cse@iert.ac.in">cse@iert.ac.in</a></p>
+            <p><span className="mr-2 text-amber-400">CSE Society</span><a className="transition hover:text-white" href="mailto:csesociety.iert@gmail.com">csesociety.iert@gmail.com</a></p>
             <p><span className="mr-2 text-amber-400">Web</span><a className="transition hover:text-white" href="https://www.iert.ac.in" target="_blank" rel="noreferrer">www.iert.ac.in</a></p>
           </address>
         </div>

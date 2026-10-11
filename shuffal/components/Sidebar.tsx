@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuthStore } from '@/lib/store';
 import type { User } from '@/lib/store';
 import { usePathname, useRouter } from 'next/navigation';
@@ -16,7 +16,6 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const pathname = usePathname();
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -77,10 +76,13 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                onMouseEnter={() => setHoveredItem(item.href)}
-                onMouseLeave={() => setHoveredItem(null)}
+                aria-current={
+                  pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`))
+                    ? 'page'
+                    : undefined
+                }
                 className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 transform ${
-                  pathname === item.href || pathname.startsWith(`${item.href}/`) || hoveredItem === item.href
+                  pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`))
                     ? 'bg-blue-600/30 text-white scale-105'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                 }`}
