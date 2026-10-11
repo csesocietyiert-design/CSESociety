@@ -68,6 +68,14 @@ const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
 		{ label: 'X (Twitter)', url: 'https://x.com/XNixuki' },
 		{ label: 'Telegram', url: 'https://t.me/Nixuki101' },
 	],
+	'yashasvi': [
+		{ label: 'GitHub', url: 'https://github.com/Yashasvi3220' },
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/yashasvi-maurya-aa0502388' },
+	],
+	'yashasvi maurya': [
+		{ label: 'GitHub', url: 'https://github.com/Yashasvi3220' },
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/yashasvi-maurya-aa0502388' },
+	],
 	'pushpendra maury': [
 		{ label: 'Email', url: 'mailto:mauryapushpendra6@gmail.com' },
 	],
