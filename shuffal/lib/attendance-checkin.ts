@@ -41,7 +41,7 @@ export async function recordAttendance(
 ) {
   const { data: session, error: sessionError } = await actor.supabase
     .from('attendance_sessions')
-    .select('id')
+    .select('id, approval_status')
     .eq('id', sessionId)
     .maybeSingle();
   if (sessionError) {
@@ -49,6 +49,9 @@ export async function recordAttendance(
     return NextResponse.json({ error: 'Failed to verify attendance session' }, { status: 500 });
   }
   if (!session) return NextResponse.json({ error: 'Attendance session not found' }, { status: 404 });
+  if (session.approval_status === 'approved') {
+    return NextResponse.json({ error: 'This attendance session is approved and check-in is closed' }, { status: 409 });
+  }
 
   const { data: attendee, error: attendeeError } = await actor.supabase
     .from('users')

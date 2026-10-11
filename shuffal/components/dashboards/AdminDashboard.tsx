@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useUsers, useEvents, useRealtimeNotifications, useNotificationHistory, useActivityLogs, Announcement } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import AdminPasswordManager from '@/components/AdminPasswordManager';
+import type { User } from '@/lib/store';
 
 type PendingEvent = {
   id: string;
@@ -15,12 +15,18 @@ type PendingEvent = {
   start_date: string;
 };
 
-export default function AdminDashboard({ user }: any) {
-  const router = useRouter();
+type PendingAttendanceSession = {
+  id: string;
+  eventName: string;
+  date: string;
+  approvalStatus: 'pending' | 'approved';
+};
+
+export default function AdminDashboard({ user }: { user: User }) {
   const [showPasswordManager, setShowPasswordManager] = useState(false);
   const totalMembersClickTimes = useRef<number[]>([]);
   const canManageMemberPasswords = String(user?.role || '').toLowerCase() === 'admin';
-  const { users, loading: usersLoading } = useUsers();
+  const { users } = useUsers();
   const { events, loading: eventsLoading } = useEvents();
   const { notifications } = useRealtimeNotifications(user?.id);
   const { notifications: notificationHistory } = useNotificationHistory();
@@ -37,7 +43,10 @@ export default function AdminDashboard({ user }: any) {
   const [eventApprovalConfirm, setEventApprovalConfirm] = useState<PendingEvent | null>(null);
   const [eventApprovalDecision, setEventApprovalDecision] = useState<'approved' | 'rejected'>('approved');
   const [eventApprovalAction, setEventApprovalAction] = useState<string | null>(null);
-  const [pendingCount, setPendingCount] = useState(0);
+  const [pendingAttendanceSessions, setPendingAttendanceSessions] = useState<PendingAttendanceSession[]>([]);
+  const [attendanceApprovalLoading, setAttendanceApprovalLoading] = useState(false);
+  const [attendanceApprovalError, setAttendanceApprovalError] = useState('');
+  const [attendanceApprovalAction, setAttendanceApprovalAction] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalMembers: 0,
     activeEvents: 0,
@@ -61,7 +70,6 @@ export default function AdminDashboard({ user }: any) {
           supabase.from('certificates').select('id', { count: 'exact', head: true }),
         ]);
 
-        setPendingCount(pendingResult.count || 0);
         setStats({
           totalMembers: usersResult.count || 0,
           activeEvents: eventsResult.count || 0,
@@ -69,8 +77,8 @@ export default function AdminDashboard({ user }: any) {
           pendingEventApprovals: pendingEventsResult.count || 0,
           totalCertificates: certificatesResult.count || 0,
         });
-      } catch (err) {
-        // Silently fail
+      } catch (error) {
+        console.error('Error fetching admin dashboard stats:', error);
       }
     };
 
@@ -134,6 +142,52 @@ export default function AdminDashboard({ user }: any) {
     };
     if (user?.role === 'admin') loadPendingEvents();
   }, [user?.role]);
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
+
+    let active = true;
+    const loadPendingAttendance = async () => {
+      setAttendanceApprovalLoading(true);
+      try {
+        const response = await fetch('/api/attendance');
+        const payload = await response.json() as { sessions?: PendingAttendanceSession[]; error?: string };
+        if (!response.ok) throw new Error(payload.error || 'Could not load attendance sessions');
+        if (active) {
+          setPendingAttendanceSessions(
+            (payload.sessions || []).filter((session) => session.approvalStatus === 'pending')
+          );
+          setAttendanceApprovalError('');
+        }
+      } catch (error) {
+        if (active) {
+          setAttendanceApprovalError(error instanceof Error ? error.message : 'Could not load attendance sessions');
+        }
+      } finally {
+        if (active) setAttendanceApprovalLoading(false);
+      }
+    };
+
+    void loadPendingAttendance();
+    return () => {
+      active = false;
+    };
+  }, [user?.role]);
+
+  const approveAttendanceSession = async (session: PendingAttendanceSession) => {
+    setAttendanceApprovalAction(session.id);
+    setAttendanceApprovalError('');
+    try {
+      const response = await fetch(`/api/attendance/${session.id}/approve`, { method: 'POST' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not approve attendance session');
+      setPendingAttendanceSessions((sessions) => sessions.filter((item) => item.id !== session.id));
+    } catch (error) {
+      setAttendanceApprovalError(error instanceof Error ? error.message : 'Could not approve attendance session');
+    } finally {
+      setAttendanceApprovalAction(null);
+    }
+  };
 
   const reviewPendingEvent = async () => {
     if (!eventApprovalConfirm) return;
@@ -239,7 +293,7 @@ export default function AdminDashboard({ user }: any) {
         <Link href="/dashboard/approvals">
           <div className="backdrop-blur-md bg-gradient-to-br from-yellow-600/20 to-yellow-700/10 border border-yellow-500/30 rounded-lg p-6 hover:border-yellow-400/50 transition-all duration-200 cursor-pointer hover:scale-105 transform">
             <p className="text-slate-400 text-sm font-medium mb-2">Pending Approvals</p>
-            <p className="text-4xl font-bold text-white">{stats.pendingApprovals + stats.pendingEventApprovals}</p>
+            <p className="text-4xl font-bold text-white">{stats.pendingApprovals + stats.pendingEventApprovals + pendingAttendanceSessions.length}</p>
             <p className="text-xs text-yellow-400 mt-2">Need review</p>
           </div>
         </Link>
@@ -257,6 +311,43 @@ export default function AdminDashboard({ user }: any) {
       {pendingEvents.length > 0 && <section className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-6 shadow-lg shadow-black/10">
         <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-300">Needs review</p><h2 className="mt-2 text-xl font-semibold text-white">Pending Event Approvals</h2><p className="mt-1 text-sm text-yellow-100/70">Approve an event to publish it to all member dashboards.</p></div><span className="rounded-full border border-yellow-400/30 px-3 py-1 text-sm font-semibold text-yellow-200">{pendingEvents.length}</span></div>
         <div className="mt-5 grid gap-4 md:grid-cols-2">{pendingEvents.map((event) => <article key={event.id} className="rounded-lg border border-yellow-500/25 bg-slate-950/35 p-5"><p className="text-xs uppercase tracking-wider text-yellow-300">{event.event_type === 'technical' ? 'Technical event' : 'Cultural event'} · {new Date(event.start_date).toLocaleDateString('en-IN')}</p><h3 className="mt-2 text-lg font-semibold text-white">{event.title}</h3>{event.caption && <p className="mt-2 text-sm text-slate-300">{event.caption}</p>}<div className="mt-4 flex gap-3"><button type="button" onClick={() => { setEventApprovalDecision('approved'); setEventApprovalConfirm(event); }} disabled={eventApprovalAction === event.id} className="flex-1 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">Approve</button><button type="button" onClick={() => { setEventApprovalDecision('rejected'); setEventApprovalConfirm(event); }} disabled={eventApprovalAction === event.id} className="flex-1 rounded-lg border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:border-rose-300 disabled:opacity-50">Reject</button></div></article>)}</div>
+      </section>}
+
+      {user?.role === 'admin' && <section className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-6 shadow-lg shadow-black/10">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-300">Needs review</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Pending Attendance Approvals</h2>
+            <p className="mt-1 text-sm text-blue-100/70">Approve attendance sessions submitted by society secretaries.</p>
+          </div>
+          <span className="rounded-full border border-blue-400/30 px-3 py-1 text-sm font-semibold text-blue-200">{pendingAttendanceSessions.length} Pending</span>
+        </div>
+        {attendanceApprovalError && <p role="alert" className="mt-4 rounded-lg border border-rose-400/30 bg-rose-400/5 p-3 text-sm text-rose-300">{attendanceApprovalError}</p>}
+        {attendanceApprovalLoading ? <p className="mt-5 text-sm text-slate-400">Loading attendance sessions...</p> : pendingAttendanceSessions.length === 0 ? (
+          <p className="mt-5 rounded-lg border border-slate-700/50 bg-slate-900/40 p-5 text-sm text-slate-400">No attendance sessions are waiting for approval.</p>
+        ) : (
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {pendingAttendanceSessions.map((session) => (
+              <article key={session.id} className="rounded-lg border border-blue-500/25 bg-slate-950/35 p-5">
+                <p className="text-xs uppercase tracking-wider text-blue-300">{new Date(`${session.date}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                <h3 className="mt-2 text-lg font-semibold text-white">{session.eventName}</h3>
+                <div className="mt-4 flex gap-3">
+                  <Link href={`/dashboard/attendance/${session.id}`} className="flex-1 rounded-lg border border-slate-600 px-3 py-2 text-center text-sm font-semibold text-slate-200 hover:border-blue-300">
+                    Review
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => void approveAttendanceSession(session)}
+                    disabled={attendanceApprovalAction === session.id}
+                    className="flex-1 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
+                  >
+                    {attendanceApprovalAction === session.id ? 'Approving...' : 'Approve'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>}
 
       {eventApprovalConfirm && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"><div className="w-full max-w-md rounded-lg border border-yellow-500/50 bg-slate-900 p-6"><h3 className="text-xl font-bold text-white">Confirm {eventApprovalDecision === 'approved' ? 'Approval' : 'Rejection'}</h3><p className="mt-3 text-sm leading-6 text-slate-300">Are you sure you want to {eventApprovalDecision === 'approved' ? 'approve and publish' : 'reject'} <span className="font-semibold text-yellow-300">{eventApprovalConfirm.title}</span>?</p><div className="mt-6 flex gap-3"><button type="button" onClick={reviewPendingEvent} disabled={eventApprovalAction === eventApprovalConfirm.id} className="flex-1 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">Confirm</button><button type="button" onClick={() => setEventApprovalConfirm(null)} className="flex-1 rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300">Cancel</button></div></div></div>}

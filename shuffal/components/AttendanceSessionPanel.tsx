@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { jsPDF } from 'jspdf';
+import * as XLSX from 'xlsx';
 import { useAuthStore } from '@/lib/store';
 
 type AttendanceSession = {
@@ -30,6 +32,21 @@ async function getError(response: Response, fallback: string) {
 
 function roleName(role: string) {
   return role.split('_').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+}
+
+function getExportBaseName(eventName: string, date: string) {
+  const safeEventName = eventName.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+  return `${safeEventName || 'attendance'}-${date}`;
+}
+
+function downloadJson(filename: string, content: unknown) {
+  const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function QrScanner({ onScan, onError }: { onScan: (value: string) => void; onError: (message: string) => void }) {
@@ -130,6 +147,10 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
 
   const submitCheckIn = useCallback(async (endpoint: 'scan' | 'manual', value: string) => {
     if ((endpoint === 'scan' && !canManage) || (endpoint === 'manual' && !canManualCheckIn) || processingScan.current) return;
+    if (session?.approvalStatus === 'approved') {
+      setScanError('This attendance session is approved and check-in is closed');
+      return;
+    }
     if (endpoint === 'scan' && lastScan.current?.value === value && Date.now() - lastScan.current.at < 5000) return;
     processingScan.current = true;
     if (endpoint === 'scan') lastScan.current = { value, at: Date.now() };
@@ -154,7 +175,7 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
       setScanBusy(false);
       window.setTimeout(() => { processingScan.current = false; }, 1200);
     }
-  }, [canManage, canManualCheckIn, sessionId]);
+  }, [canManage, canManualCheckIn, session, sessionId]);
 
   const markAttendanceFromQr = useCallback((qrCode: string) => {
     if (canManage) void submitCheckIn('scan', qrCode);
@@ -163,6 +184,77 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
   const handleManualSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (manualCode.trim() && canManualCheckIn) void submitCheckIn('manual', manualCode.trim());
+  };
+
+  const exportBaseName = getExportBaseName(session?.eventName || 'attendance', session?.date || '');
+  const exportAttendees = attendees.map((attendee) => ({
+    'Society ID': attendee.societyId,
+    Name: attendee.name,
+    Year: attendee.year || '',
+    'Marked At': new Date(attendee.markedAt).toLocaleString(),
+    'Marked By': roleName(attendee.markedByRole),
+  }));
+
+  const downloadAttendanceJson = () => {
+    if (!session) return;
+    downloadJson(`${exportBaseName}.json`, {
+      eventName: session.eventName,
+      date: session.date,
+      approvalStatus: session.approvalStatus,
+      attendeeCount: attendees.length,
+      attendees: exportAttendees,
+    });
+  };
+
+  const downloadAttendanceExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(exportAttendees);
+    worksheet['!cols'] = [{ wch: 16 }, { wch: 28 }, { wch: 10 }, { wch: 24 }, { wch: 24 }];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+    XLSX.writeFile(workbook, `${exportBaseName}.xlsx`);
+  };
+
+  const downloadAttendancePdf = () => {
+    if (!session) return;
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const columns = [14, 52, 116, 142];
+    let y = 20;
+
+    pdf.setFontSize(16);
+    pdf.text(session.eventName, 14, y);
+    y += 9;
+    pdf.setFontSize(10);
+    pdf.text(`Date: ${new Date(`${session.date}T00:00:00`).toLocaleDateString('en-GB')}`, 14, y);
+    pdf.text(`Present: ${attendees.length}`, pageWidth - 14, y, { align: 'right' });
+    y += 10;
+
+    const drawTableHeader = () => {
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Society ID', columns[0], y);
+      pdf.text('Name', columns[1], y);
+      pdf.text('Year', columns[2], y);
+      pdf.text('Marked At', columns[3], y);
+      pdf.setFont('helvetica', 'normal');
+      y += 7;
+    };
+
+    drawTableHeader();
+    for (const attendee of attendees) {
+      if (y > pageHeight - 14) {
+        pdf.addPage();
+        y = 18;
+        drawTableHeader();
+      }
+      pdf.text(attendee.societyId, columns[0], y);
+      pdf.text(pdf.splitTextToSize(attendee.name, 58), columns[1], y);
+      pdf.text(attendee.year ? String(attendee.year) : '-', columns[2], y);
+      pdf.text(new Date(attendee.markedAt).toLocaleString('en-GB'), columns[3], y);
+      y += 7;
+    }
+
+    pdf.save(`${exportBaseName}.pdf`);
   };
 
   if (isLoading) {
@@ -205,7 +297,7 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
         )}
       </header>
 
-      {(canManage || isAdmin) && (
+      {session.approvalStatus === 'pending' && (canManage || isAdmin) && (
         <section className={`grid gap-5 ${canManage && isAdmin ? 'lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]' : ''}`}>
           {canManage && (
           <div className="rounded-2xl border border-slate-700/70 bg-slate-900/60 p-5">
@@ -262,9 +354,20 @@ export default function AttendanceSessionPanel({ sessionId }: { sessionId: strin
         <div className="flex items-center justify-between border-b border-slate-700/70 px-5 py-4">
           <div>
             <h2 className="text-lg font-semibold text-white">Marked attendees</h2>
-            <p className="mt-1 text-sm text-slate-400">This list refreshes automatically.</p>
+            <p className="mt-1 text-sm text-slate-400">
+              {session.approvalStatus === 'approved' ? 'Approved attendance record · check-in is closed.' : 'This list refreshes automatically.'}
+            </p>
           </div>
-          <span className="rounded-full bg-blue-500/15 px-3 py-1 text-sm font-medium text-blue-200">{attendees.length}</span>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="rounded-full bg-blue-500/15 px-3 py-1 text-sm font-medium text-blue-200">{attendees.length}</span>
+            {session.approvalStatus === 'approved' && (
+              <>
+                <button type="button" onClick={downloadAttendancePdf} className="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-blue-400 hover:text-white">PDF</button>
+                <button type="button" onClick={downloadAttendanceJson} className="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-blue-400 hover:text-white">JSON</button>
+                <button type="button" onClick={downloadAttendanceExcel} className="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:border-blue-400 hover:text-white">Excel</button>
+              </>
+            )}
+          </div>
         </div>
         {attendees.length ? (
           <div className="overflow-x-auto">
