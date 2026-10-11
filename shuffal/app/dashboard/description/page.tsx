@@ -117,7 +117,9 @@ function TeamCard({ member, membershipPhoto }: { member: User; membershipPhoto?:
 		{ label: 'Instagram', url: member.instagram_url },
 		...(teamSocialLinks[member.name.trim().toLowerCase()] || []),
 		...(member.email ? [{ label: 'Email', url: `mailto:${member.email}` }] : []),
-	].filter((link): link is { label: string; url: string } => Boolean(link.url));
+	]
+		.filter((link): link is { label: string; url: string } => Boolean(link.url))
+		.filter((link, index, links) => link.label !== 'Email' || links.findIndex((candidate) => candidate.label === 'Email') === index);
 
 	return (
 		<article className="group rounded-lg border border-slate-700/60 bg-slate-900/70 p-5 text-center shadow-lg shadow-black/10 transition duration-200 hover:-translate-y-1 hover:border-teal-400/50 hover:shadow-teal-950/20">
