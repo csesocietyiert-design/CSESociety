@@ -2,6 +2,29 @@ import { NextResponse } from 'next/server';
 import { canManageAttendance, getAttendanceActor, isValidAttendanceDate } from '@/lib/attendance-auth';
 import { logActivity } from '@/lib/activity-logger';
 
+function getAttendanceSchemaError(error: { code?: string; message?: string }) {
+  const message = error.message?.toLowerCase() || '';
+  if (
+    error.code === '42P01'
+    || error.code === 'PGRST205'
+    || (message.includes('attendance_sessions') && (message.includes('does not exist') || message.includes('could not find the table')))
+  ) {
+    return 'Attendance tables are missing in Supabase. Run migrations 028_create_attendance_tables.sql, 029_add_attendance_approval.sql, and 030_allow_admin_manual_attendance.sql.';
+  }
+  if (
+    message.includes('approval_status')
+    && (
+      error.code === '42703'
+      || error.code === 'PGRST204'
+      || message.includes('does not exist')
+      || message.includes('could not find the')
+    )
+  ) {
+    return 'Attendance approval schema is missing in Supabase. Run migration 029_add_attendance_approval.sql.';
+  }
+  return null;
+}
+
 export async function GET(request: Request) {
   const { actor, error: authError } = await getAttendanceActor(request);
   if (authError) return authError;
@@ -14,7 +37,9 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error('Error fetching attendance sessions:', error);
-    return NextResponse.json({ error: 'Failed to load attendance sessions' }, { status: 500 });
+    return NextResponse.json({
+      error: getAttendanceSchemaError(error) || 'Failed to load attendance sessions. Check the server logs and Supabase configuration.',
+    }, { status: 500 });
   }
 
   return NextResponse.json({
