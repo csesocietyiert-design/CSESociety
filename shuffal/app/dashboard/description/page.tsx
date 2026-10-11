@@ -44,7 +44,7 @@ const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
 		{ label: 'GitHub', url: 'https://github.com/AyushPatel-codes' },
 		{ label: 'Instagram', url: 'https://www.instagram.com/aayushxus?obrf=bjh2ODFwbGRhYzdt' },
 		{ label: 'X (Twitter)', url: 'https://x.com/AyushPatel51433' },
-		{ label: 'Email', url: 'mailto:ayush89p87@gmail.com' },
+		{ label: 'Email', url: 'mailto:ayush23p89@gmail.com' },
 	],
 	'ayush patel': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayush-patel-473593385?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
