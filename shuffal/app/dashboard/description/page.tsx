@@ -43,11 +43,31 @@ const teamSocialLinks: Record<string, { label: string; url: string }[]> = {
 	'ayush': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayush-patel-473593385?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
 		{ label: 'GitHub', url: 'https://github.com/AyushPatel-codes' },
+		{ label: 'Instagram', url: 'https://www.instagram.com/aayushxus?obrf=bjh2ODFwbGRhYzdt' },
+		{ label: 'X (Twitter)', url: 'https://x.com/AyushPatel51433' },
 		{ label: 'Email', url: 'mailto:ayush89p87@gmail.com' },
 	],
 	'ayush patel': [
 		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ayush-patel-473593385?utm_source=share_via&utm_content=profile&utm_medium=member_android' },
 		{ label: 'GitHub', url: 'https://github.com/AyushPatel-codes' },
+		{ label: 'Instagram', url: 'https://www.instagram.com/aayushxus?obrf=bjh2ODFwbGRhYzdt' },
+		{ label: 'X (Twitter)', url: 'https://x.com/AyushPatel51433' },
+	],
+	'ambuj': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ambujsingh2007' },
+		{ label: 'GitHub', url: 'https://github.com/AmbujSingh2007' },
+		{ label: 'Google Skills', url: 'https://www.skills.google/public_profiles/bf0160fe-d199-4f80-85c6-7a6680865e2c' },
+	],
+	'ambuj singh': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/ambujsingh2007' },
+		{ label: 'GitHub', url: 'https://github.com/AmbujSingh2007' },
+		{ label: 'Google Skills', url: 'https://www.skills.google/public_profiles/bf0160fe-d199-4f80-85c6-7a6680865e2c' },
+	],
+	'nikhil': [
+		{ label: 'LinkedIn', url: 'https://www.linkedin.com/in/nikhil-588a5842b' },
+		{ label: 'GitHub', url: 'https://github.com/nikhil101-pixel' },
+		{ label: 'X (Twitter)', url: 'https://x.com/XNixuki' },
+		{ label: 'Telegram', url: 'https://t.me/Nixuki101' },
 	],
 	'pushpendra maury': [
 		{ label: 'Email', url: 'mailto:mauryapushpendra6@gmail.com' },
