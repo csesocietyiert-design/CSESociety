@@ -42,3 +42,5 @@ drop trigger if exists messages_touch_conversation on public.messages;
 create trigger messages_touch_conversation
 after insert on public.messages
 for each row execute function public.touch_conversation_updated_at();
+
+notify pgrst, 'reload schema';

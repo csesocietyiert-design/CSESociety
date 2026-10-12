@@ -100,6 +100,12 @@ Example: `23F0101` means:
 
 The API verifies the signed `cse_session` cookie and looks up the user role in `users`; it does not trust a role or user ID submitted by the browser. Attendance endpoints require `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to be configured.
 
+## Direct Messages on the Notifications page
+
+The Notifications page also includes Direct Messages. In the Supabase SQL Editor, run `supabase/migrations/026_create_secure_admin_messages.sql` after the `users` table has been created. Then run `supabase/migrations/033_add_message_history_controls.sql` to enable per-user chat-history deletion. These migrations refresh the PostgREST schema cache. Members can search verified users by name or Society ID; deleting a chat hides its history only from the deleting user's inbox, and the other participant retains their copy.
+
+If Supabase still reports that `public.conversations` is missing from the schema cache after the migration runs, execute `NOTIFY pgrst, 'reload schema';` in the SQL Editor and retry.
+
 ## Security Features
 
 ✓ Passwords are hashed using PBKDF2 with salt
@@ -112,6 +118,13 @@ The API verifies the signed `cse_session` cookie and looks up the user role in `
 ### Error: "No matching schema"
 - Run the SQL migration again in Supabase SQL Editor
 - Make sure you ran the complete `001_init.sql` file
+
+### Error: "Could not find the table 'public.conversations' in the schema cache"
+- Run `supabase/migrations/026_create_secure_admin_messages.sql` in Supabase SQL Editor
+- If the table already exists, run `NOTIFY pgrst, 'reload schema';` and retry
+
+### Error: Direct messages cannot load after enabling per-user history deletion
+- Run `supabase/migrations/033_add_message_history_controls.sql` in Supabase SQL Editor
 
 ### Error: "Invalid credentials"
 - Verify `.env.local` has correct Supabase URL and key
