@@ -126,6 +126,10 @@ If Supabase still reports that `public.conversations` is missing from the schema
 ### Error: Direct messages cannot load after enabling per-user history deletion
 - Run `supabase/migrations/033_add_message_history_controls.sql` in Supabase SQL Editor
 
+### Error: `column conversations.member_deleted_at does not exist`
+- Run `supabase/migrations/033_add_message_history_controls.sql` in Supabase SQL Editor; it safely adds the history-control columns to an existing table
+- Then run `NOTIFY pgrst, 'reload schema';` and retry
+
 ### Error: "Invalid credentials"
 - Verify `.env.local` has correct Supabase URL and key
 - Check that NEXT_PUBLIC_ prefix is included
