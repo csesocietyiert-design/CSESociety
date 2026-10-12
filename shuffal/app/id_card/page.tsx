@@ -12,7 +12,7 @@ interface PublicIdCardPageProps {
 }
 
 export default async function PublicIdCardPage({ searchParams }: PublicIdCardPageProps) {
-  const societyId = (await searchParams).id?.trim() || '';
+  const societyId = normalizeSocietyId((await searchParams).id);
   const cardUrl = societyId ? await findCardUrl(societyId) : null;
 
   return (
@@ -41,6 +41,12 @@ export default async function PublicIdCardPage({ searchParams }: PublicIdCardPag
       </div>
     </main>
   );
+}
+
+function normalizeSocietyId(value?: string) {
+  const raw = value?.trim() || '';
+  const match = raw.match(/^([a-zA-Z0-9._-]{1,20})(?:\s+\([^()]*\))?$/);
+  return match?.[1] || raw;
 }
 
 async function findCardUrl(societyId: string) {
