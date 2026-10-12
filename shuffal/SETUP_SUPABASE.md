@@ -106,6 +106,10 @@ The Notifications page also includes Direct Messages. In the Supabase SQL Editor
 
 If Supabase still reports that `public.conversations` is missing from the schema cache after the migration runs, execute `NOTIFY pgrst, 'reload schema';` in the SQL Editor and retry.
 
+## Society Funds
+
+In the Supabase SQL Editor, run migrations `023_add_finance_entries.sql`, `024_add_finance_total_amount.sql`, and `025_add_finance_bill_details.sql` in order. If funds still fail to load, use the error shown in the Finance page to identify the missing table or column and apply the indicated migration.
+
 ## Security Features
 
 ✓ Passwords are hashed using PBKDF2 with salt

@@ -23,7 +23,22 @@ async function getRequester(request: Request) {
 }
 
 function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Finance request failed';
+  const message = error instanceof Error
+    ? error.message
+    : typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+      ? error.message
+      : 'Finance request failed';
+
+  if (/finance_entries/i.test(message) && /(does not exist|could not find the table)/i.test(message)) {
+    return 'Finance ledger table is missing. Run migration 023_add_finance_entries.sql in Supabase.';
+  }
+  if (/finance_settings/i.test(message) && /(does not exist|could not find the table)/i.test(message)) {
+    return 'Finance settings table is missing. Run migration 024_add_finance_total_amount.sql in Supabase.';
+  }
+  if (/(details|bill_link)/i.test(message) && /(column|schema cache)/i.test(message) && /(does not exist|could not find)/i.test(message)) {
+    return 'Finance entry details are missing. Run migration 025_add_finance_bill_details.sql in Supabase.';
+  }
+  return message;
 }
 
 export async function GET(request: Request) {
@@ -47,7 +62,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Finance read error:', error);
     const message = errorMessage(error);
-    return Response.json({ error: message.includes('finance_entries') ? 'Finance database table is missing. Run migration 023_add_finance_entries.sql in Supabase.' : message }, { status: 500 });
+    return Response.json({ error: message }, { status: 500 });
   }
 }
 
@@ -87,8 +102,7 @@ export async function POST(request: Request) {
     return Response.json({ entry: data }, { status: 201 });
   } catch (error) {
     console.error('Finance create error:', error);
-    const message = errorMessage(error);
-    return Response.json({ error: message.includes('finance_entries') ? 'Finance database table is missing. Run migration 023_add_finance_entries.sql in Supabase.' : message }, { status: 500 });
+    return Response.json({ error: errorMessage(error) }, { status: 500 });
   }
 }
 
