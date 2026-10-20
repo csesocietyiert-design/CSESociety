@@ -58,7 +58,8 @@ export async function GET(request: Request) {
       .eq('id', 1)
       .maybeSingle();
     if (settingsError) throw settingsError;
-    return Response.json({ entries: data || [], totalAmount: Number(settings?.total_amount || 0), canManage: requester.user.role === 'treasurer' });
+    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
+    return Response.json({ entries: data || [], totalAmount: Number(settings?.total_amount || 0), canManage });
   } catch (error) {
     console.error('Finance read error:', error);
     const message = errorMessage(error);
@@ -71,7 +72,8 @@ export async function POST(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    if (requester.user.role !== 'treasurer') return Response.json({ error: 'Only the treasurer can update society funds' }, { status: 403 });
+    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
+    if (!canManage) return Response.json({ error: 'Only the treasurer or admin can update society funds' }, { status: 403 });
 
     const body = await request.json();
     const entryType = body?.entryType === 'income' || body?.entryType === 'expense' ? body.entryType : null;
@@ -111,7 +113,8 @@ export async function DELETE(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    if (requester.user.role !== 'treasurer') return Response.json({ error: 'Only the treasurer can remove fund entries' }, { status: 403 });
+    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
+    if (!canManage) return Response.json({ error: 'Only the treasurer or admin can remove fund entries' }, { status: 403 });
     const { id } = await request.json();
     if (typeof id !== 'string' || !id) return Response.json({ error: 'Entry ID is required' }, { status: 400 });
     const { data: entry, error: entryError } = await requester.supabase.from('finance_entries').select('approval_status').eq('id', id).maybeSingle();
@@ -132,7 +135,11 @@ export async function PATCH(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    if (requester.user.role !== 'admin') return Response.json({ error: 'Only an admin can approve fund entries or set the total amount' }, { status: 403 });
+    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
+    if (!canManage) return Response.json({ error: 'Only the treasurer or admin can manage fund entries' }, { status: 403 });
+    if (requester.user.role !== 'admin' && requester.user.role !== 'treasurer') {
+      return Response.json({ error: 'Only an admin or treasurer can update society funds' }, { status: 403 });
+    }
     const { id, amount, action } = await request.json();
     if (action === 'set_total_amount') {
       const totalAmount = Number(amount);
@@ -160,6 +167,7 @@ export async function PATCH(request: Request) {
       if (!data) return Response.json({ error: 'Approved entries cannot be edited' }, { status: 409 });
       return Response.json({ entry: data });
     }
+    if (requester.user.role !== 'admin') return Response.json({ error: 'Only an admin can approve fund entries' }, { status: 403 });
     const { data, error } = await requester.supabase
       .from('finance_entries')
       .update({ approval_status: 'approved', approved_by: requester.user.id, approved_at: new Date().toISOString() })
@@ -175,3 +183,4 @@ export async function PATCH(request: Request) {
     return Response.json({ error: errorMessage(error) }, { status: 500 });
   }
 }
+
