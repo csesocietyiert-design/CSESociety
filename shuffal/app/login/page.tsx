@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -225,7 +225,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex flex-1 flex-col items-center justify-center gap-7 px-3 py-8 pt-48 sm:gap-8 sm:px-4 sm:py-12 sm:pt-[200px] md:flex-row md:gap-12 md:px-6 md:pt-[180px] lg:gap-48">
+      <div className="relative z-10 mx-auto flex flex-1 flex-col items-center justify-center gap-7 px-3 py-8 pt-48 sm:gap-8 sm:px-4 sm:py-12 sm:pt-[200px] md:flex-row md:gap-12 md:px-6 md:pt-[180px]">
         {/* Left - Login Card */}
         <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border backdrop-blur-sm order-1 md:order-1 relative pt-24 sm:pt-32 md:pt-40 px-5 sm:px-6 md:px-8 pb-5 sm:pb-6 md:pb-8">
           <div className="absolute -top-16 sm:-top-24 md:-top-32 left-1/2 transform -translate-x-1/2 flex justify-center">
@@ -314,10 +314,10 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleClick}
             disabled={loading || googleLoading}
-            className="mt-4 flex w-full items-center justify-center gap-3 rounded-md border border-white/10 bg-white/5 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-4 flex w-full items-center justify-center gap-3 rounded-md border border-white/10 bg-white/5 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-              <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.8-2.7-5.8-6s2.6-6 5.8-6c1.8 0 3 .8 3.7 1.5l2.5-2.4C16.7 3.2 14.7 2.4 12 2.4 6.9 2.4 2.8 6.5 2.8 11.6s4.1 9.2 9.2 9.2c5.3 0 8.8-3.7 8.8-8.9 0-.6-.1-1.2-.2-1.7H12Z" />
+              <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.8-2.7-5.8-6s2.6-6 5.8-6c1.8 0 3 .8 3.7 1.5l2.5-2.4C16.7 3.2 14.7 2.4 12 2.4 6.9 2.4 2.8 6.5 2.8 11.6s4.1 9.2 9.2 9.2c5.5 0 9.1-3.9 9.1-9.2 0-.7-.1-1.1-.2-1.6H12Z" />
               <path fill="#34A853" d="M3.8 7.2l3.4 2.5c.9-1.7 2.8-2.9 4.8-2.9 1.8 0 3 .8 3.7 1.5l2.5-2.4C16.7 3.2 14.7 2.4 12 2.4c-3.6 0-6.7 2.1-8.2 5.1Z" />
               <path fill="#FBBC05" d="M3.8 16.9c1.5 2.9 4.6 5.1 8.2 5.1 2.4 0 4.4-.8 5.9-2.3l-2.9-2.4c-.8.6-1.9 1-3 1-2.3 0-4.3-1.6-5-3.7l-3.2 2.3Z" />
               <path fill="#4285F4" d="M12 21.9c2.8 0 5.2-.9 6.9-2.5l-3.2-2.5c-.9.6-2.1 1-3.7 1-3.2 0-5.4-2.2-5.4-4.9H.9v2.8c1.6 3.2 4.9 5.1 11.1 5.1Z" />
@@ -345,7 +345,7 @@ export default function LoginPage() {
               <article key={event.title} className="rounded-md bg-white px-3 py-3 text-slate-700 shadow-sm">
                 <p className="text-[10px] font-semibold uppercase text-slate-500">{event.number} · {event.date}</p>
                 <h3 className="mt-1 text-xs font-semibold text-slate-900">{event.title}</h3>
-                <p className="mt-1 text-[10px] text-slate-600">{event.category} · {event.budget}</p>
+                <p className="mt-1 text-[10px] text-slate-600">{event.category}</p>
               </article>
             ))}
           </div>
@@ -364,7 +364,7 @@ export default function LoginPage() {
                 <article key={event.title} className="rounded-md bg-white px-4 py-3 text-slate-700 shadow-sm">
                   <p className="text-xs font-semibold uppercase text-slate-500">{event.number} · {event.date}</p>
                   <h3 className="mt-1 text-sm font-semibold text-slate-900 sm:text-base">{event.title}</h3>
-                  <p className="mt-1 text-xs text-slate-600">{event.category} · {event.budget}</p>
+                  <p className="mt-1 text-xs text-slate-600">{event.category}</p>
                 </article>
               ))}
             </div>
