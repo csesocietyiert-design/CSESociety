@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,22 +13,19 @@ const upcomingEvents = [
     number: 2,
     date: 'Saturday, 31 October 2026',
     title: 'Inter-Branch Chess Championship / E-sport Championship',
-    category: 'Sports',
-    budget: '₹4,000',
+    category: 'Sports',  
   },
   {
     number: 3,
     date: 'Saturday, 7 November 2026',
     title: 'Winter Code-Rush',
     category: 'Technical',
-    budget: '₹4,000',
   },
   {
     number: 4,
     date: 'Saturday, 13 February 2027',
     title: 'Table Tennis Smash Tournament / E-sports Championship',
     category: 'Sports',
-    budget: '₹4,000',
   },
 ] as const;
 
