@@ -38,7 +38,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Attendance', href: '/dashboard/attendance', icon: 'calendar', show: true },
     { label: 'ID Card', href: '/dashboard/id-card', icon: 'user', show: true },
     { label: 'Resources', href: '/dashboard/resources', icon: 'bar-chart', show: true },
-    { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: true },
+    { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: isTreasurer || isFacultyAdmin },
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative },
     { label: 'My Year', href: '/dashboard/members', icon: 'user', show: isYearRepresentative },
     { label: 'Profile', href: '/dashboard/profile', icon: 'user', show: true },
@@ -119,14 +119,15 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
 function getIcon(name: string) {
   const icons: Record<string, React.ReactElement> = {
     grid: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>,
-    users: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>,
-    calendar: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>,
-    bell: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>,
-    award: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v6h2.97c.5 1.25 1.42 2.31 2.58 3v2.3c.39.57.84 1.12 1.35 1.63.51.51.97 1.06 1.35 1.63h5.6c.38-.57.84-1.12 1.35-1.63.51-.51.97-1.06 1.35-1.63v-2.3c1.16-.69 2.08-1.75 2.58-3H21V7c0-1.1-.9-2-2-2zm-8 10.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>,
+    users: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.66 0-8 1.34-8 4v2h16v-2c0-2.66-5.34-4-8-4zm8 0c.29 0 .62.02.97.05 1.64.2 2.88 1.17 3.57 2.59.7 1.42.46 3.36-.64 4.36H22v-2c0-2.66-5.34-4-8-4z"/></svg>,
+    calendar: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-2-9H7V5h10v5z"/></svg>,
+    bell: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>,
+    award: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v6h2.97c.5 1.25 1.42 2.31 2.58 3v2.3c.39.57.84 1.12 1.35 1.63.51.51.97 1.06 1.35 1.63.38-.57.84-1.12 1.35-1.63.51-.51.96-1.06 1.35-1.63V16c1.16-.69 2.08-1.75 2.58-3H21V7c0-1.1-.9-2-2-2zm-7 9.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 7.5 12 7.5s3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>,
     'bar-chart': <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>,
     user: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>,
     info: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth="2"/><path strokeLinecap="round" strokeWidth="2" d="M12 10v6m0-9h.01"/></svg>,
-    academic: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7.5 12 3l9 4.5L12 12 3 7.5Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9.2V15c3.3 2.5 8.7 2.5 12 0V9.2M21 8v6"/></svg>,
+    academic: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7.5 12 3l9 4.5L12 12 3 7.5Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 9.5V15l5 3 5-3V9.5"/></svg>,
   };
   return icons[name] || <span className="w-5 h-5">•</span>;
 }
+

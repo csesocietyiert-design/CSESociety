@@ -23,5 +23,5 @@ export default function FinancePage() {
   }
 
   const role = user.role.toLowerCase();
-  return <LayoutWrapper user={user}><FinancePanel canManage={role === 'treasurer'} canApprove={role === 'admin'} /></LayoutWrapper>;
+  return <LayoutWrapper user={user}><FinancePanel canManage={role === 'treasurer' || role === 'admin'} canApprove={role === 'admin'} /></LayoutWrapper>;
 }
