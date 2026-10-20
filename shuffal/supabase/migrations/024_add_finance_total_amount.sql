@@ -9,5 +9,5 @@ create table if not exists public.finance_settings (
 alter table public.finance_settings enable row level security;
 
 insert into public.finance_settings (id, total_amount)
-values (1, 0)
+values (1, 58200)
 on conflict (id) do nothing;

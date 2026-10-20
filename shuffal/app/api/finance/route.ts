@@ -58,8 +58,9 @@ export async function GET(request: Request) {
       .eq('id', 1)
       .maybeSingle();
     if (settingsError) throw settingsError;
+    const totalAmount = Number(settings?.total_amount ?? 58200);
     const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
-    return Response.json({ entries: data || [], totalAmount: Number(settings?.total_amount || 0), canManage });
+    return Response.json({ entries: data || [], totalAmount, canManage });
   } catch (error) {
     console.error('Finance read error:', error);
     const message = errorMessage(error);
@@ -137,9 +138,6 @@ export async function PATCH(request: Request) {
     if ('error' in requester) return requester.error;
     const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
     if (!canManage) return Response.json({ error: 'Only the treasurer or admin can manage fund entries' }, { status: 403 });
-    if (requester.user.role !== 'admin' && requester.user.role !== 'treasurer') {
-      return Response.json({ error: 'Only an admin or treasurer can update society funds' }, { status: 403 });
-    }
     const { id, amount, action } = await request.json();
     if (action === 'set_total_amount') {
       const totalAmount = Number(amount);
