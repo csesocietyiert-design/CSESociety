@@ -10,7 +10,7 @@ export const EVENT_REGISTRATION = {
   publicFormId: '37567b20-114a-47c1-ad51-548d6bfba605',
   title: 'E-Sports Swiss-League Tournament',
   subtitle: 'Trophies & certificates',
-  venue: 'Auditorium',
+  venue: 'PPT Hall',
   eventDate: '2026-11-01',
   startsAt: '2026-11-01T09:00:00+05:30',
   closesAt: '2026-11-01T09:00:00+05:30',
