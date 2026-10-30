@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
   const canonicalSocietyId = member.cse_id;
   const { data: otp, error: otpError } = await supabase
-    .from('event_registration_otps')
+    .from('esports_event_registration_otps')
     .select('code_hash, expires_at, attempts, verified_at, used_at')
     .eq('society_id', canonicalSocietyId)
     .maybeSingle();
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
   const expectedHash = hashEventOtp(canonicalSocietyId, code);
   if (!secureStringEquals(otp.code_hash, expectedHash)) {
     const { error: attemptError } = await supabase
-      .from('event_registration_otps')
+      .from('esports_event_registration_otps')
       .update({ attempts: otp.attempts + 1, updated_at: now.toISOString() })
       .eq('society_id', canonicalSocietyId)
       .is('verified_at', null)
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
 
   const token = createVerificationToken();
   const { data: updatedOtp, error: updateError } = await supabase
-    .from('event_registration_otps')
+    .from('esports_event_registration_otps')
     .update({
       verified_at: now.toISOString(),
       verified_token_hash: hashEventOtp(canonicalSocietyId, token),

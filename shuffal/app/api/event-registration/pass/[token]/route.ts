@@ -21,7 +21,7 @@ export async function GET(
 
   const tokenHash = hashEventPassToken('', token);
   const { data: registration, error } = await supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .select('id, full_name, participant_type, society_id, college_roll_number, session_selection, games, team_format, team_name, fee_amount, payment_status, pass_token_hash, attendance_status')
     .eq('event_key', EVENT_REGISTRATION.key)
     .eq('pass_token_hash', tokenHash)

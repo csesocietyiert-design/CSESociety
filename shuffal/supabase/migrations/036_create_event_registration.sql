@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS public.event_registration_otps (
+CREATE TABLE IF NOT EXISTS public.esports_event_registration_otps (
   society_id VARCHAR(20) PRIMARY KEY REFERENCES public.users(cse_id) ON DELETE CASCADE,
   code_hash TEXT NOT NULL,
   expires_at TIMESTAMPTZ NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.event_registration_otps (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS public.event_registrations (
+CREATE TABLE IF NOT EXISTS public.esports_event_registrations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_key TEXT NOT NULL DEFAULT 'esports-2026',
   participant_type TEXT NOT NULL CHECK (participant_type IN ('member', 'non_member')),
@@ -58,27 +58,23 @@ CREATE TABLE IF NOT EXISTS public.event_registrations (
   )
 );
 
-ALTER TABLE public.event_registrations
-  ADD COLUMN IF NOT EXISTS member_user_id UUID
-  REFERENCES public.users(id) ON DELETE SET NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_event_registrations_member_event
-  ON public.event_registrations (event_key, member_user_id)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_esports_event_registrations_member_event
+  ON public.esports_event_registrations (event_key, member_user_id)
   WHERE member_user_id IS NOT NULL;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_event_registrations_transaction_id
-  ON public.event_registrations (LOWER(payment_transaction_id))
+CREATE UNIQUE INDEX IF NOT EXISTS idx_esports_event_registrations_transaction_id
+  ON public.esports_event_registrations (LOWER(payment_transaction_id))
   WHERE payment_transaction_id IS NOT NULL;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_event_registrations_pass_token
-  ON public.event_registrations (pass_token_hash)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_esports_event_registrations_pass_token
+  ON public.esports_event_registrations (pass_token_hash)
   WHERE pass_token_hash IS NOT NULL;
 
-CREATE INDEX IF NOT EXISTS idx_event_registrations_roster
-  ON public.event_registrations (event_key, participant_type, created_at);
+CREATE INDEX IF NOT EXISTS idx_esports_event_registrations_roster
+  ON public.esports_event_registrations (event_key, participant_type, created_at);
 
-ALTER TABLE public.event_registration_otps ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.event_registrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.esports_event_registration_otps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.esports_event_registrations ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (

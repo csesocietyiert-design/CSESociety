@@ -11,7 +11,7 @@ export async function GET(
 
   const { id } = await context.params;
   const { data, error } = await auth.supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .select('payment_screenshot_path')
     .eq('id', id)
     .eq('event_key', EVENT_REGISTRATION.key)

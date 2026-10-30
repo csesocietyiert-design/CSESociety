@@ -26,7 +26,7 @@ export async function POST(
   }
 
   const { data: registration, error: loadError } = await auth.supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .select('id, full_name, email, whatsapp_phone, participant_type, payment_status')
     .eq('id', id)
     .eq('event_key', EVENT_REGISTRATION.key)
@@ -46,7 +46,7 @@ export async function POST(
   const token = randomBytes(32).toString('base64url');
   const tokenHash = hashEventPassToken('', token);
   const { error: saveError } = await auth.supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .update({ pass_token_hash: tokenHash, updated_at: new Date().toISOString() })
     .eq('id', registration.id)
     .eq('event_key', EVENT_REGISTRATION.key);
@@ -67,7 +67,7 @@ export async function POST(
 
     const sentAt = new Date().toISOString();
     const { error: markError } = await auth.supabase
-      .from('event_registrations')
+      .from('esports_event_registrations')
       .update({ pass_status: 'sent', pass_sent_at: sentAt, updated_at: sentAt })
       .eq('id', registration.id)
       .eq('event_key', EVENT_REGISTRATION.key);

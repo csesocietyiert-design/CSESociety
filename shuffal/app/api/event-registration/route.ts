@@ -69,7 +69,7 @@ function hasValidImageSignature(buffer: Buffer, mimeType: string): boolean {
 function isMissingRegistrationSchema(error: { code?: string; message?: string }): boolean {
   return error.code === '42P01'
     || error.code === 'PGRST205'
-    || error.message?.toLowerCase().includes('event_registrations') === true;
+    || error.message?.toLowerCase().includes('esports_event_registrations') === true;
 }
 
 export async function GET(request: Request) {
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
   if (auth.error) return auth.error;
 
   const { data, error } = await auth.supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .select('*')
     .eq('event_key', EVENT_REGISTRATION.key)
     .order('participant_type', { ascending: true })
@@ -207,7 +207,7 @@ export async function POST(request: Request) {
     verificationTokenHash = hashEventOtp(member.cse_id, verificationToken);
     const now = new Date();
     const { data: otpRecord, error: otpError } = await supabase
-      .from('event_registration_otps')
+      .from('esports_event_registration_otps')
       .select('verified_at, verified_token_hash, expires_at, used_at')
       .eq('society_id', member.cse_id)
       .maybeSingle();
@@ -298,7 +298,7 @@ export async function POST(request: Request) {
   if (participantType === 'member') {
     const now = new Date().toISOString();
     const { data: consumed, error: consumeError } = await supabase
-      .from('event_registration_otps')
+      .from('esports_event_registration_otps')
       .update({ verified_token_hash: null, used_at: now, updated_at: now })
       .eq('society_id', member!.cse_id)
       .eq('verified_token_hash', verificationTokenHash)
@@ -341,7 +341,7 @@ export async function POST(request: Request) {
   };
 
   const { data: registration, error: insertError } = await supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .insert(row)
     .select('id')
     .single();

@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
   const now = new Date();
   const { data: previous, error: previousError } = await supabase
-    .from('event_registration_otps')
+    .from('esports_event_registration_otps')
     .select('last_sent_at')
     .eq('society_id', member.cse_id)
     .maybeSingle();
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   const code = createEventOtp();
   const { error: saveError } = await supabase
-    .from('event_registration_otps')
+    .from('esports_event_registration_otps')
     .upsert({
       society_id: member.cse_id,
       code_hash: hashEventOtp(member.cse_id, code),
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
   } catch (mailError) {
     console.error('Event OTP email delivery failed:', mailError);
     const { error: invalidateError } = await supabase
-      .from('event_registration_otps')
+      .from('esports_event_registration_otps')
       .update({ expires_at: now.toISOString(), updated_at: now.toISOString() })
       .eq('society_id', member.cse_id);
     if (invalidateError) console.error('Failed to invalidate undelivered event OTP:', invalidateError);

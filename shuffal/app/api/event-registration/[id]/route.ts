@@ -58,7 +58,7 @@ export async function PATCH(
   }
 
   const { data: current, error: currentError } = await auth.supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .select('id, payment_status, participant_type')
     .eq('id', id)
     .eq('event_key', EVENT_REGISTRATION.key)
@@ -79,7 +79,7 @@ export async function PATCH(
   }
 
   const { data, error } = await auth.supabase
-    .from('event_registrations')
+    .from('esports_event_registrations')
     .update(changes)
     .eq('id', id)
     .eq('event_key', EVENT_REGISTRATION.key)
