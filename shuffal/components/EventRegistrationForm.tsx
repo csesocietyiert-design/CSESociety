@@ -305,41 +305,41 @@ export default function EventRegistrationForm() {
   }
 
   return (
-    <main className="auth-page relative min-h-screen overflow-hidden px-4 py-10 text-slate-100 sm:px-6 sm:py-12 lg:py-14">
+    <main className="auth-page relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
       <div className="blob-container" aria-hidden="true">
         <div className="blob-1 amoeba-blob" />
         <div className="blob-2 amoeba-blob" />
         <div className="blob-3 amoeba-blob" />
       </div>
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header className="auth-card relative z-10 rounded-2xl border p-6 sm:p-9 lg:p-10">
+      <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7 lg:space-y-8">
+        <header className="auth-card relative z-10 rounded-2xl border p-5 sm:p-7 md:p-9">
           <div className="flex flex-col items-center text-center">
-            <Image src="/logo.png" alt="CSE Society logo" width={104} height={104} className="h-20 w-20 object-contain sm:h-24 sm:w-24" priority />
-            <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-sky-300">CSE Society · IERT</p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{EVENT_REGISTRATION.title}</h1>
+            <Image src="/logo.png" alt="CSE Society logo" width={104} height={104} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
+            <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-sky-300 sm:text-xs">CSE Society · IERT</p>
+            <h1 className="mt-2 max-w-3xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl lg:text-4xl">{EVENT_REGISTRATION.title}</h1>
           </div>
-          <div className="mt-7 grid gap-4 text-sm text-slate-300 sm:grid-cols-2">
+          <div className="mt-5 grid gap-3 text-sm text-slate-300 sm:mt-7 sm:grid-cols-2 sm:gap-4">
             <p className="rounded-xl border border-white/10 bg-slate-950/35 p-4 leading-6 sm:p-5"><strong className="text-white">First Half:</strong> 9:00 AM–12:00 PM · Choose BGMI or Free Fire</p>
             <p className="rounded-xl border border-white/10 bg-slate-950/35 p-4 leading-6 sm:p-5"><strong className="text-white">Second Half:</strong> 2:00 PM–4:00 PM · Choose Table Tennis or Chess</p>
           </div>
-          <p className="mt-5 text-xs leading-5 text-slate-400">Registration closes at 9:00 AM IST on 1 November 2026.</p>
+          <p className="mt-4 text-xs leading-5 text-slate-400 sm:mt-5">Registration closes at 9:00 AM IST on 1 November 2026.</p>
         </header>
 
         {isOpen === null ? (
-          <section aria-live="polite" className="rounded-2xl border border-slate-700 bg-slate-900 p-8 text-center">
+          <section aria-live="polite" className="auth-card rounded-2xl border p-6 text-center sm:p-8">
             <p className="text-slate-400">Checking registration availability…</p>
           </section>
         ) : !isOpen ? (
-          <section className="rounded-2xl border border-slate-700 bg-slate-900 p-8 text-center">
+          <section className="auth-card rounded-2xl border p-6 text-center sm:p-8">
             <h2 className="text-xl font-bold">Registration is closed</h2>
             <p className="mt-2 text-slate-400">Online registration closed when the event started at 9:00 AM IST on 1 November 2026.</p>
           </section>
         ) : (
-          <form onSubmit={submitRegistration} className="relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-8">
-              <section className="auth-card rounded-2xl border p-6 sm:p-8 lg:p-9">
+          <form onSubmit={submitRegistration} className="relative z-10 grid min-w-0 gap-5 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-8">
+            <div className="min-w-0 space-y-5 sm:space-y-6 lg:space-y-7">
+              <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
                 <SectionHeading number="01" title="Participant type" />
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4">
                   <ChoiceCard
                     title="CSE Society member"
                     detail="Free · verify with Society ID and email OTP"
@@ -364,7 +364,7 @@ export default function EventRegistrationForm() {
                 </div>
 
                 {isMember && (
-                  <div className="mt-5 space-y-4 rounded-xl border border-teal-500/20 bg-teal-950/20 p-4">
+                  <div className="mt-5 space-y-4 rounded-xl border border-teal-500/20 bg-teal-950/20 p-4 sm:p-5">
                     {!member ? (
                       <>
                         <div className="flex flex-col gap-3 sm:flex-row">
@@ -429,7 +429,7 @@ export default function EventRegistrationForm() {
                 )}
 
                 {participantType === 'non_member' && (
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-5">
                     <TextField label="Full name" required value={nonMember.name} onChange={(value) => updateNonMember('name', value)} />
                     <TextField label="College roll number / Student ID" required value={nonMember.collegeRollNumber} onChange={(value) => updateNonMember('collegeRollNumber', value)} />
                     <TextField label="Branch / Department" required value={nonMember.department} onChange={(value) => updateNonMember('department', value)} />
@@ -450,9 +450,9 @@ export default function EventRegistrationForm() {
 
               {participantType && (isMember ? member : true) && (
                 <>
-                  <section className="auth-card rounded-2xl border p-6 sm:p-8">
+                  <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
                     <SectionHeading number="02" title="Choose session" />
-                    <div className="mt-6 grid gap-4 md:grid-cols-3">
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
                       <SessionCard selected={session === 'first_half'} onClick={() => chooseSession('first_half')} title="First Half" time="9:00 AM – 12:00 PM" price={getEventFee(isMember ? 'member' : 'non_member', 'first_half')} detail="Choose BGMI or Free Fire" />
                       <SessionCard selected={session === 'second_half'} onClick={() => chooseSession('second_half')} title="Second Half" time="2:00 PM – 4:00 PM" price={getEventFee(isMember ? 'member' : 'non_member', 'second_half')} detail="Choose Table Tennis or Chess" />
                       <SessionCard selected={session === 'both'} onClick={() => chooseSession('both')} title="Both Sessions" time="9:00 AM – 4:00 PM" price={getEventFee(isMember ? 'member' : 'non_member', 'both')} detail="Choose one game from each half" />
@@ -468,14 +468,14 @@ export default function EventRegistrationForm() {
                           </div>
                         </fieldset>
                         {selectedGames.includes('BGMI') && (
-                          <div className="grid gap-4 rounded-xl border border-slate-800 p-4 sm:grid-cols-2">
+                          <div className="grid gap-4 rounded-xl border border-slate-800/80 bg-slate-950/25 p-4 sm:grid-cols-2 sm:p-5">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">BGMI · Your player details</p>
                             <TextField label="BGMI IGN" required value={identity.bgmiIgn} onChange={(value) => updateIdentity('bgmiIgn', value)} />
                             <TextField label="BGMI Character UID" required value={identity.bgmiUid} onChange={(value) => updateIdentity('bgmiUid', value)} />
                           </div>
                         )}
                         {selectedGames.includes('Free Fire') && (
-                          <div className="grid gap-4 rounded-xl border border-slate-800 p-4 sm:grid-cols-2">
+                          <div className="grid gap-4 rounded-xl border border-slate-800/80 bg-slate-950/25 p-4 sm:grid-cols-2 sm:p-5">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">Free Fire · Your player details</p>
                             <TextField label="Free Fire IGN" required value={identity.freeFireIgn} onChange={(value) => updateIdentity('freeFireIgn', value)} />
                             <TextField label="Free Fire UID" required value={identity.freeFireUid} onChange={(value) => updateIdentity('freeFireUid', value)} />
@@ -484,9 +484,9 @@ export default function EventRegistrationForm() {
                       </div>
                     )}
                     {hasSecondHalf && (
-                      <fieldset className="mt-7">
+                      <fieldset className="mt-6 sm:mt-7">
                         <legend className="text-sm font-semibold text-slate-200">Choose one Second Half event</legend>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
                           {SECOND_HALF_GAMES.map((game) => (
                             <ChoiceCard key={game} title={game} detail={game === 'Chess' ? '5-minute blitz' : 'Best-of-2 blitz'} selected={games.includes(game)} onClick={() => chooseGame(game)} />
                           ))}
@@ -494,14 +494,14 @@ export default function EventRegistrationForm() {
                       </fieldset>
                     )}
                     {chessOnlySession ? (
-                      <div className="mt-7 rounded-xl border border-sky-400/20 bg-sky-400/5 p-4 sm:p-5">
+                      <div className="mt-6 rounded-xl border border-sky-400/20 bg-sky-400/5 p-4 sm:mt-7 sm:p-5">
                         <p className="text-sm font-semibold text-sky-100">Player format · Solo</p>
                         <p className="mt-1 text-sm leading-6 text-slate-400">Chess is a single-player event, so Duo registration is not available.</p>
                       </div>
                     ) : (
-                      <fieldset className="mt-7">
+                      <fieldset className="mt-6 sm:mt-7">
                         <legend className="text-sm font-semibold text-slate-200">Player format</legend>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
                           <ChoiceCard title="Solo · 1 player" detail="Register as an individual" selected={teamFormat === 'solo'} onClick={() => setTeamFormat('solo')} />
                           <ChoiceCard title="Duo · 2 players" detail="Both players submit separately with the same team name" selected={teamFormat === 'duo'} onClick={() => setTeamFormat('duo')} />
                         </div>
@@ -510,28 +510,28 @@ export default function EventRegistrationForm() {
                         )}
                       </fieldset>
                     )}
-                    <div className="mt-6 max-w-xl">
+                    <div className="mt-5 max-w-xl sm:mt-6">
                       <TextField label="Team name" required value={teamName} onChange={setTeamName} />
                       <p className="mt-2 text-xs leading-5 text-slate-400">{teamFormat === 'duo' ? 'Enter exactly the same team name on both players’ individual registrations. Each player enters their own details and pays separately.' : 'Enter a team name for your Solo registration.'}</p>
                     </div>
                   </section>
 
-                  <section className="auth-card rounded-2xl border p-6 sm:p-8 lg:p-9">
+                  <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
                     <SectionHeading number="03" title="Entry-pass delivery" />
                     <p className="mt-2 text-sm text-slate-400">
                       {isMember ? `Contact details are taken from the verified Society account (${member?.email || ''}).` : 'Choose where the entry-pass update should be sent.'}
                     </p>
-                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
                       <ChoiceCard title="Email" detail={registrationEmail || 'Your registered / entered email'} selected={deliveryMethod === 'email'} onClick={() => setDeliveryMethod('email')} />
                       <ChoiceCard title="WhatsApp" detail={hasWhatsappNumber ? registrationPhone : 'No phone number is saved for this account'} selected={deliveryMethod === 'whatsapp'} disabled={!hasWhatsappNumber} onClick={() => setDeliveryMethod('whatsapp')} />
                     </div>
                   </section>
 
                   {!isMember && fee > 0 && (
-                    <section className="auth-card rounded-2xl border border-amber-500/30 p-6 sm:p-8">
+                    <section className="auth-card min-w-0 rounded-2xl border border-amber-500/30 p-5 sm:p-6 lg:p-8">
                       <SectionHeading number="04" title="UPI payment" />
-                      <div className="mt-4 grid gap-5 md:grid-cols-[210px_1fr]">
-                        <div className="rounded-xl bg-white p-2">
+                      <div className="mt-4 grid gap-4 sm:gap-5 md:grid-cols-[minmax(180px,210px)_minmax(0,1fr)]">
+                        <div className="mx-auto w-full max-w-[210px] rounded-xl bg-white p-2 md:mx-0">
                           <Image src={`/event-registration/upi-${fee}.jpeg`} alt={`UPI payment QR for ₹${fee}`} width={500} height={500} className="aspect-square w-full rounded-lg object-contain" />
                         </div>
                         <div className="space-y-4">
@@ -550,7 +550,7 @@ export default function EventRegistrationForm() {
                     </section>
                   )}
 
-                  <section className="auth-card rounded-2xl border p-6 sm:p-8">
+                  <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
                     <SectionHeading number={isMember ? '04' : '05'} title="Rules and confirmation" />
                     <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-300">
                       {EVENT_REGISTRATION.rules.map((rule) => <li key={rule}>{rule}</li>)}
@@ -568,7 +568,7 @@ export default function EventRegistrationForm() {
               )}
             </div>
 
-            <aside className="auth-card h-fit rounded-2xl border border-sky-400/25 p-6 shadow-xl lg:sticky lg:top-6">
+            <aside className="auth-card min-w-0 h-fit rounded-2xl border border-sky-400/25 p-5 shadow-xl sm:p-6 xl:sticky xl:top-6">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-300">Order summary</p>
               <h2 className="mt-2 text-lg font-bold text-white">{EVENT_REGISTRATION.title}</h2>
               <dl className="mt-5 space-y-3 text-sm">
