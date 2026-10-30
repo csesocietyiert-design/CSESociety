@@ -4,6 +4,8 @@ import {
   EVENT_REGISTRATION,
   getEventFee,
   isEventRegistrationOpen,
+  FIRST_HALF_GAMES,
+  SECOND_HALF_GAMES,
   type EventGame,
 } from '@/lib/event-registration';
 import {
@@ -13,7 +15,7 @@ import {
   sendEventRegistrationNotice,
 } from '@/lib/event-registration-server';
 
-const allowedGames = new Set<EventGame>(['BGMI', 'Free Fire', 'Table Tennis']);
+const allowedGames = new Set<EventGame>([...FIRST_HALF_GAMES, ...SECOND_HALF_GAMES]);
 const imageExtensions: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -56,7 +58,6 @@ function validIdentity(value: unknown): Record<string, string> {
     bgmiUid: getString(identity.bgmiUid, 40),
     freeFireIgn: getString(identity.freeFireIgn, 80),
     freeFireUid: getString(identity.freeFireUid, 40),
-    chessUsername: getString(identity.chessUsername, 80),
   };
 }
 
@@ -139,25 +140,25 @@ export async function POST(request: Request) {
   }
 
   const rawGames = Array.isArray(body.games) ? body.games : [];
-  const games = [...new Set(rawGames.filter((game): game is EventGame => typeof game === 'string' && allowedGames.has(game as EventGame)))];
-  if (rawGames.length !== games.length) {
+  const games = rawGames.filter((game): game is EventGame => typeof game === 'string' && allowedGames.has(game as EventGame));
+  if (rawGames.length !== games.length || new Set(games).size !== games.length) {
     return NextResponse.json({ error: 'One or more selected games are invalid.' }, { status: 400 });
   }
   const hasFirstHalf = session === 'first_half' || session === 'both';
-  if (hasFirstHalf && games.length === 0) {
-    return NextResponse.json({ error: 'Select at least one first-half game.' }, { status: 400 });
-  }
-  if (!hasFirstHalf && games.length !== 0) {
-    return NextResponse.json({ error: 'First-half games are not available in the selected session.' }, { status: 400 });
+  const hasSecondHalf = session === 'second_half' || session === 'both';
+  const firstHalfGames = games.filter((game) => FIRST_HALF_GAMES.includes(game));
+  const secondHalfGames = games.filter((game) => SECOND_HALF_GAMES.includes(game));
+  if (firstHalfGames.length !== Number(hasFirstHalf) || secondHalfGames.length !== Number(hasSecondHalf)) {
+    return NextResponse.json({ error: 'Choose exactly one game for each selected half.' }, { status: 400 });
   }
 
-  const teamFormat = hasFirstHalf ? body.teamFormat : 'solo';
+  const teamFormat = body.teamFormat;
   if (teamFormat !== 'solo' && teamFormat !== 'duo') {
     return NextResponse.json({ error: 'Choose a valid player format.' }, { status: 400 });
   }
-  const teamName = hasFirstHalf && teamFormat === 'duo' ? getString(body.teamName, 80) : '';
-  if (hasFirstHalf && teamFormat === 'duo' && !teamName) {
-    return NextResponse.json({ error: 'A team name is required for Duo registration.' }, { status: 400 });
+  const teamName = getString(body.teamName, 80);
+  if (!teamName) {
+    return NextResponse.json({ error: 'A team name is required for registration.' }, { status: 400 });
   }
 
   const identity = validIdentity(body.identity);
@@ -337,14 +338,13 @@ export async function POST(request: Request) {
     whatsapp_phone: phone || null,
     email,
     session_selection: session,
-    games: session === 'second_half' ? [] : games,
+    games,
     team_format: teamFormat,
     team_name: teamName || null,
     bgmi_ign: games.includes('BGMI') ? identity.bgmiIgn : null,
     bgmi_uid: games.includes('BGMI') ? identity.bgmiUid : null,
     free_fire_ign: games.includes('Free Fire') ? identity.freeFireIgn : null,
     free_fire_uid: games.includes('Free Fire') ? identity.freeFireUid : null,
-    chess_username: session === 'second_half' || session === 'both' ? identity.chessUsername || null : null,
     fee_amount: feeAmount,
     payment_transaction_id: transactionId || null,
     payment_screenshot_path: screenshotPath,

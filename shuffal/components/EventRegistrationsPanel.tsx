@@ -23,7 +23,6 @@ type EventRegistration = {
   bgmi_uid: string | null;
   free_fire_ign: string | null;
   free_fire_uid: string | null;
-  chess_username: string | null;
   fee_amount: number;
   payment_transaction_id: string | null;
   payment_screenshot_path: string | null;
@@ -44,6 +43,12 @@ const sessionLabels: Record<EventRegistration['session_selection'], string> = {
   second_half: 'Second Half',
   both: 'Both Sessions',
 };
+
+function getGamesLabel(row: EventRegistration): string {
+  return row.games.length > 0
+    ? row.games.join(', ')
+    : row.session_selection === 'second_half' ? 'Chess' : 'Not selected';
+}
 
 export default function EventRegistrationsPanel() {
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
@@ -187,10 +192,10 @@ export default function EventRegistrationsPanel() {
     visibleRegistrations.forEach((row, index) => {
       const details = [
         `${index + 1}. ${row.participant_type === 'member' ? 'MEMBER' : 'NON-MEMBER'}  |  ${row.full_name}  |  ${row.society_id || row.college_roll_number || ''}`,
-        `Session: ${sessionLabels[row.session_selection]}  |  Games: ${row.games.join(', ') || 'Chess'}  |  Team: ${row.team_name || row.team_format}`,
+        `Session: ${sessionLabels[row.session_selection]}  |  Games: ${getGamesLabel(row)}  |  Team: ${row.team_name || row.team_format}`,
         `Email: ${row.email}  |  WhatsApp: ${row.whatsapp_phone}  |  Fee: Rs ${row.fee_amount}  |  Payment: ${row.payment_status}`,
         `Attendance: ${row.attendance_status}  |  Evaluation: ${row.evaluation_score ?? '-'}  |  Notes: ${row.evaluation_notes || '-'}`,
-        `BGMI: ${row.bgmi_ign || '-'} / ${row.bgmi_uid || '-'}  |  Free Fire: ${row.free_fire_ign || '-'} / ${row.free_fire_uid || '-'}  |  Chess username: ${row.chess_username || '-'}`,
+        `BGMI: ${row.bgmi_ign || '-'} / ${row.bgmi_uid || '-'}  |  Free Fire: ${row.free_fire_ign || '-'} / ${row.free_fire_uid || '-'}`,
       ].join('\n');
       const lines = pdf.splitTextToSize(details, pageWidth - 28);
       const blockHeight = lines.length * 4 + 5;
@@ -224,10 +229,10 @@ export default function EventRegistrationsPanel() {
           new Paragraph(`Society ID / student ID: ${row.society_id || row.college_roll_number || '-'}`),
           new Paragraph(`Department / year: ${row.department || '-'} / ${row.year || '-'}`),
           new Paragraph(`Email: ${row.email} · WhatsApp: ${row.whatsapp_phone}`),
-          new Paragraph(`Session: ${sessionLabels[row.session_selection]} · Games: ${row.games.join(', ') || 'Chess'} · Format: ${row.team_format} · Team: ${row.team_name || '-'}`),
+          new Paragraph(`Session: ${sessionLabels[row.session_selection]} · Games: ${getGamesLabel(row)} · Format: ${row.team_format} · Team: ${row.team_name || '-'}`),
           new Paragraph(`Fee: Rs ${row.fee_amount} · Payment: ${row.payment_status} · Transaction ID: ${row.payment_transaction_id || '-'}`),
           new Paragraph(`Attendance: ${row.attendance_status} · Evaluation score: ${row.evaluation_score ?? '-'} · Notes: ${row.evaluation_notes || '-'}`),
-          new Paragraph(`BGMI: ${row.bgmi_ign || '-'} / ${row.bgmi_uid || '-'} · Free Fire: ${row.free_fire_ign || '-'} / ${row.free_fire_uid || '-'} · Chess username: ${row.chess_username || '-'}`),
+          new Paragraph(`BGMI: ${row.bgmi_ign || '-'} / ${row.bgmi_uid || '-'} · Free Fire: ${row.free_fire_ign || '-'} / ${row.free_fire_uid || '-'}`),
           new Paragraph(' '),
         ]),
       ];
@@ -258,7 +263,7 @@ export default function EventRegistrationsPanel() {
         <td>${escapeHtml(row.society_id || row.college_roll_number || '-')}</td>
         <td>${escapeHtml(row.department || '-')} / ${escapeHtml(String(row.year || '-'))}</td>
         <td>${escapeHtml(sessionLabels[row.session_selection])}</td>
-        <td>${escapeHtml(row.games.join(', ') || 'Chess')}</td>
+        <td>${escapeHtml(getGamesLabel(row))}</td>
         <td>${escapeHtml(row.team_name || row.team_format)}</td>
         <td>${escapeHtml(row.email)}</td>
         <td>${escapeHtml(row.whatsapp_phone || '-')}</td>
@@ -375,17 +380,16 @@ function RegistrationCard({
             <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs font-bold text-slate-400">#{index}</span>
             <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${member ? 'bg-teal-400/10 text-teal-200' : 'bg-amber-400/10 text-amber-200'}`}>{member ? 'Society member' : 'Non-member'}</span>
             <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">{sessionLabels[row.session_selection]}</span>
-            <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">{row.team_format === 'duo' ? `Duo · ${row.team_name || 'Team'}` : 'Solo'}</span>
+            <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">{row.team_format === 'duo' ? `Duo · ${row.team_name || 'Team'}` : `Solo · ${row.team_name || 'Team'}`}</span>
           </div>
           <h2 className="mt-3 text-xl font-bold text-white">{row.full_name}</h2>
           <p className="mt-1 text-sm text-slate-400">{row.society_id || row.college_roll_number || 'No student ID'} · {row.department || 'CSE'} · Year {row.year || '-'}</p>
           <div className="mt-4 grid gap-2 text-sm text-slate-300 sm:grid-cols-2 xl:grid-cols-3">
             <p><span className="text-slate-500">Email:</span> {row.email}</p>
             <p><span className="text-slate-500">WhatsApp:</span> {row.whatsapp_phone || 'Not on file'}</p>
-            <p><span className="text-slate-500">Games:</span> {row.games.join(', ') || 'Chess'}</p>
+            <p><span className="text-slate-500">Games:</span> {getGamesLabel(row)}</p>
             {row.bgmi_ign && <p><span className="text-slate-500">BGMI:</span> {row.bgmi_ign} · UID {row.bgmi_uid}</p>}
             {row.free_fire_ign && <p><span className="text-slate-500">Free Fire:</span> {row.free_fire_ign} · UID {row.free_fire_uid}</p>}
-            {row.chess_username && <p><span className="text-slate-500">Chess username:</span> {row.chess_username}</p>}
             <p><span className="text-slate-500">Registration:</span> {new Date(row.created_at).toLocaleString('en-IN')}</p>
           </div>
         </div>

@@ -198,7 +198,7 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
             </p>
             <h2 className={`mt-2 text-lg font-semibold ${eventOpen === false ? 'text-slate-400' : 'text-white'}`}>{EVENT_REGISTRATION.title}</h2>
             <p className="mt-2 text-sm text-slate-400">
-              1 November 2026 · {EVENT_REGISTRATION.venue} · BGMI, Free Fire, Table Tennis &amp; Chess
+              1 November 2026 · {EVENT_REGISTRATION.venue} · First Half: BGMI or Free Fire · Second Half: Table Tennis or Chess
             </p>
             <p className="mt-1 text-xs text-slate-500">Registration closes at 9:00 AM IST · Members free · Non-members from ₹30</p>
           </div>

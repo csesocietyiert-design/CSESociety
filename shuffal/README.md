@@ -25,8 +25,9 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 - Public participant form: `/event-registration` (no dashboard login required).
 - Admin and secretary roster: `/dashboard/event-registrations`.
 - Members verify their Society ID with a one-time code sent to the email already stored on their verified `users` record. The code expires after five minutes and is single-use.
+- Choose First Half (BGMI or Free Fire), Second Half (Table Tennis or Chess), or both; exactly one game must be selected for each chosen half. Chess usernames are not collected.
 - Non-members enter their details manually and pay per participant: ₹40 for First Half, ₹30 for Second Half, or ₹60 for Both Sessions. Their UPI transaction ID is required; a payment screenshot is optional.
-- Both Duo participants submit separately and enter the same team name. Verified Society members register free and should bring their Society ID card for entry attendance.
+- Solo and Duo participants enter a team name. Both Duo participants submit separately using the same team name. Verified Society members register free and should bring their Society ID card for entry attendance.
 - The roster groups members before non-members and supports print, PDF, DOCX, payment review, attendance, and evaluation notes.
 - Apply `supabase/migrations/036_create_event_registration.sql` in Supabase before enabling submissions. It creates the event-specific `esports_event_registrations` and `esports_event_registration_otps` tables and the private payment-proof storage bucket without altering other registration tables.
 - Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, and `EVENT_OTP_PEPPER` in the deployment environment. Do not commit credentials. For Gmail, use an app password, not the account password.

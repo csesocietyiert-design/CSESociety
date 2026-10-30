@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   EVENT_REGISTRATION,
+  FIRST_HALF_GAMES,
+  SECOND_HALF_GAMES,
   getEventFee,
   getGamesForSession,
   isEventRegistrationOpen,
@@ -37,7 +39,6 @@ type GameIdentity = {
   bgmiUid: string;
   freeFireIgn: string;
   freeFireUid: string;
-  chessUsername: string;
 };
 
 type PublicMessage = { type: 'error' | 'success' | 'info'; text: string };
@@ -55,9 +56,7 @@ const initialIdentity: GameIdentity = {
   bgmiUid: '',
   freeFireIgn: '',
   freeFireUid: '',
-  chessUsername: '',
 };
-const firstHalfGames: EventGame[] = ['BGMI', 'Free Fire', 'Table Tennis'];
 
 function hasValidWhatsappNumber(phone: string): boolean {
   return /^\+?[0-9 ()-]{8,25}$/.test(phone.trim());
@@ -102,6 +101,7 @@ export default function EventRegistrationForm() {
 
   const isMember = participantType === 'member';
   const hasFirstHalf = session === 'first_half' || session === 'both';
+  const hasSecondHalf = session === 'second_half' || session === 'both';
   const fee = useMemo(
     () => (participantType && session ? getEventFee(participantType, session) : 0),
     [participantType, session],
@@ -123,7 +123,6 @@ export default function EventRegistrationForm() {
 
   const chooseSession = (value: EventSession) => {
     setSession(value);
-    if (value === 'second_half') setGames([]);
   };
 
   const sendOtp = async () => {
@@ -177,8 +176,9 @@ export default function EventRegistrationForm() {
     }
   };
 
-  const toggleGame = (game: EventGame) => {
-    setGames((current) => current.includes(game) ? current.filter((value) => value !== game) : [...current, game]);
+  const chooseGame = (game: EventGame) => {
+    const gameGroup = FIRST_HALF_GAMES.includes(game) ? FIRST_HALF_GAMES : SECOND_HALF_GAMES;
+    setGames((current) => [...current.filter((value) => !gameGroup.includes(value)), game]);
   };
 
   const handleScreenshot = (file: File | undefined) => {
@@ -213,19 +213,20 @@ export default function EventRegistrationForm() {
       setMessage({ type: 'error', text: 'Verify your Society ID by email OTP before continuing.' });
       return;
     }
-    if (hasFirstHalf && games.length === 0) {
-      setMessage({ type: 'error', text: 'Select at least one first-half game.' });
+    if ((hasFirstHalf && !selectedGames.some((game) => FIRST_HALF_GAMES.includes(game)))
+      || (hasSecondHalf && !selectedGames.some((game) => SECOND_HALF_GAMES.includes(game)))) {
+      setMessage({ type: 'error', text: 'Choose exactly one game for each selected half.' });
       return;
     }
-    if (teamFormat === 'duo' && !teamName.trim()) {
-      setMessage({ type: 'error', text: 'Enter the team name used by both Duo players.' });
+    if (!teamName.trim()) {
+      setMessage({ type: 'error', text: 'Enter your team name.' });
       return;
     }
-    if (games.includes('BGMI') && (!identity.bgmiIgn.trim() || !identity.bgmiUid.trim())) {
+    if (selectedGames.includes('BGMI') && (!identity.bgmiIgn.trim() || !identity.bgmiUid.trim())) {
       setMessage({ type: 'error', text: 'Enter your BGMI IGN and UID.' });
       return;
     }
-    if (games.includes('Free Fire') && (!identity.freeFireIgn.trim() || !identity.freeFireUid.trim())) {
+    if (selectedGames.includes('Free Fire') && (!identity.freeFireIgn.trim() || !identity.freeFireUid.trim())) {
       setMessage({ type: 'error', text: 'Enter your Free Fire IGN and UID.' });
       return;
     }
@@ -245,9 +246,9 @@ export default function EventRegistrationForm() {
       memberPhone: isMember ? memberWhatsapp.trim() : undefined,
       nonMember: isMember ? undefined : nonMember,
       session,
-      games,
-      teamFormat: hasFirstHalf ? teamFormat : 'solo',
-      teamName: hasFirstHalf && teamFormat === 'duo' ? teamName.trim() : '',
+      games: selectedGames,
+      teamFormat,
+      teamName: teamName.trim(),
       identity,
       deliveryMethod,
       transactionId: isMember ? '' : transactionId,
@@ -303,8 +304,8 @@ export default function EventRegistrationForm() {
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{EVENT_REGISTRATION.title}</h1>
           <p className="mt-2 text-slate-300">{EVENT_REGISTRATION.subtitle} · {EVENT_REGISTRATION.venue}</p>
           <div className="mt-5 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-            <p className="rounded-lg border border-slate-700 bg-slate-950/50 p-3"><strong className="text-white">First Half:</strong> 9:00 AM–12:00 PM · BGMI, Free Fire, Table Tennis</p>
-            <p className="rounded-lg border border-slate-700 bg-slate-950/50 p-3"><strong className="text-white">Second Half:</strong> 2:00 PM–4:00 PM · Chess blitz</p>
+            <p className="rounded-lg border border-slate-700 bg-slate-950/50 p-3"><strong className="text-white">First Half:</strong> 9:00 AM–12:00 PM · Choose BGMI or Free Fire</p>
+            <p className="rounded-lg border border-slate-700 bg-slate-950/50 p-3"><strong className="text-white">Second Half:</strong> 2:00 PM–4:00 PM · Choose Table Tennis or Chess</p>
           </div>
           <p className="mt-4 text-xs text-slate-400">Registration closes at 9:00 AM IST on 1 November 2026.</p>
         </header>
@@ -437,44 +438,28 @@ export default function EventRegistrationForm() {
                   <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-7">
                     <SectionHeading number="02" title="Choose session" />
                     <div className="mt-5 grid gap-3 md:grid-cols-3">
-                      <SessionCard selected={session === 'first_half'} onClick={() => chooseSession('first_half')} title="First Half" time="9:00 AM – 12:00 PM" price={isMember ? 0 : 40} detail="BGMI · Free Fire · Table Tennis" />
-                      <SessionCard selected={session === 'second_half'} onClick={() => chooseSession('second_half')} title="Second Half" time="2:00 PM – 4:00 PM" price={isMember ? 0 : 30} detail="Chess · Solo blitz" />
-                      <SessionCard selected={session === 'both'} onClick={() => chooseSession('both')} title="Both Sessions" time="9:00 AM – 4:00 PM" price={isMember ? 0 : 60} detail="First-half game(s) + Chess" />
+                      <SessionCard selected={session === 'first_half'} onClick={() => chooseSession('first_half')} title="First Half" time="9:00 AM – 12:00 PM" price={getEventFee(isMember ? 'member' : 'non_member', 'first_half')} detail="Choose BGMI or Free Fire" />
+                      <SessionCard selected={session === 'second_half'} onClick={() => chooseSession('second_half')} title="Second Half" time="2:00 PM – 4:00 PM" price={getEventFee(isMember ? 'member' : 'non_member', 'second_half')} detail="Choose Table Tennis or Chess" />
+                      <SessionCard selected={session === 'both'} onClick={() => chooseSession('both')} title="Both Sessions" time="9:00 AM – 4:00 PM" price={getEventFee(isMember ? 'member' : 'non_member', 'both')} detail="Choose one game from each half" />
                     </div>
                     {hasFirstHalf && (
                       <div className="mt-6 space-y-5">
                         <fieldset>
-                          <legend className="text-sm font-semibold text-slate-200">Choose first-half game(s)</legend>
-                          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                            {firstHalfGames.map((game) => (
-                              <label key={game} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-700 bg-slate-950/60 p-3 text-sm hover:border-teal-500/60">
-                                <input type="checkbox" checked={games.includes(game)} onChange={() => toggleGame(game)} className="h-4 w-4 accent-teal-400" />
-                                {game}
-                              </label>
+                          <legend className="text-sm font-semibold text-slate-200">Choose one First Half game</legend>
+                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            {FIRST_HALF_GAMES.map((game) => (
+                              <ChoiceCard key={game} title={game} detail={games.includes(game) ? 'Selected' : 'Select this game'} selected={games.includes(game)} onClick={() => chooseGame(game)} />
                             ))}
                           </div>
                         </fieldset>
-                        <fieldset>
-                          <legend className="text-sm font-semibold text-slate-200">Player format</legend>
-                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                            <ChoiceCard title="Solo · 1 player" detail="Register as an individual" selected={teamFormat === 'solo'} onClick={() => setTeamFormat('solo')} />
-                            <ChoiceCard title="Duo · 2 players" detail="Both players submit separately with the same team name" selected={teamFormat === 'duo'} onClick={() => setTeamFormat('duo')} />
-                          </div>
-                        </fieldset>
-                        {teamFormat === 'duo' && (
-                          <TextField label="Duo team name" required value={teamName} onChange={setTeamName} />
-                        )}
-                        {teamFormat === 'duo' && (
-                          <p className="-mt-2 text-xs text-slate-400">Enter exactly the same team name on both players’ individual registrations. Each player’s own form is one entry and has its own fee.</p>
-                        )}
-                        {games.includes('BGMI') && (
+                        {selectedGames.includes('BGMI') && (
                           <div className="grid gap-4 rounded-xl border border-slate-800 p-4 sm:grid-cols-2">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">BGMI · Your player details</p>
                             <TextField label="BGMI IGN" required value={identity.bgmiIgn} onChange={(value) => updateIdentity('bgmiIgn', value)} />
                             <TextField label="BGMI Character UID" required value={identity.bgmiUid} onChange={(value) => updateIdentity('bgmiUid', value)} />
                           </div>
                         )}
-                        {games.includes('Free Fire') && (
+                        {selectedGames.includes('Free Fire') && (
                           <div className="grid gap-4 rounded-xl border border-slate-800 p-4 sm:grid-cols-2">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">Free Fire · Your player details</p>
                             <TextField label="Free Fire IGN" required value={identity.freeFireIgn} onChange={(value) => updateIdentity('freeFireIgn', value)} />
@@ -483,14 +468,27 @@ export default function EventRegistrationForm() {
                         )}
                       </div>
                     )}
-                    {(session === 'second_half' || session === 'both') && (
-                      <div className="mt-6 rounded-xl border border-amber-500/20 bg-amber-950/20 p-4">
-                        <p className="font-semibold text-amber-100">Chess · Solo · 5-minute blitz</p>
-                        <div className="mt-4 max-w-md">
-                          <TextField label="Chess.com / Lichess username (optional)" value={identity.chessUsername} onChange={(value) => updateIdentity('chessUsername', value)} />
+                    {hasSecondHalf && (
+                      <fieldset className="mt-6">
+                        <legend className="text-sm font-semibold text-slate-200">Choose one Second Half event</legend>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          {SECOND_HALF_GAMES.map((game) => (
+                            <ChoiceCard key={game} title={game} detail={game === 'Chess' ? '5-minute blitz' : 'Best-of-2 blitz'} selected={games.includes(game)} onClick={() => chooseGame(game)} />
+                          ))}
                         </div>
-                      </div>
+                      </fieldset>
                     )}
+                    <fieldset className="mt-6">
+                      <legend className="text-sm font-semibold text-slate-200">Player format</legend>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <ChoiceCard title="Solo · 1 player" detail="Register as an individual" selected={teamFormat === 'solo'} onClick={() => setTeamFormat('solo')} />
+                        <ChoiceCard title="Duo · 2 players" detail="Both players submit separately with the same team name" selected={teamFormat === 'duo'} onClick={() => setTeamFormat('duo')} />
+                      </div>
+                    </fieldset>
+                    <div className="mt-5 max-w-xl">
+                      <TextField label="Team name" required value={teamName} onChange={setTeamName} />
+                      <p className="mt-2 text-xs text-slate-400">{teamFormat === 'duo' ? 'Enter exactly the same team name on both players’ individual registrations. Each player enters their own details and pays separately.' : 'Enter a team name for your Solo registration.'}</p>
+                    </div>
                   </section>
 
                   <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-7">
@@ -551,7 +549,7 @@ export default function EventRegistrationForm() {
               <dl className="mt-5 space-y-3 text-sm">
                 <SummaryRow label="Participant" value={participantType ? (isMember ? 'Society member' : 'Non-member') : 'Not selected'} />
                 <SummaryRow label="Session" value={session ? sessionLabel(session) : 'Not selected'} />
-                {hasFirstHalf && <SummaryRow label="Format" value={teamFormat === 'duo' ? `Duo · ${teamName || 'team name pending'}` : 'Solo · 1 player'} />}
+                {session && <SummaryRow label="Format / team" value={`${teamFormat === 'duo' ? 'Duo · 2 players' : 'Solo · 1 player'} · ${teamName || 'team name pending'}`} />}
                 <SummaryRow label="Game(s)" value={selectedGames.length ? selectedGames.join(', ') : 'Not selected'} />
                 <SummaryRow label="Delivery" value={deliveryMethod === 'email' ? 'Email' : 'WhatsApp'} />
               </dl>

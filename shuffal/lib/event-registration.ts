@@ -1,3 +1,10 @@
+export type EventSession = 'first_half' | 'second_half' | 'both';
+export type EventGame = 'BGMI' | 'Free Fire' | 'Table Tennis' | 'Chess';
+export type EventParticipantType = 'member' | 'non_member';
+
+export const FIRST_HALF_GAMES: readonly EventGame[] = ['BGMI', 'Free Fire'];
+export const SECOND_HALF_GAMES: readonly EventGame[] = ['Table Tennis', 'Chess'];
+
 export const EVENT_REGISTRATION = {
   key: 'esports-2026',
   title: 'E-Sports Swiss-League Tournament',
@@ -9,12 +16,12 @@ export const EVENT_REGISTRATION = {
   firstHalf: {
     label: 'First Half',
     time: '9:00 AM – 12:00 PM',
-    games: ['BGMI', 'Free Fire', 'Table Tennis'],
+    games: FIRST_HALF_GAMES,
   },
   secondHalf: {
     label: 'Second Half',
     time: '2:00 PM – 4:00 PM',
-    games: ['Chess'],
+    games: SECOND_HALF_GAMES,
   },
   fees: {
     first_half: 40,
@@ -23,18 +30,14 @@ export const EVENT_REGISTRATION = {
     member: 0,
   },
   rules: [
-    'First-half games allow Solo (1 player) or Duo (2 players).',
-    'Chess is Solo only, with 5-minute blitz rounds.',
+    'Choose exactly one game from each selected half: BGMI or Free Fire in the First Half, and Table Tennis or Chess in the Second Half.',
     'Table Tennis follows a best-of-2 blitz format.',
+    'Chess uses 5-minute blitz rounds.',
     'Use of hacks, cheats, or emulators is not allowed.',
     'Participants must arrive on time for their selected session.',
-    'Both Duo players must submit their own registration with the same team name.',
+    'Solo and Duo participants must enter a team name. Both Duo players submit their own registration with the same team name.',
   ],
 } as const;
-
-export type EventSession = 'first_half' | 'second_half' | 'both';
-export type EventGame = 'BGMI' | 'Free Fire' | 'Table Tennis';
-export type EventParticipantType = 'member' | 'non_member';
 
 export function getEventFee(participantType: EventParticipantType, session: EventSession): number {
   return participantType === 'member' ? 0 : EVENT_REGISTRATION.fees[session];
@@ -44,7 +47,15 @@ export function isEventRegistrationOpen(now = Date.now()): boolean {
   return now < new Date(EVENT_REGISTRATION.closesAt).getTime();
 }
 
-export function getGamesForSession(session: EventSession, firstHalfGames: EventGame[]): string[] {
-  if (session === 'second_half') return ['Chess'];
-  return session === 'both' ? [...firstHalfGames, 'Chess'] : firstHalfGames;
+export function getGamesForSession(session: EventSession, selectedGames: EventGame[]): EventGame[] {
+  const games: EventGame[] = [];
+  if (session === 'first_half' || session === 'both') {
+    const game = FIRST_HALF_GAMES.find((candidate) => selectedGames.includes(candidate));
+    if (game) games.push(game);
+  }
+  if (session === 'second_half' || session === 'both') {
+    const game = SECOND_HALF_GAMES.find((candidate) => selectedGames.includes(candidate));
+    if (game) games.push(game);
+  }
+  return games;
 }
