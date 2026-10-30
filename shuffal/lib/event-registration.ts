@@ -7,6 +7,7 @@ export const SECOND_HALF_GAMES: readonly EventGame[] = ['Table Tennis', 'Chess']
 
 export const EVENT_REGISTRATION = {
   key: 'esports-2026',
+  publicFormId: '37567b20-114a-47c1-ad51-548d6bfba605',
   title: 'E-Sports Swiss-League Tournament',
   subtitle: 'Trophies & certificates',
   venue: 'Auditorium',

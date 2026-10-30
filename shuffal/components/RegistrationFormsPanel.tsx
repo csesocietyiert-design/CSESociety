@@ -135,7 +135,7 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
   };
 
   const handleShareEvent = async () => {
-    const url = `${window.location.origin}/event-registration`;
+    const url = `${window.location.origin}/forms/${EVENT_REGISTRATION.publicFormId}`;
     setError('');
     setNotice('');
     try {
@@ -204,7 +204,7 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
           </div>
           <div className="mt-4 flex shrink-0 gap-2 sm:mt-0">
             <Link
-              href="/event-registration"
+              href={`/forms/${EVENT_REGISTRATION.publicFormId}`}
               className="rounded-lg bg-teal-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-teal-300"
             >
               {eventOpen ? 'Register now' : 'View event'}

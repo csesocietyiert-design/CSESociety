@@ -276,8 +276,13 @@ export default function EventRegistrationForm() {
 
   if (registered) {
     return (
-      <main className="min-h-screen bg-slate-950 px-4 py-12 text-white sm:px-6">
-        <section className="mx-auto max-w-xl rounded-2xl border border-emerald-500/30 bg-slate-900 p-8 text-center shadow-2xl">
+      <main className="auth-page relative min-h-screen overflow-hidden px-4 py-12 text-white sm:px-6">
+        <div className="blob-container" aria-hidden="true">
+          <div className="blob-1 amoeba-blob" />
+          <div className="blob-2 amoeba-blob" />
+          <div className="blob-3 amoeba-blob" />
+        </div>
+        <section className="auth-card relative z-10 mx-auto max-w-xl rounded-2xl border p-8 text-center shadow-2xl">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-2xl text-emerald-300">✓</div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Registration received</p>
           <h1 className="mt-3 text-2xl font-bold">You are registered</h1>
@@ -297,12 +302,19 @@ export default function EventRegistrationForm() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6 lg:py-12">
+    <main className="auth-page relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-6 lg:py-12">
+      <div className="blob-container" aria-hidden="true">
+        <div className="blob-1 amoeba-blob" />
+        <div className="blob-2 amoeba-blob" />
+        <div className="blob-3 amoeba-blob" />
+      </div>
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/60 p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">CSE Society · IERT</p>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{EVENT_REGISTRATION.title}</h1>
-          <p className="mt-2 text-slate-300">{EVENT_REGISTRATION.subtitle} · {EVENT_REGISTRATION.venue}</p>
+        <header className="auth-card relative z-10 mb-8 rounded-2xl border p-6 sm:p-8">
+          <div className="flex flex-col items-center text-center">
+            <Image src="/logo.png" alt="CSE Society logo" width={96} height={96} className="h-20 w-20 object-contain sm:h-24 sm:w-24" priority />
+            <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-sky-300">CSE Society · IERT</p>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{EVENT_REGISTRATION.title}</h1>
+          </div>
           <div className="mt-5 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
             <p className="rounded-lg border border-slate-700 bg-slate-950/50 p-3"><strong className="text-white">First Half:</strong> 9:00 AM–12:00 PM · Choose BGMI or Free Fire</p>
             <p className="rounded-lg border border-slate-700 bg-slate-950/50 p-3"><strong className="text-white">Second Half:</strong> 2:00 PM–4:00 PM · Choose Table Tennis or Chess</p>
@@ -320,7 +332,7 @@ export default function EventRegistrationForm() {
             <p className="mt-2 text-slate-400">Online registration closed when the event started at 9:00 AM IST on 1 November 2026.</p>
           </section>
         ) : (
-          <form onSubmit={submitRegistration} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <form onSubmit={submitRegistration} className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-7">
                 <SectionHeading number="01" title="Participant type" />
