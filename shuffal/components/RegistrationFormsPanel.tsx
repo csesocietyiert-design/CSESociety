@@ -190,8 +190,7 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
       {error && <p role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>}
       {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</p>}
 
-      {!user && (
-        <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-rose-500/30 bg-gradient-to-br from-rose-600/20 via-rose-700/10 to-slate-900/70 text-white shadow-rose-950/20'}`}>
+      <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-rose-500/30 bg-gradient-to-br from-rose-600/20 via-rose-700/10 to-slate-900/70 text-white shadow-rose-950/20'}`}>
           <div className="flex items-start justify-between gap-4">
             <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'border-slate-600 bg-slate-800/60 text-slate-400' : 'border-rose-400/30 bg-rose-400/10 text-rose-200'}`}>
               {eventOpen ? 'Open for registration' : 'Registration closed'}
@@ -226,8 +225,7 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
               {eventOpen ? 'Register now' : 'View event'}
             </Link>
           </div>
-        </article>
-      )}
+      </article>
 
       <section>
         <div className="mb-4 flex items-center justify-between gap-4">
