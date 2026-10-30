@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -77,8 +77,6 @@ export default function EventRegistrationForm() {
   const [deliveryMethod, setDeliveryMethod] = useState<'email' | 'whatsapp'>('email');
   const [transactionId, setTransactionId] = useState('');
   const [screenshot, setScreenshot] = useState<File | null>(null);
-  const [screenshotPreview, setScreenshotPreview] = useState('');
-  const screenshotPreviewUrl = useRef<string | null>(null);
   const [rulesAccepted, setRulesAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [busyOtp, setBusyOtp] = useState(false);
@@ -90,10 +88,6 @@ export default function EventRegistrationForm() {
     updateOpen();
     const timer = window.setInterval(updateOpen, 15_000);
     return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => () => {
-    if (screenshotPreviewUrl.current) URL.revokeObjectURL(screenshotPreviewUrl.current);
   }, []);
 
   const isMember = participantType === 'member';
@@ -179,23 +173,16 @@ export default function EventRegistrationForm() {
 
   const handleScreenshot = (file: File | undefined) => {
     setMessage(null);
-    if (screenshotPreviewUrl.current) URL.revokeObjectURL(screenshotPreviewUrl.current);
-    screenshotPreviewUrl.current = null;
     if (!file) {
       setScreenshot(null);
-      setScreenshotPreview('');
       return;
     }
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
       setScreenshot(null);
-      setScreenshotPreview('');
       setMessage({ type: 'error', text: 'Payment screenshot must be a JPG, PNG, or WebP image up to 5 MB.' });
       return;
     }
     setScreenshot(file);
-    const previewUrl = URL.createObjectURL(file);
-    screenshotPreviewUrl.current = previewUrl;
-    setScreenshotPreview(previewUrl);
   };
 
   const submitRegistration = async (event: FormEvent<HTMLFormElement>) => {
@@ -519,8 +506,8 @@ export default function EventRegistrationForm() {
                     <section className="auth-card min-w-0 rounded-2xl border border-amber-500/30 p-5 sm:p-6 lg:p-8">
                       <SectionHeading number={isMember ? '03' : '04'} title="UPI payment" />
                       <div className="mt-4 grid gap-4 sm:gap-5 md:grid-cols-[minmax(180px,210px)_minmax(0,1fr)]">
-                        <div className="mx-auto w-full max-w-[210px] rounded-xl bg-white p-2 md:mx-0">
-                          <Image src={`/event-registration/upi-${fee}.jpeg`} alt={`UPI payment QR for ₹${fee}`} width={500} height={500} className="aspect-square w-full rounded-lg object-contain" />
+                        <div className="mx-auto w-full max-w-[250px] rounded-xl bg-white p-2 md:mx-0">
+                          <Image src={`/event-registration/upi-${fee}.jpeg`} alt={`UPI payment QR for ₹${fee}`} width={764} height={764} className="aspect-square w-full rounded-lg object-contain" />
                         </div>
                         <div className="space-y-4">
                           <p className="text-sm text-slate-300">Pay <strong className="text-amber-200">₹{fee}</strong> to <strong className="text-white">vbht2006@okhdfcbank</strong> using UPI. The QR code amount matches your session selection.</p>
@@ -528,11 +515,8 @@ export default function EventRegistrationForm() {
                           <label className="block text-sm font-medium text-slate-300">
                             Payment screenshot <span className="text-rose-300">(required)</span>
                             <input required type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleScreenshot(event.target.files?.[0])} className="mt-2 block w-full text-sm text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-600" />
-                            <span className="mt-1 block text-xs text-slate-500">JPG, PNG, or WebP · maximum 5 MB</span>
+                            <span className="mt-1 block text-xs text-slate-500">JPG, PNG, or WebP · maximum 5 MB{screenshot ? ` · Selected: ${screenshot.name}` : ''}</span>
                           </label>
-                          {screenshotPreview && (
-                            <Image src={screenshotPreview} alt="Payment screenshot preview" width={640} height={480} unoptimized className="max-h-56 rounded-lg border border-slate-700 object-contain" />
-                          )}
                         </div>
                       </div>
                     </section>
