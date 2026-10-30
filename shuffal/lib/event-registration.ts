@@ -36,7 +36,7 @@ export const EVENT_REGISTRATION = {
     'Chess is Solo only and uses 5-minute blitz rounds.',
     'Use of hacks, cheats, or emulators is not allowed.',
     'Participants must arrive on time for their selected session.',
-    'Solo and Duo participants must enter a team name. Both Duo players submit their own registration with the same team name. Chess is Solo only.',
+    'Solo and Duo participants must enter a team name. Both Duo players submit their own registration with the same team name. For both sessions, Duo applies only to the First Half game.',
   ],
 } as const;
 
