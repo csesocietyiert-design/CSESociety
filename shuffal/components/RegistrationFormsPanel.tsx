@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { EVENT_REGISTRATION, isEventRegistrationOpen } from '@/lib/event-registration';
 import { FORM_CREATOR_ROLES, isFormExpired, normalizeFormRole, type RegistrationForm } from '@/lib/forms';
 import type { User } from '@/lib/store';
 
@@ -19,6 +20,7 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
   const [formInput, setFormInput] = useState({ title: '', endDate: '', resourceUrl: '', documentUrl: '' });
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [eventOpen, setEventOpen] = useState(isEventRegistrationOpen);
 
   const isAdmin = user?.role === 'admin';
   const canCreate = user ? FORM_CREATOR_ROLES.has(normalizeFormRole(user.role)) : false;
@@ -41,6 +43,11 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
   useEffect(() => {
     void loadForms();
   }, [loadForms]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setEventOpen(isEventRegistrationOpen()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -127,6 +134,23 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
     }
   };
 
+  const handleShareEvent = async () => {
+    const url = `${window.location.origin}/event-registration`;
+    setError('');
+    setNotice('');
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: EVENT_REGISTRATION.title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setNotice('Event registration link copied to clipboard.');
+      }
+    } catch (shareError) {
+      if (shareError instanceof Error && shareError.name === 'AbortError') return;
+      setError('Could not share the event registration link. Check your browser clipboard permissions.');
+    }
+  };
+
   return (
     <main className="mx-auto max-w-7xl space-y-6 pb-8 pt-4 text-white sm:pt-6">
       <header className="space-y-2">
@@ -165,6 +189,38 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
 
       {error && <p role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>}
       {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</p>}
+
+      {!user && (
+        <article className={`flex flex-col rounded-xl border p-5 transition sm:flex-row sm:items-center sm:justify-between sm:gap-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/35 text-slate-400' : 'border-teal-400/40 bg-gradient-to-br from-teal-500/15 to-blue-500/10 text-white shadow-lg shadow-teal-950/10'}`}>
+          <div>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'text-slate-500' : 'text-teal-300'}`}>
+              {eventOpen ? 'Open for registration' : 'Registration closed'}
+            </p>
+            <h2 className={`mt-2 text-lg font-semibold ${eventOpen === false ? 'text-slate-400' : 'text-white'}`}>{EVENT_REGISTRATION.title}</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              1 November 2026 · {EVENT_REGISTRATION.venue} · BGMI, Free Fire, Table Tennis &amp; Chess
+            </p>
+            <p className="mt-1 text-xs text-slate-500">Registration closes at 9:00 AM IST · Members free · Non-members from ₹30</p>
+          </div>
+          <div className="mt-4 flex shrink-0 gap-2 sm:mt-0">
+            <Link
+              href="/event-registration"
+              className="rounded-lg bg-teal-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-teal-300"
+            >
+              {eventOpen ? 'Register now' : 'View event'}
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleShareEvent()}
+              aria-label="Share E-Sports Swiss-League Tournament registration"
+              title="Share event registration"
+              className="rounded-lg border border-slate-600/70 p-2 text-slate-300 transition hover:border-teal-400 hover:text-teal-200"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+            </button>
+          </div>
+        </article>
+      )}
 
       <section>
         <div className="mb-4 flex items-center justify-between gap-4">
