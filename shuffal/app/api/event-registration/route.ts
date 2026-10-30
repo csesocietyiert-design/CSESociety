@@ -266,7 +266,7 @@ export async function POST(request: Request) {
   const fullName = participantType === 'member' ? member!.name : getString(nonMember.name, 255);
   const email = participantType === 'member' ? member!.email.trim().toLowerCase() : getString(nonMember.email, 255).toLowerCase();
   const phone = participantType === 'member' ? (member!.phone || '').trim() : getString(nonMember.phone, 25);
-  const department = participantType === 'member' ? (member!.department || 'CSE') : getString(nonMember.department, 100);
+  const department = participantType === 'member' ? (member!.department || 'Computer Science & Engineering') : 'Computer Science & Engineering';
   const collegeRollNumber = participantType === 'member' ? null : getString(nonMember.aktuRollNumber ?? nonMember.collegeRollNumber, 50) || null;
   const yearValue = participantType === 'member' ? member!.year : Number(nonMember.year);
   const year = Number.isInteger(yearValue) && yearValue >= 1 && yearValue <= 6 ? yearValue : null;
@@ -279,8 +279,8 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json({ error: 'Enter valid name, email, and WhatsApp contact details.' }, { status: 400 });
   }
-  if (participantType === 'non_member' && ((!collegeRollNumber && year !== 1) || !department || year === null)) {
-    return NextResponse.json({ error: 'Enter valid department and year. AKTU Roll Number is required after Year 1.' }, { status: 400 });
+  if (participantType === 'non_member' && ((!collegeRollNumber && year !== 1) || year === null)) {
+    return NextResponse.json({ error: 'Enter a valid year. AKTU Roll Number is required after Year 1.' }, { status: 400 });
   }
   const feeAmount = getEventFee(participantType, session);
   const transactionId = participantType === 'member' ? '' : getString(body.transactionId, 80);
@@ -291,9 +291,12 @@ export async function POST(request: Request) {
   const screenshotValue = formData.get('paymentScreenshot');
   let screenshot: File | null = null;
   let screenshotBuffer: Buffer | null = null;
+  if (participantType === 'non_member' && !(screenshotValue instanceof File)) {
+    return NextResponse.json({ error: 'A payment screenshot is required for non-member registration.' }, { status: 400 });
+  }
   if (participantType === 'non_member' && screenshotValue instanceof File) {
     screenshot = screenshotValue;
-    if (screenshot.size > 5 * 1024 * 1024 || !imageExtensions[screenshot.type]) {
+    if (screenshot.size === 0 || screenshot.size > 5 * 1024 * 1024 || !imageExtensions[screenshot.type]) {
       return NextResponse.json({ error: 'Payment screenshot must be a JPG, PNG, or WebP image up to 5 MB.' }, { status: 400 });
     }
     screenshotBuffer = Buffer.from(await screenshot.arrayBuffer());
@@ -316,7 +319,7 @@ export async function POST(request: Request) {
       .upload(screenshotPath, screenshotBuffer, { contentType: screenshot.type, upsert: false });
     if (uploadError) {
       console.error('Event payment screenshot upload failed:', uploadError);
-      return NextResponse.json({ error: 'Could not save the payment screenshot. Try again without the optional screenshot or use a smaller image.' }, { status: 503 });
+      return NextResponse.json({ error: 'Could not save the payment screenshot. Please retry with a JPG, PNG, or WebP image up to 5 MB.' }, { status: 503 });
     }
   }
 

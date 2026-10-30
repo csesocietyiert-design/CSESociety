@@ -28,7 +28,6 @@ type MemberDetails = {
 type NonMemberDetails = {
   name: string;
   aktuRollNumber: string;
-  department: string;
   year: string;
   phone: string;
   email: string;
@@ -46,7 +45,6 @@ type PublicMessage = { type: 'error' | 'success' | 'info'; text: string };
 const initialNonMember: NonMemberDetails = {
   name: '',
   aktuRollNumber: '',
-  department: '',
   year: '',
   phone: '',
   email: '',
@@ -222,6 +220,10 @@ export default function EventRegistrationForm() {
     }
     if (!isMember && deliveryMethod === 'whatsapp' && !hasWhatsappNumber) {
       setMessage({ type: 'error', text: 'A WhatsApp number is required for WhatsApp delivery.' });
+      return;
+    }
+    if (!isMember && fee > 0 && !screenshot) {
+      setMessage({ type: 'error', text: 'Upload your payment screenshot before submitting.' });
       return;
     }
     if (!rulesAccepted) {
@@ -424,7 +426,10 @@ export default function EventRegistrationForm() {
                       value={nonMember.aktuRollNumber}
                       onChange={(value) => updateNonMember('aktuRollNumber', value)}
                     />
-                    <TextField label="Branch / Department" required value={nonMember.department} onChange={(value) => updateNonMember('department', value)} />
+                    <label className="text-sm font-medium text-slate-300">
+                      Branch / Department
+                      <input readOnly value="Computer Science & Engineering" className="mt-2 w-full cursor-not-allowed rounded-lg border border-slate-700 bg-slate-900 px-3 py-3 text-slate-400 outline-none" />
+                    </label>
                     <TextField label="WhatsApp number" required type="tel" value={nonMember.phone} onChange={(value) => updateNonMember('phone', value)} />
                     <TextField label="Email address" required type="email" value={nonMember.email} onChange={(value) => updateNonMember('email', value)} />
                   </div>
@@ -501,7 +506,7 @@ export default function EventRegistrationForm() {
                     </div>
                   </section>
 
-                  {!isMember && <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
+                  {participantType === 'non_member' && <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
                     <SectionHeading number="03" title="Entry-pass delivery" />
                     <p className="mt-2 text-sm text-slate-400">Choose where the entry-pass update should be sent.</p>
                     <div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
@@ -521,8 +526,8 @@ export default function EventRegistrationForm() {
                           <p className="text-sm text-slate-300">Pay <strong className="text-amber-200">₹{fee}</strong> to <strong className="text-white">vbht2006@okhdfcbank</strong> using UPI. The QR code amount matches your session selection.</p>
                           <TextField label="UPI transaction ID / UTR" required value={transactionId} onChange={setTransactionId} maxLength={80} />
                           <label className="block text-sm font-medium text-slate-300">
-                            Payment screenshot (optional)
-                            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleScreenshot(event.target.files?.[0])} className="mt-2 block w-full text-sm text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-600" />
+                            Payment screenshot <span className="text-rose-300">(required)</span>
+                            <input required type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleScreenshot(event.target.files?.[0])} className="mt-2 block w-full text-sm text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-600" />
                             <span className="mt-1 block text-xs text-slate-500">JPG, PNG, or WebP · maximum 5 MB</span>
                           </label>
                           {screenshotPreview && (
