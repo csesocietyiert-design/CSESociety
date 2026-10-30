@@ -11,9 +11,10 @@ export default function Forms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [shareMessage, setShareMessage] = useState("");
+  const [eventOpen, setEventOpen] = useState(null);
 
   const handleShare = async (form) => {
-    const url = `${dashboardOrigin}/forms/${encodeURIComponent(form.id)}`;
+    const url = form.shareUrl || `${dashboardOrigin}/forms/${encodeURIComponent(form.id)}`;
     setShareMessage("");
 
     try {
@@ -33,6 +34,11 @@ export default function Forms() {
   };
 
   useEffect(() => {
+    const updateEventStatus = () => {
+      setEventOpen(Date.now() < new Date("2026-11-01T09:00:00+05:30").getTime());
+    };
+    updateEventStatus();
+    const timer = window.setInterval(updateEventStatus, 15000);
     let active = true;
 
     fetch(formsApiUrl, { cache: "no-store" })
@@ -60,6 +66,7 @@ export default function Forms() {
 
     return () => {
       active = false;
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -80,15 +87,40 @@ export default function Forms() {
         </header>
         {shareMessage && <p className="forms-share-message" role="status">{shareMessage}</p>}
 
-        {loading ? (
-          <p className="forms-message" role="status">Loading registration forms...</p>
-        ) : error ? (
-          <p className="forms-message forms-error" role="alert">{error}</p>
-        ) : forms.length === 0 ? (
-          <p className="forms-message">There are no registration forms available right now.</p>
-        ) : (
-          <section className="forms-grid" aria-label="Available registration forms">
-            {forms.map((form, index) => {
+        <section className="forms-grid" aria-label="Available registration forms">
+          <article className={`form-panel-card tone-2 ${eventOpen === false ? "is-closed" : ""}`}>
+            <div className="form-card-head">
+              <span className={`form-badge ${eventOpen === true ? "form-open" : eventOpen === false ? "form-closed" : ""}`}>
+                {eventOpen === null ? "Checking" : eventOpen ? "Open" : "Closed"}
+              </span>
+            </div>
+            <h2>E-Sports Swiss-League Tournament</h2>
+            <ul className="form-meta">
+              <li><Clock3 size={15} /> 1 Nov 2026 · Closes at 9:00 AM</li>
+              <li>Auditorium · Trophies &amp; certificates</li>
+            </ul>
+            <div className="form-card-footer">
+              <a className="panel-primary-btn" href={`${dashboardOrigin}/event-registration`} target="_blank" rel="noreferrer">
+                {eventOpen === false ? "View event details" : "Register now"} <ArrowRight size={15} />
+              </a>
+              <button
+                className="panel-share-btn"
+                type="button"
+                onClick={() => void handleShare({ title: "E-Sports Swiss-League Tournament", shareUrl: `${dashboardOrigin}/event-registration` })}
+              >
+                {shareMessage === 'Form link copied to clipboard.' || shareMessage.startsWith('Shared "E-Sports')
+                  ? <Check size={15} />
+                  : <Share2 size={15} />}
+                Share
+              </button>
+            </div>
+          </article>
+          {loading && <p className="forms-message forms-grid-message" role="status">Loading other registration forms...</p>}
+          {error && <p className="forms-message forms-error forms-grid-message" role="alert">{error}</p>}
+          {!loading && !error && forms.length === 0 && (
+            <p className="forms-message forms-grid-message">There are no other registration forms available right now.</p>
+          )}
+          {!loading && !error && forms.map((form, index) => {
               const isClosed = form.end_date < getIndiaDate();
               const formUrl = `${dashboardOrigin}/forms/${encodeURIComponent(form.id)}`;
               const documentUrl = `${formUrl}?document=1`;
@@ -135,8 +167,7 @@ export default function Forms() {
                 </article>
               );
             })}
-          </section>
-        )}
+        </section>
       </main>
     </div>
   );

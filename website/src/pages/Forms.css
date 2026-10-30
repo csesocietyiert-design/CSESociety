@@ -87,6 +87,10 @@
   text-align: center;
 }
 
+.forms-grid-message {
+  grid-column: 1 / -1;
+}
+
 .forms-error {
   border-color: rgba(248, 113, 113, 0.35);
   color: #fecaca;
