@@ -27,6 +27,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
   const isTreasurer = user.role === 'treasurer';
   const canViewMembers = isFacultyAdmin || isExecutive || user.role === 'technical_secretary' || user.role === 'cultural_secretary' || isTreasurer;
   const isSecretary = user.role === 'technical_secretary' || user.role === 'cultural_secretary' || user.role === 'secretary';
+  const canManageEventRegistrations = ['admin', 'general_secretary', 'technical_secretary', 'cultural_secretary', 'secretary'].includes(user.role);
   const isYearRepresentative = user.role === 'year_representative' || user.role === 'yearRep';
   const menuItems = [
     { label: 'Dashboard', href: '/dashboard', icon: 'grid' },
@@ -39,6 +40,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'ID Card', href: '/dashboard/id-card', icon: 'user', show: true },
     { label: 'Resources', href: '/dashboard/resources', icon: 'bar-chart', show: true },
     { label: 'Forms', href: '/dashboard/forms', icon: 'calendar', show: true },
+    { label: 'Event Registrations', href: '/dashboard/event-registrations', icon: 'users', show: canManageEventRegistrations },
     { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: isTreasurer || isFacultyAdmin },
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative },
     { label: 'My Year', href: '/dashboard/members', icon: 'user', show: isYearRepresentative },

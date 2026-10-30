@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## E-Sports Event Registration
+
+- Public participant form: `/event-registration` (no dashboard login required).
+- Admin and secretary roster: `/dashboard/event-registrations`.
+- Members verify their Society ID with a one-time code sent to the email already stored on their verified `users` record. The code expires after five minutes and is single-use.
+- Non-members enter their details manually and pay per participant: ₹40 for First Half, ₹30 for Second Half, or ₹60 for Both Sessions. Their UPI transaction ID is required; a payment screenshot is optional.
+- Both Duo participants submit separately and enter the same team name. Verified Society members register free and should bring their Society ID card for entry attendance.
+- The roster groups members before non-members and supports print, PDF, DOCX, payment review, attendance, and evaluation notes.
+- Apply `supabase/migrations/036_create_event_registration.sql` in Supabase before enabling submissions. It creates private registration/OTP tables and the private payment-proof storage bucket.
+- Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, and `EVENT_OTP_PEPPER` in the deployment environment. Do not commit credentials. For Gmail, use an app password, not the account password.
+- Confirmation email is sent after a registration is saved. Entry-pass delivery is coordinated by the event team; the roster includes email and WhatsApp contact links.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
