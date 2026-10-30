@@ -143,7 +143,8 @@ export async function sendEventRegistrationNotice(
   name: string,
   registrationId: string,
   feeAmount: number,
-  deliveryMethod: 'email' | 'whatsapp'
+  deliveryMethod: 'email' | 'whatsapp',
+  participantType: 'member' | 'non_member',
 ): Promise<void> {
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMTP_PORT || '587');
@@ -159,13 +160,15 @@ export async function sendEventRegistrationNotice(
     secure: port === 465,
     auth: { user, pass: password },
   });
-  const deliveryLabel = deliveryMethod === 'email' ? 'email' : 'WhatsApp';
+  const instructions = participantType === 'member'
+    ? 'Bring your CSE Society ID card for entry. Society members do not receive a separate entry pass.'
+    : `Your entry-pass update will be shared through ${deliveryMethod === 'email' ? 'email' : 'WhatsApp'} after the registration is checked. Keep your payment transaction ID for reference.`;
   await transporter.sendMail({
     from,
     to: email,
     subject: 'CSE Society E-Sports registration received',
-    text: `Hello ${name}, your registration (${registrationId}) has been received. Amount recorded: ₹${feeAmount}. Your entry-pass update will be shared through ${deliveryLabel} after the registration is checked. Keep your payment transaction ID for reference.`,
-    html: `<p>Hello ${escapeHtml(name)},</p><p>Your E-Sports registration has been received.</p><p>Registration reference: <strong>${escapeHtml(registrationId)}</strong><br>Amount recorded: ₹${feeAmount}</p><p>Your entry-pass update will be shared through ${deliveryLabel} after the registration is checked. Keep your payment transaction ID for reference.</p>`,
+    text: `Hello ${name}, your registration (${registrationId}) has been received. Amount recorded: ₹${feeAmount}. ${instructions}`,
+    html: `<p>Hello ${escapeHtml(name)},</p><p>Your E-Sports registration has been received.</p><p>Registration reference: <strong>${escapeHtml(registrationId)}</strong><br>Amount recorded: ₹${feeAmount}</p><p>${escapeHtml(instructions)}</p>`,
   });
 }
 

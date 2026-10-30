@@ -166,7 +166,7 @@ export async function POST(request: Request) {
 
   const identity = validIdentity(body.identity);
 
-  const deliveryMethod = body.deliveryMethod;
+  const deliveryMethod = participantType === 'member' ? 'email' : body.deliveryMethod;
   if (deliveryMethod !== 'email' && deliveryMethod !== 'whatsapp') {
     return NextResponse.json({ error: 'Choose email or WhatsApp entry-pass delivery.' }, { status: 400 });
   }
@@ -267,7 +267,7 @@ export async function POST(request: Request) {
   const email = participantType === 'member' ? member!.email.trim().toLowerCase() : getString(nonMember.email, 255).toLowerCase();
   const phone = participantType === 'member' ? (member!.phone || '').trim() : getString(nonMember.phone, 25);
   const department = participantType === 'member' ? (member!.department || 'CSE') : getString(nonMember.department, 100);
-  const collegeRollNumber = participantType === 'member' ? null : getString(nonMember.collegeRollNumber, 50);
+  const collegeRollNumber = participantType === 'member' ? null : getString(nonMember.aktuRollNumber ?? nonMember.collegeRollNumber, 50) || null;
   const yearValue = participantType === 'member' ? member!.year : Number(nonMember.year);
   const year = Number.isInteger(yearValue) && yearValue >= 1 && yearValue <= 6 ? yearValue : null;
 
@@ -279,8 +279,8 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json({ error: 'Enter valid name, email, and WhatsApp contact details.' }, { status: 400 });
   }
-  if (participantType === 'non_member' && (!collegeRollNumber || !department || year === null)) {
-    return NextResponse.json({ error: 'Enter valid student ID, department, and year.' }, { status: 400 });
+  if (participantType === 'non_member' && ((!collegeRollNumber && year !== 1) || !department || year === null)) {
+    return NextResponse.json({ error: 'Enter valid department and year. AKTU Roll Number is required after Year 1.' }, { status: 400 });
   }
   const feeAmount = getEventFee(participantType, session);
   const transactionId = participantType === 'member' ? '' : getString(body.transactionId, 80);
@@ -393,7 +393,7 @@ export async function POST(request: Request) {
 
   let notificationError: string | null = null;
   try {
-    await sendEventRegistrationNotice(email, fullName, registration.id, feeAmount, deliveryMethod);
+    await sendEventRegistrationNotice(email, fullName, registration.id, feeAmount, deliveryMethod, participantType);
   } catch (emailError) {
     console.error('Event registration confirmation email failed:', emailError);
     notificationError = 'Your registration is saved, but the confirmation email could not be sent. Please keep your reference and contact the CSE Society.';

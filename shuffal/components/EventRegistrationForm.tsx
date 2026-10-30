@@ -27,7 +27,7 @@ type MemberDetails = {
 
 type NonMemberDetails = {
   name: string;
-  collegeRollNumber: string;
+  aktuRollNumber: string;
   department: string;
   year: string;
   phone: string;
@@ -45,7 +45,7 @@ type PublicMessage = { type: 'error' | 'success' | 'info'; text: string };
 
 const initialNonMember: NonMemberDetails = {
   name: '',
-  collegeRollNumber: '',
+  aktuRollNumber: '',
   department: '',
   year: '',
   phone: '',
@@ -70,7 +70,6 @@ export default function EventRegistrationForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [verificationToken, setVerificationToken] = useState('');
-  const [memberWhatsapp, setMemberWhatsapp] = useState('');
   const [nonMember, setNonMember] = useState(initialNonMember);
   const [session, setSession] = useState<EventSession | ''>('');
   const [games, setGames] = useState<EventGame[]>([]);
@@ -107,10 +106,8 @@ export default function EventRegistrationForm() {
     [participantType, session],
   );
   const selectedGames = session ? getGamesForSession(session, games) : [];
-  const registrationEmail = isMember ? member?.email || '' : nonMember.email;
-  const registrationPhone = isMember
-    ? (hasValidWhatsappNumber(member?.phone || '') ? member?.phone || '' : memberWhatsapp)
-    : nonMember.phone;
+  const registrationEmail = nonMember.email;
+  const registrationPhone = nonMember.phone;
   const hasWhatsappNumber = hasValidWhatsappNumber(registrationPhone);
   const chessOnlySession = session === 'second_half' && selectedGames.includes('Chess');
 
@@ -168,8 +165,6 @@ export default function EventRegistrationForm() {
       if (!response.ok) throw new Error(payload.error || 'Could not verify the code.');
       setMember(payload.member);
       setVerificationToken(payload.verificationToken);
-      setMemberWhatsapp('');
-      setDeliveryMethod(hasValidWhatsappNumber(payload.member.phone) ? 'whatsapp' : 'email');
       setMessage({ type: 'success', text: `Society ID verified. Code sent to ${payload.member.maskedEmail}.` });
     } catch (verifyError) {
       setMessage({ type: 'error', text: verifyError instanceof Error ? verifyError.message : 'Could not verify the code.' });
@@ -225,7 +220,7 @@ export default function EventRegistrationForm() {
       setMessage({ type: 'error', text: 'Enter your team name.' });
       return;
     }
-    if (deliveryMethod === 'whatsapp' && !hasWhatsappNumber) {
+    if (!isMember && deliveryMethod === 'whatsapp' && !hasWhatsappNumber) {
       setMessage({ type: 'error', text: 'A WhatsApp number is required for WhatsApp delivery.' });
       return;
     }
@@ -238,14 +233,14 @@ export default function EventRegistrationForm() {
       participantType,
       societyId: isMember ? member?.societyId : undefined,
       verificationToken: isMember ? verificationToken : undefined,
-      memberPhone: isMember ? memberWhatsapp.trim() : undefined,
+      memberPhone: undefined,
       nonMember: isMember ? undefined : nonMember,
       session,
       games: selectedGames,
       teamFormat,
       teamName: teamName.trim(),
       identity,
-      deliveryMethod,
+      deliveryMethod: isMember ? 'email' : deliveryMethod,
       transactionId: isMember ? '' : transactionId,
       rulesAccepted,
     };
@@ -375,6 +370,7 @@ export default function EventRegistrationForm() {
                             {busyOtp ? 'Sending…' : 'Send email code'}
                           </button>
                         </div>
+                        <p className="text-xs leading-5 text-slate-400">If the code doesn’t arrive, check your spam or junk folder.</p>
                         {otpSent && (
                           <div className="flex flex-col gap-3 sm:flex-row">
                             <label className="flex-1 text-sm font-medium text-slate-300">
@@ -409,29 +405,26 @@ export default function EventRegistrationForm() {
                         }} className="text-sm text-slate-400 underline hover:text-white">Change ID</button>
                       </div>
                     )}
-                    {member && !hasValidWhatsappNumber(member.phone) && (
-                      <TextField
-                        label="WhatsApp number (optional)"
-                        type="tel"
-                        value={memberWhatsapp}
-                        onChange={setMemberWhatsapp}
-                      />
-                    )}
                   </div>
                 )}
 
                 {participantType === 'non_member' && (
                   <div className="mt-5 grid gap-4 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-5">
                     <TextField label="Full name" required value={nonMember.name} onChange={(value) => updateNonMember('name', value)} />
-                    <TextField label="College roll number / Student ID" required value={nonMember.collegeRollNumber} onChange={(value) => updateNonMember('collegeRollNumber', value)} />
-                    <TextField label="Branch / Department" required value={nonMember.department} onChange={(value) => updateNonMember('department', value)} />
                     <label className="text-sm font-medium text-slate-300">
-                      Year / Semester
+                      Year
                       <select required value={nonMember.year} onChange={(event) => updateNonMember('year', event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-3 text-white outline-none focus:border-teal-400">
                         <option value="">Select year</option>
                         <option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option>
                       </select>
                     </label>
+                    <TextField
+                      label={`AKTU Roll Number${nonMember.year === '1' ? ' (optional for Year 1)' : ''}`}
+                      required={nonMember.year !== '1'}
+                      value={nonMember.aktuRollNumber}
+                      onChange={(value) => updateNonMember('aktuRollNumber', value)}
+                    />
+                    <TextField label="Branch / Department" required value={nonMember.department} onChange={(value) => updateNonMember('department', value)} />
                     <TextField label="WhatsApp number" required type="tel" value={nonMember.phone} onChange={(value) => updateNonMember('phone', value)} />
                     <TextField label="Email address" required type="email" value={nonMember.email} onChange={(value) => updateNonMember('email', value)} />
                   </div>
@@ -508,20 +501,18 @@ export default function EventRegistrationForm() {
                     </div>
                   </section>
 
-                  <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
+                  {!isMember && <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
                     <SectionHeading number="03" title="Entry-pass delivery" />
-                    <p className="mt-2 text-sm text-slate-400">
-                      {isMember ? `Contact details are taken from the verified Society account (${member?.email || ''}).` : 'Choose where the entry-pass update should be sent.'}
-                    </p>
+                    <p className="mt-2 text-sm text-slate-400">Choose where the entry-pass update should be sent.</p>
                     <div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
                       <ChoiceCard title="Email" detail={registrationEmail || 'Your registered / entered email'} selected={deliveryMethod === 'email'} onClick={() => setDeliveryMethod('email')} />
                       <ChoiceCard title="WhatsApp" detail={hasWhatsappNumber ? registrationPhone : 'No phone number is saved for this account'} selected={deliveryMethod === 'whatsapp'} disabled={!hasWhatsappNumber} onClick={() => setDeliveryMethod('whatsapp')} />
                     </div>
-                  </section>
+                  </section>}
 
                   {!isMember && fee > 0 && (
                     <section className="auth-card min-w-0 rounded-2xl border border-amber-500/30 p-5 sm:p-6 lg:p-8">
-                      <SectionHeading number="04" title="UPI payment" />
+                      <SectionHeading number={isMember ? '03' : '04'} title="UPI payment" />
                       <div className="mt-4 grid gap-4 sm:gap-5 md:grid-cols-[minmax(180px,210px)_minmax(0,1fr)]">
                         <div className="mx-auto w-full max-w-[210px] rounded-xl bg-white p-2 md:mx-0">
                           <Image src={`/event-registration/upi-${fee}.jpeg`} alt={`UPI payment QR for ₹${fee}`} width={500} height={500} className="aspect-square w-full rounded-lg object-contain" />
@@ -543,7 +534,7 @@ export default function EventRegistrationForm() {
                   )}
 
                   <section className="auth-card min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-8">
-                    <SectionHeading number={isMember ? '04' : '05'} title="Rules and confirmation" />
+                    <SectionHeading number={isMember ? '03' : '05'} title="Rules and confirmation" />
                     <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-300">
                       {EVENT_REGISTRATION.rules.map((rule) => <li key={rule}>{rule}</li>)}
                     </ul>
@@ -568,7 +559,7 @@ export default function EventRegistrationForm() {
                 <SummaryRow label="Session" value={session ? sessionLabel(session) : 'Not selected'} />
                 {session && <SummaryRow label="Format / team" value={`${teamFormat === 'duo' ? 'Duo · 2 players' : 'Solo · 1 player'} · ${teamName || 'team name pending'}`} />}
                 <SummaryRow label="Game(s)" value={selectedGames.length ? selectedGames.join(', ') : 'Not selected'} />
-                <SummaryRow label="Delivery" value={deliveryMethod === 'email' ? 'Email' : 'WhatsApp'} />
+                {participantType === 'non_member' && <SummaryRow label="Delivery" value={deliveryMethod === 'email' ? 'Email' : 'WhatsApp'} />}
               </dl>
               <div className="mt-5 flex items-center justify-between border-t border-slate-700 pt-4">
                 <span className="text-sm text-slate-300">Total payable</span>

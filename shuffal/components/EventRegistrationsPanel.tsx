@@ -50,7 +50,7 @@ function getGamesLabel(row: EventRegistration): string {
     : row.session_selection === 'second_half' ? 'Chess' : 'Not selected';
 }
 
-export default function EventRegistrationsPanel() {
+export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean }) {
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,6 +58,7 @@ export default function EventRegistrationsPanel() {
   const [filter, setFilter] = useState<RosterFilter>('all');
   const [search, setSearch] = useState('');
   const [savingId, setSavingId] = useState('');
+  const [deletingId, setDeletingId] = useState('');
   const [drafts, setDrafts] = useState<Record<string, EvaluationDraft>>({});
 
   const loadRegistrations = useCallback(async () => {
@@ -136,6 +137,29 @@ export default function EventRegistrationsPanel() {
       setError(updateError instanceof Error ? updateError.message : 'Could not update registration.');
     } finally {
       setSavingId('');
+    }
+  };
+
+  const deleteRegistration = async (row: EventRegistration) => {
+    if (!window.confirm(`Delete the registration for ${row.full_name}? This cannot be undone.`)) return;
+    setDeletingId(row.id);
+    setError('');
+    setNotice('');
+    try {
+      const response = await fetch(`/api/event-registration/${row.id}`, { method: 'DELETE' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not delete registration.');
+      setRegistrations((current) => current.filter((item) => item.id !== row.id));
+      setDrafts((current) => {
+        const next = { ...current };
+        delete next[row.id];
+        return next;
+      });
+      setNotice(payload.cleanupWarning || `Registration for ${row.full_name} deleted.`);
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Could not delete registration.');
+    } finally {
+      setDeletingId('');
     }
   };
 
@@ -339,8 +363,11 @@ export default function EventRegistrationsPanel() {
               index={index + 1}
               draft={drafts[row.id] || { score: '', notes: '' }}
               saving={savingId === row.id}
+              deleting={deletingId === row.id}
+              canDelete={isAdmin}
               onUpdate={(changes, message) => void updateRegistration(row, changes, message)}
               onSendPass={(method) => void sendEntryPass(row, method)}
+              onDelete={() => void deleteRegistration(row)}
               onDraftChange={(draft) => setDrafts((current) => ({ ...current, [row.id]: draft }))}
               onSaveEvaluation={() => saveEvaluation(row)}
             />
@@ -356,8 +383,11 @@ function RegistrationCard({
   index,
   draft,
   saving,
+  deleting,
+  canDelete,
   onUpdate,
   onSendPass,
+  onDelete,
   onDraftChange,
   onSaveEvaluation,
 }: {
@@ -365,8 +395,11 @@ function RegistrationCard({
   index: number;
   draft: EvaluationDraft;
   saving: boolean;
+  deleting: boolean;
+  canDelete: boolean;
   onUpdate: (changes: Record<string, unknown>, message: string) => void;
   onSendPass: (method: 'email' | 'whatsapp') => void;
+  onDelete: () => void;
   onDraftChange: (draft: EvaluationDraft) => void;
   onSaveEvaluation: () => void;
 }) {
@@ -421,14 +454,17 @@ function RegistrationCard({
             <option value="checked_in">Checked in</option>
             <option value="no_show">No show</option>
           </select>
-          <select value={row.pass_status} disabled={saving || (!member && row.payment_status !== 'verified')} onChange={(event) => onUpdate({ passStatus: event.target.value }, `Pass status updated for ${row.full_name}.`)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white">
-            <option value="pending">Pass not sent</option>
-            <option value="sent">Pass sent</option>
-          </select>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={saving || (!member && row.payment_status !== 'verified')} onClick={() => onSendPass('email')} className="rounded-md border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">Send email pass</button>
-            {whatsappNumber && <button type="button" disabled={saving || (!member && row.payment_status !== 'verified')} onClick={() => onSendPass('whatsapp')} className="rounded-md border border-emerald-700/50 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-900/30 disabled:cursor-not-allowed disabled:opacity-40">WhatsApp pass</button>}
-          </div>
+          {!member && <>
+            <select value={row.pass_status} disabled={saving || row.payment_status !== 'verified'} onChange={(event) => onUpdate({ passStatus: event.target.value }, `Pass status updated for ${row.full_name}.`)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white">
+              <option value="pending">Pass not sent</option>
+              <option value="sent">Pass sent</option>
+            </select>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={saving || row.payment_status !== 'verified'} onClick={() => onSendPass('email')} className="rounded-md border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">Send email pass</button>
+              {whatsappNumber && <button type="button" disabled={saving || row.payment_status !== 'verified'} onClick={() => onSendPass('whatsapp')} className="rounded-md border border-emerald-700/50 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-900/30 disabled:cursor-not-allowed disabled:opacity-40">WhatsApp pass</button>}
+            </div>
+          </>}
+          {canDelete && <button type="button" disabled={saving || deleting} onClick={onDelete} className="mt-1 rounded-md border border-rose-500/40 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-40">{deleting ? 'Deleting…' : 'Delete registration'}</button>}
         </div>
       </div>
 

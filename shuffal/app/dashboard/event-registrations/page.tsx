@@ -30,5 +30,5 @@ export default function EventRegistrationsPage() {
     return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading event registrations…</div>;
   }
 
-  return <LayoutWrapper user={user}><EventRegistrationsPanel /></LayoutWrapper>;
+  return <LayoutWrapper user={user}><EventRegistrationsPanel isAdmin={user.role.toLowerCase() === 'admin'} /></LayoutWrapper>;
 }

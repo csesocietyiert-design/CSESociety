@@ -69,6 +69,9 @@ export async function PATCH(
   }
   if (!current) return NextResponse.json({ error: 'Event registration not found.' }, { status: 404 });
 
+  if (current.participant_type === 'member' && changes.pass_status !== undefined) {
+    return NextResponse.json({ error: 'Society members do not receive a separate entry pass.' }, { status: 400 });
+  }
   const nextPaymentStatus = typeof changes.payment_status === 'string' ? changes.payment_status : current.payment_status;
   const nextPassStatus = typeof changes.pass_status === 'string' ? changes.pass_status : undefined;
   if (nextPassStatus === 'sent' && !['verified', 'waived'].includes(nextPaymentStatus)) {
@@ -91,4 +94,61 @@ export async function PATCH(
   }
 
   return NextResponse.json({ registration: data });
+}
+
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const auth = await getEventRegistrationManager(request);
+  if (auth.error) return auth.error;
+
+  const { data: requester, error: requesterError } = await auth.supabase
+    .from('users')
+    .select('role')
+    .eq('id', auth.managerId)
+    .maybeSingle();
+  if (requesterError) {
+    console.error('Event registration delete permission lookup failed:', requesterError);
+    return NextResponse.json({ error: 'Could not verify delete permission.' }, { status: 500 });
+  }
+  if (String(requester?.role).toLowerCase() !== 'admin') {
+    return NextResponse.json({ error: 'Only admins can delete event registrations.' }, { status: 403 });
+  }
+
+  const { id } = await context.params;
+  const { data: registration, error: loadError } = await auth.supabase
+    .from('esports_event_registrations')
+    .select('id, payment_screenshot_path')
+    .eq('id', id)
+    .eq('event_key', EVENT_REGISTRATION.key)
+    .maybeSingle();
+  if (loadError) {
+    console.error('Event registration could not be loaded for deletion:', loadError);
+    return NextResponse.json({ error: 'Could not delete event registration.' }, { status: 500 });
+  }
+  if (!registration) return NextResponse.json({ error: 'Event registration not found.' }, { status: 404 });
+
+  const { error: deleteError } = await auth.supabase
+    .from('esports_event_registrations')
+    .delete()
+    .eq('id', id)
+    .eq('event_key', EVENT_REGISTRATION.key);
+  if (deleteError) {
+    console.error('Event registration deletion failed:', deleteError);
+    return NextResponse.json({ error: 'Could not delete event registration.' }, { status: 500 });
+  }
+
+  let cleanupWarning: string | null = null;
+  if (registration.payment_screenshot_path) {
+    const { error: cleanupError } = await auth.supabase.storage
+      .from('event-payment-proofs')
+      .remove([registration.payment_screenshot_path]);
+    if (cleanupError) {
+      console.error('Payment screenshot cleanup failed after registration deletion:', cleanupError);
+      cleanupWarning = 'Registration deleted, but its payment screenshot could not be removed.';
+    }
+  }
+
+  return NextResponse.json({ success: true, cleanupWarning });
 }

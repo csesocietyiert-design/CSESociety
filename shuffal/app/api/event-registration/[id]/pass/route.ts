@@ -36,6 +36,9 @@ export async function POST(
     return NextResponse.json({ error: 'Could not load this registration.' }, { status: 500 });
   }
   if (!registration) return NextResponse.json({ error: 'Event registration not found.' }, { status: 404 });
+  if (registration.participant_type === 'member') {
+    return NextResponse.json({ error: 'Society members do not receive a separate entry pass.' }, { status: 409 });
+  }
   if (!['verified', 'waived'].includes(registration.payment_status)) {
     return NextResponse.json({ error: 'Verify the payment before issuing this entry pass.' }, { status: 409 });
   }
