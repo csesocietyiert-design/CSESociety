@@ -38,6 +38,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Attendance', href: '/dashboard/attendance', icon: 'calendar', show: true },
     { label: 'ID Card', href: '/dashboard/id-card', icon: 'user', show: true },
     { label: 'Resources', href: '/dashboard/resources', icon: 'bar-chart', show: true },
+    { label: 'Forms', href: '/dashboard/forms', icon: 'calendar', show: true },
     { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: isTreasurer || isFacultyAdmin },
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative },
     { label: 'My Year', href: '/dashboard/members', icon: 'user', show: isYearRepresentative },
@@ -130,4 +131,3 @@ function getIcon(name: string) {
   };
   return icons[name] || <span className="w-5 h-5">•</span>;
 }
-

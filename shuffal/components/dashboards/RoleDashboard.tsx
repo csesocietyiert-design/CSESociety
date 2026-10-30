@@ -29,6 +29,7 @@ const configs: Record<'executive' | 'secretary' | 'year_representative' | 'treas
     accentClass: 'text-cyan-300',
     features: [
       { label: 'Members', href: '/dashboard/members', detail: 'View and support society members', tone: 'sky' },
+      { label: 'Registration Forms', href: '/dashboard/forms', detail: 'Create and manage public forms', tone: 'purple' },
       { label: 'Events', href: '/dashboard/events', detail: 'Coordinate upcoming activities', tone: 'amber' },
       { label: 'Registrations', href: '/dashboard/events', detail: 'Review event participation', tone: 'teal' },
       { label: 'Attendance', href: '/dashboard/attendance', detail: 'Track society engagement', tone: 'emerald' },
