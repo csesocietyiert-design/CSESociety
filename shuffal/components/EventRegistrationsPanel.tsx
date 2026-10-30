@@ -191,8 +191,8 @@ export default function EventRegistrationsPanel() {
 
     visibleRegistrations.forEach((row, index) => {
       const details = [
-        `${index + 1}. ${row.participant_type === 'member' ? 'MEMBER' : 'NON-MEMBER'}  |  ${row.full_name}  |  ${row.society_id || row.college_roll_number || ''}`,
-        `Session: ${sessionLabels[row.session_selection]}  |  Games: ${getGamesLabel(row)}  |  Team: ${row.team_name || row.team_format}`,
+        `${index + 1}. ${row.participant_type === 'member' ? 'MEMBER' : 'NON-MEMBER'}  |  Participant name: ${row.full_name}  |  ID: ${row.society_id || row.college_roll_number || ''}`,
+        `Team name: ${row.team_name || '-'}  |  Format: ${row.team_format}  |  Session: ${sessionLabels[row.session_selection]}  |  Games: ${getGamesLabel(row)}`,
         `Email: ${row.email}  |  WhatsApp: ${row.whatsapp_phone}  |  Fee: Rs ${row.fee_amount}  |  Payment: ${row.payment_status}`,
         `Attendance: ${row.attendance_status}  |  Evaluation: ${row.evaluation_score ?? '-'}  |  Notes: ${row.evaluation_notes || '-'}`,
         `BGMI: ${row.bgmi_ign || '-'} / ${row.bgmi_uid || '-'}  |  Free Fire: ${row.free_fire_ign || '-'} / ${row.free_fire_uid || '-'}`,
@@ -229,7 +229,9 @@ export default function EventRegistrationsPanel() {
           new Paragraph(`Society ID / student ID: ${row.society_id || row.college_roll_number || '-'}`),
           new Paragraph(`Department / year: ${row.department || '-'} / ${row.year || '-'}`),
           new Paragraph(`Email: ${row.email} · WhatsApp: ${row.whatsapp_phone}`),
-          new Paragraph(`Session: ${sessionLabels[row.session_selection]} · Games: ${getGamesLabel(row)} · Format: ${row.team_format} · Team: ${row.team_name || '-'}`),
+          new Paragraph(`Participant name: ${row.full_name}`),
+          new Paragraph(`Team name: ${row.team_name || '-'} · Format: ${row.team_format}`),
+          new Paragraph(`Session: ${sessionLabels[row.session_selection]} · Games: ${getGamesLabel(row)}`),
           new Paragraph(`Fee: Rs ${row.fee_amount} · Payment: ${row.payment_status} · Transaction ID: ${row.payment_transaction_id || '-'}`),
           new Paragraph(`Attendance: ${row.attendance_status} · Evaluation score: ${row.evaluation_score ?? '-'} · Notes: ${row.evaluation_notes || '-'}`),
           new Paragraph(`BGMI: ${row.bgmi_ign || '-'} / ${row.bgmi_uid || '-'} · Free Fire: ${row.free_fire_ign || '-'} / ${row.free_fire_uid || '-'}`),
@@ -262,9 +264,9 @@ export default function EventRegistrationsPanel() {
         <td>${escapeHtml(row.full_name)}</td>
         <td>${escapeHtml(row.society_id || row.college_roll_number || '-')}</td>
         <td>${escapeHtml(row.department || '-')} / ${escapeHtml(String(row.year || '-'))}</td>
+        <td>${escapeHtml(row.team_name || '-')}</td>
         <td>${escapeHtml(sessionLabels[row.session_selection])}</td>
         <td>${escapeHtml(getGamesLabel(row))}</td>
-        <td>${escapeHtml(row.team_name || row.team_format)}</td>
         <td>${escapeHtml(row.email)}</td>
         <td>${escapeHtml(row.whatsapp_phone || '-')}</td>
         <td>Rs ${row.fee_amount} · ${escapeHtml(row.payment_status)}</td>
@@ -275,7 +277,7 @@ export default function EventRegistrationsPanel() {
     printWindow.document.write(`<!doctype html><html><head><title>${escapeHtml(EVENT_REGISTRATION.title)} roster</title>
       <style>body{font:12px Arial,sans-serif;color:#111;padding:20px}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:5px;text-align:left;vertical-align:top}th{background:#eee} @page{size:landscape}</style>
       </head><body><h1>${escapeHtml(EVENT_REGISTRATION.title)} — registration roster</h1><p>Members listed before non-members · ${new Date().toLocaleString('en-IN')}</p>
-      <table><thead><tr><th>#</th><th>Type</th><th>Name</th><th>ID</th><th>Branch/year</th><th>Session</th><th>Games</th><th>Team</th><th>Email</th><th>WhatsApp</th><th>Payment</th><th>Attendance</th><th>Score</th><th>Evaluation notes</th></tr></thead><tbody>${rows}</tbody></table>
+      <table><thead><tr><th>#</th><th>Type</th><th>Participant name</th><th>ID</th><th>Branch/year</th><th>Team name</th><th>Session</th><th>Games</th><th>Email</th><th>WhatsApp</th><th>Payment</th><th>Attendance</th><th>Score</th><th>Evaluation notes</th></tr></thead><tbody>${rows}</tbody></table>
       <script>window.onload=()=>{window.print();window.close()}</script></body></html>`);
     printWindow.document.close();
   };
@@ -380,9 +382,18 @@ function RegistrationCard({
             <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs font-bold text-slate-400">#{index}</span>
             <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${member ? 'bg-teal-400/10 text-teal-200' : 'bg-amber-400/10 text-amber-200'}`}>{member ? 'Society member' : 'Non-member'}</span>
             <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">{sessionLabels[row.session_selection]}</span>
-            <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">{row.team_format === 'duo' ? `Duo · ${row.team_name || 'Team'}` : `Solo · ${row.team_name || 'Team'}`}</span>
+            <span className="rounded-full bg-slate-950/70 px-2.5 py-1 text-xs text-slate-300">{row.team_format === 'duo' ? 'Duo · 2 players' : 'Solo · 1 player'}</span>
           </div>
-          <h2 className="mt-3 text-xl font-bold text-white">{row.full_name}</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Participant name</p>
+              <h2 className="mt-1 break-words text-lg font-bold text-white">{row.full_name}</h2>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Team name</p>
+              <p className="mt-1 break-words text-lg font-bold text-white">{row.team_name || '-'}</p>
+            </div>
+          </div>
           <p className="mt-1 text-sm text-slate-400">{row.society_id || row.college_roll_number || 'No student ID'} · {row.department || 'CSE'} · Year {row.year || '-'}</p>
           <div className="mt-4 grid gap-2 text-sm text-slate-300 sm:grid-cols-2 xl:grid-cols-3">
             <p><span className="text-slate-500">Email:</span> {row.email}</p>
