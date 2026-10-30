@@ -1,0 +1,58 @@
+.contact-cards-section { background: var(--off-white); }
+.contact-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.contact-info-card { padding: 24px 18px; text-align: center; border-top: 4px solid var(--primary); }
+.contact-icon { font-size: 2.2rem; margin-bottom: 12px; }
+.contact-info-card h3 { font-size: 1rem; font-family: 'Source Sans 3', sans-serif; font-weight: 700; margin-bottom: 10px; color: var(--primary); }
+.contact-info-card p { font-size: 0.87rem; color: var(--text-light); margin-bottom: 4px; line-height: 1.5; }
+.contact-info-card a { color: var(--primary); transition: color 0.2s; }
+.contact-info-card a:hover { color: var(--primary-dark); text-decoration: underline; }
+.social-links { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.social-btn { display: block; padding: 6px 14px; background: var(--off-white); border-radius: 20px; font-size: 0.82rem; color: var(--primary); font-weight: 600; transition: all 0.2s; }
+.social-btn:hover { background: var(--primary); color: white; }
+
+.contact-main-section {}
+.contact-main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+.map-container { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.key-contacts-title { font-size: 1rem; font-family: 'Source Sans 3', sans-serif; font-weight: 700; margin-bottom: 10px; color: var(--primary); }
+.key-contacts-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.key-contacts-table th { background: var(--primary); color: white; padding: 10px 12px; text-align: left; }
+.key-contacts-table td { padding: 10px 12px; color: var(--text-light); border-bottom: 1px solid var(--gray-light); }
+.key-contacts-table a { color: var(--primary); }
+.key-contacts-table tr:nth-child(even) td { background: var(--off-white); }
+
+.contact-form { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+.form-group input, .form-group select, .form-group textarea {
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-light);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-family: 'Source Sans 3', sans-serif;
+  color: var(--text);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,53,128,0.08); }
+.form-group textarea { resize: vertical; min-height: 120px; }
+.form-submit-btn { width: 100%; padding: 13px; font-size: 1rem; }
+.form-note { font-size: 0.78rem; color: var(--gray); }
+.form-note a { color: var(--primary); }
+.form-success { text-align: center; padding: 48px 24px; background: var(--off-white); border-radius: var(--radius); border: 2px solid var(--primary); }
+.success-icon { font-size: 3rem; margin-bottom: 14px; }
+.form-success h3 { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; }
+.form-success p { color: var(--text-light); margin-bottom: 20px; }
+
+.reach-section { background: var(--off-white); }
+.reach-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.reach-card { padding: 24px 18px; text-align: center; }
+.reach-icon { font-size: 2.2rem; display: block; margin-bottom: 12px; }
+.reach-card h3 { font-size: 1rem; font-family: 'Source Sans 3', sans-serif; font-weight: 700; margin-bottom: 8px; }
+.reach-card p { font-size: 0.87rem; color: var(--text-light); line-height: 1.6; }
+
+@media (max-width: 1024px) { .contact-cards-grid { grid-template-columns: 1fr 1fr; } .reach-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px) { .contact-main-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .contact-cards-grid { grid-template-columns: 1fr 1fr; } .reach-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 400px) { .contact-cards-grid { grid-template-columns: 1fr; } .reach-grid { grid-template-columns: 1fr; } }

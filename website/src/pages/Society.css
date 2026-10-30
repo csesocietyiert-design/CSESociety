@@ -1,0 +1,490 @@
+.about-society-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.society-intro {
+  color: var(--text-light);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.society-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.society-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.society-info-card {
+  padding: 24px;
+  border-top: 4px solid var(--primary);
+}
+
+.society-info-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.society-card-divider {
+  width: 40px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-bottom: 18px;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.info-value {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.society-alt-section {
+  background: var(--off-white);
+}
+
+.society-objectives-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.society-objective-card {
+  padding: 24px 20px;
+  border-top: 4px solid var(--primary);
+}
+
+.society-objective-card h3 {
+  font-size: 1rem;
+  margin: 12px 0 8px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+}
+
+.society-objective-card p {
+  font-size: 0.88rem;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.society-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 53, 128, 0.08);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.society-membership-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.society-membership-card {
+  padding: 24px;
+  border-top: 4px solid var(--accent);
+}
+
+.society-membership-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.society-membership-card p {
+  color: var(--text-light);
+  line-height: 1.7;
+  font-size: 0.92rem;
+}
+
+.membership-note {
+  margin-top: 12px;
+  font-size: 0.84rem;
+  color: var(--gray);
+}
+
+.structure-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 24px;
+}
+
+.structure-node {
+  background: var(--primary);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.structure-connector {
+  width: 30px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.structure-subsection {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--primary);
+}
+
+.structure-subsection h3 {
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.structure-subsection p {
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.society-section-intro {
+  color: var(--text-light);
+  margin-bottom: 24px;
+}
+
+.society-member-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.society-member-card {
+  padding: 20px;
+  text-align: center;
+  border-top: 4px solid var(--primary);
+}
+
+.society-member-photo {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  background: var(--off-white);
+  border: 3px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1rem;
+  overflow: hidden;
+}
+
+.society-member-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.society-member-card h3 {
+  font-size: 0.98rem;
+  margin-bottom: 6px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+}
+
+.society-member-role {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.society-member-responsibility {
+  color: var(--text-light);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.society-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.society-accordion-item {
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.society-accordion-item.open {
+  border-color: var(--primary);
+}
+
+.society-accordion-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  background: none;
+  border: none;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.society-accordion-item.open .society-accordion-trigger {
+  background: var(--primary);
+  color: white;
+}
+
+.society-accordion-body {
+  padding: 0 18px 18px;
+  color: var(--text-light);
+}
+
+.society-accordion-body p {
+  margin: 14px 0 10px;
+  font-size: 0.92rem;
+}
+
+.society-accordion-body ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 0;
+}
+
+.society-accordion-body li {
+  padding-left: 16px;
+  position: relative;
+  font-size: 0.9rem;
+}
+
+.society-accordion-body li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+}
+
+.society-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.society-activity-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  border-top: 4px solid var(--primary);
+}
+
+.society-activity-card h3 {
+  font-size: 1rem;
+  margin: 0;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+}
+
+.society-activity-type {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--gray-light);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.society-activity-date {
+  font-size: 0.82rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin: 0;
+}
+
+.society-activity-card p {
+  font-size: 0.92rem;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.society-section-note {
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+.society-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.society-gallery-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.society-gallery-placeholder {
+  min-height: 160px;
+  background: var(--gray-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray);
+  gap: 6px;
+  text-align: center;
+  padding: 16px;
+}
+
+.society-gallery-placeholder span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.society-gallery-placeholder small {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.society-document-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.society-document-card {
+  padding: 20px;
+  border-left: 4px solid var(--primary);
+}
+
+.society-document-card h3 {
+  font-size: 1rem;
+  margin: 12px 0 8px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 700;
+}
+
+.society-document-card p {
+  color: var(--text-light);
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+.society-doc-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.society-doc-status {
+  font-size: 0.8rem;
+  margin-top: 10px;
+  color: var(--gray);
+}
+
+@media (max-width: 1024px) {
+  .about-society-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .society-objectives-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .society-member-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .society-activity-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .society-gallery-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .society-membership-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .structure-flow {
+    flex-direction: column;
+  }
+
+  .structure-connector {
+    width: 2px;
+    height: 20px;
+  }
+
+  .society-member-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .society-objectives-grid,
+  .society-activity-grid,
+  .society-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-row {
+    grid-template-columns: 1fr;
+  }
+}

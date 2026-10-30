@@ -1,0 +1,4 @@
+/* All global styles are in src/styles/global.css */
+/* This file intentionally left minimal */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
