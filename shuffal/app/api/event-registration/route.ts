@@ -165,12 +165,6 @@ export async function POST(request: Request) {
   }
 
   const identity = validIdentity(body.identity);
-  if (games.includes('BGMI') && (!identity.bgmiIgn || !identity.bgmiUid)) {
-    return NextResponse.json({ error: 'BGMI IGN and UID are required.' }, { status: 400 });
-  }
-  if (games.includes('Free Fire') && (!identity.freeFireIgn || !identity.freeFireUid)) {
-    return NextResponse.json({ error: 'Free Fire IGN and UID are required.' }, { status: 400 });
-  }
 
   const deliveryMethod = body.deliveryMethod;
   if (deliveryMethod !== 'email' && deliveryMethod !== 'whatsapp') {
@@ -206,6 +200,20 @@ export async function POST(request: Request) {
     }
     if (!verifiedMember || verifiedMember.is_verified !== true || !verifiedMember.email) {
       return NextResponse.json({ error: 'A verified Society member was not found.' }, { status: 403 });
+    }
+
+    const { data: existingRegistration, error: existingRegistrationError } = await supabase
+      .from('esports_event_registrations')
+      .select('id')
+      .eq('event_key', EVENT_REGISTRATION.key)
+      .ilike('society_id', verifiedMember.cse_id)
+      .maybeSingle();
+    if (existingRegistrationError) {
+      console.error('Existing event registration lookup failed:', existingRegistrationError);
+      return NextResponse.json({ error: 'Could not check whether this Society ID is already registered.' }, { status: 503 });
+    }
+    if (existingRegistration) {
+      return NextResponse.json({ error: 'This Society ID is already registered for this event.' }, { status: 409 });
     }
 
     const { data: memberContact, error: contactError } = await supabase
@@ -344,10 +352,10 @@ export async function POST(request: Request) {
     games,
     team_format: teamFormat,
     team_name: teamName || null,
-    bgmi_ign: games.includes('BGMI') ? identity.bgmiIgn : null,
-    bgmi_uid: games.includes('BGMI') ? identity.bgmiUid : null,
-    free_fire_ign: games.includes('Free Fire') ? identity.freeFireIgn : null,
-    free_fire_uid: games.includes('Free Fire') ? identity.freeFireUid : null,
+    bgmi_ign: games.includes('BGMI') ? identity.bgmiIgn || null : null,
+    bgmi_uid: games.includes('BGMI') ? identity.bgmiUid || null : null,
+    free_fire_ign: games.includes('Free Fire') ? identity.freeFireIgn || null : null,
+    free_fire_uid: games.includes('Free Fire') ? identity.freeFireUid || null : null,
     fee_amount: feeAmount,
     payment_transaction_id: transactionId || null,
     payment_screenshot_path: screenshotPath,
@@ -365,6 +373,15 @@ export async function POST(request: Request) {
   if (insertError) {
     console.error('Event registration could not be saved:', insertError);
     if (screenshotPath) await removeScreenshot(supabase, screenshotPath);
+    if (
+      insertError.code === '23505'
+      && (
+        insertError.message.includes('idx_esports_event_registrations_society_event')
+        || insertError.message.includes('idx_esports_event_registrations_member_event')
+      )
+    ) {
+      return NextResponse.json({ error: 'This Society ID is already registered for this event.' }, { status: 409 });
+    }
     if (insertError.code === '23505') {
       return NextResponse.json({ error: 'This member is already registered, or this UPI transaction ID has already been used.' }, { status: 409 });
     }

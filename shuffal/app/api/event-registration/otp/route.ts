@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isEventRegistrationOpen } from '@/lib/event-registration';
+import { EVENT_REGISTRATION, isEventRegistrationOpen } from '@/lib/event-registration';
 import {
   createEventOtp,
   createEventSupabase,
@@ -47,6 +47,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Member verification is temporarily unavailable.' }, { status: 503 });
   }
   if (!member || member.is_verified !== true || !member.email) return genericResponse();
+
+  const { data: existingRegistration, error: existingRegistrationError } = await supabase
+    .from('esports_event_registrations')
+    .select('id')
+    .eq('event_key', EVENT_REGISTRATION.key)
+    .ilike('society_id', member.cse_id)
+    .maybeSingle();
+  if (existingRegistrationError) {
+    console.error('Existing event registration lookup failed before OTP:', existingRegistrationError);
+    return NextResponse.json({ error: 'Could not check whether this Society ID is already registered.' }, { status: 503 });
+  }
+  if (existingRegistration) {
+    return NextResponse.json({ error: 'This Society ID is already registered for this event.' }, { status: 409 });
+  }
 
   const now = new Date();
   const { data: previous, error: previousError } = await supabase

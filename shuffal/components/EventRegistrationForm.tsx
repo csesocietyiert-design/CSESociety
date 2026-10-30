@@ -225,14 +225,6 @@ export default function EventRegistrationForm() {
       setMessage({ type: 'error', text: 'Enter your team name.' });
       return;
     }
-    if (selectedGames.includes('BGMI') && (!identity.bgmiIgn.trim() || !identity.bgmiUid.trim())) {
-      setMessage({ type: 'error', text: 'Enter your BGMI IGN and UID.' });
-      return;
-    }
-    if (selectedGames.includes('Free Fire') && (!identity.freeFireIgn.trim() || !identity.freeFireUid.trim())) {
-      setMessage({ type: 'error', text: 'Enter your Free Fire IGN and UID.' });
-      return;
-    }
     if (deliveryMethod === 'whatsapp' && !hasWhatsappNumber) {
       setMessage({ type: 'error', text: 'A WhatsApp number is required for WhatsApp delivery.' });
       return;
@@ -279,13 +271,13 @@ export default function EventRegistrationForm() {
 
   if (registered) {
     return (
-      <main className="auth-page relative min-h-screen overflow-hidden px-4 py-12 text-white sm:px-6">
+      <main className="auth-page relative min-h-screen overflow-hidden px-5 py-8 text-white sm:px-6 sm:py-12">
         <div className="blob-container" aria-hidden="true">
           <div className="blob-1 amoeba-blob" />
           <div className="blob-2 amoeba-blob" />
           <div className="blob-3 amoeba-blob" />
         </div>
-        <section className="auth-card relative z-10 mx-auto max-w-xl rounded-2xl border p-8 text-center shadow-2xl">
+        <section className="auth-card relative z-10 mx-auto max-w-xl rounded-2xl border p-6 text-center shadow-2xl sm:p-8">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-2xl text-emerald-300">✓</div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Registration received</p>
           <h1 className="mt-3 text-2xl font-bold">You are registered</h1>
@@ -305,14 +297,14 @@ export default function EventRegistrationForm() {
   }
 
   return (
-    <main className="auth-page relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+    <main className="auth-page relative min-h-screen overflow-hidden px-5 py-7 text-slate-100 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
       <div className="blob-container" aria-hidden="true">
         <div className="blob-1 amoeba-blob" />
         <div className="blob-2 amoeba-blob" />
         <div className="blob-3 amoeba-blob" />
       </div>
       <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7 lg:space-y-8">
-        <header className="auth-card relative z-10 rounded-2xl border p-5 sm:p-7 md:p-9">
+        <header className="auth-card relative z-10 rounded-2xl border p-6 sm:p-7 md:p-9">
           <div className="flex flex-col items-center text-center">
             <Image src="/logo.png" alt="CSE Society logo" width={104} height={104} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
             <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-sky-300 sm:text-xs">CSE Society · IERT</p>
@@ -470,15 +462,15 @@ export default function EventRegistrationForm() {
                         {selectedGames.includes('BGMI') && (
                           <div className="grid gap-4 rounded-xl border border-slate-800/80 bg-slate-950/25 p-4 sm:grid-cols-2 sm:p-5">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">BGMI · Your player details</p>
-                            <TextField label="BGMI IGN" required value={identity.bgmiIgn} onChange={(value) => updateIdentity('bgmiIgn', value)} />
-                            <TextField label="BGMI Character UID" required value={identity.bgmiUid} onChange={(value) => updateIdentity('bgmiUid', value)} />
+                            <TextField label="BGMI IGN (optional)" value={identity.bgmiIgn} onChange={(value) => updateIdentity('bgmiIgn', value)} />
+                            <TextField label="BGMI Character UID (optional)" value={identity.bgmiUid} onChange={(value) => updateIdentity('bgmiUid', value)} />
                           </div>
                         )}
                         {selectedGames.includes('Free Fire') && (
                           <div className="grid gap-4 rounded-xl border border-slate-800/80 bg-slate-950/25 p-4 sm:grid-cols-2 sm:p-5">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">Free Fire · Your player details</p>
-                            <TextField label="Free Fire IGN" required value={identity.freeFireIgn} onChange={(value) => updateIdentity('freeFireIgn', value)} />
-                            <TextField label="Free Fire UID" required value={identity.freeFireUid} onChange={(value) => updateIdentity('freeFireUid', value)} />
+                            <TextField label="Free Fire IGN (optional)" value={identity.freeFireIgn} onChange={(value) => updateIdentity('freeFireIgn', value)} />
+                            <TextField label="Free Fire UID (optional)" value={identity.freeFireUid} onChange={(value) => updateIdentity('freeFireUid', value)} />
                           </div>
                         )}
                       </div>

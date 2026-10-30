@@ -191,33 +191,40 @@ export default function RegistrationFormsPanel({ user = null }: RegistrationForm
       {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</p>}
 
       {!user && (
-        <article className={`flex flex-col rounded-xl border p-5 transition sm:flex-row sm:items-center sm:justify-between sm:gap-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/35 text-slate-400' : 'border-teal-400/40 bg-gradient-to-br from-teal-500/15 to-blue-500/10 text-white shadow-lg shadow-teal-950/10'}`}>
-          <div>
-            <p className={`text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'text-slate-500' : 'text-teal-300'}`}>
+        <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-rose-500/30 bg-gradient-to-br from-rose-600/20 via-rose-700/10 to-slate-900/70 text-white shadow-rose-950/20'}`}>
+          <div className="flex items-start justify-between gap-4">
+            <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'border-slate-600 bg-slate-800/60 text-slate-400' : 'border-rose-400/30 bg-rose-400/10 text-rose-200'}`}>
               {eventOpen ? 'Open for registration' : 'Registration closed'}
             </p>
-            <h2 className={`mt-2 text-lg font-semibold ${eventOpen === false ? 'text-slate-400' : 'text-white'}`}>{EVENT_REGISTRATION.title}</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              1 November 2026 · {EVENT_REGISTRATION.venue} · First Half: BGMI or Free Fire · Second Half: Table Tennis or Chess
-            </p>
-            <p className="mt-1 text-xs text-slate-500">Registration closes at 9:00 AM IST · Members free · Non-members from ₹30</p>
-          </div>
-          <div className="mt-4 flex shrink-0 gap-2 sm:mt-0">
-            <Link
-              href={`/forms/${EVENT_REGISTRATION.publicFormId}`}
-              className="rounded-lg bg-teal-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-teal-300"
-            >
-              {eventOpen ? 'Register now' : 'View event'}
-            </Link>
             <button
               type="button"
               onClick={() => void handleShareEvent()}
               aria-label="Share E-Sports Swiss-League Tournament registration"
               title="Share event registration"
-              className="rounded-lg border border-slate-600/70 p-2 text-slate-300 transition hover:border-teal-400 hover:text-teal-200"
+              className={`shrink-0 rounded-lg border p-2.5 transition ${eventOpen === false ? 'border-slate-600/70 text-slate-400 hover:border-slate-500 hover:text-slate-200' : 'border-rose-300/20 bg-slate-950/20 text-rose-100 hover:border-rose-300/50 hover:bg-rose-400/10'}`}
             >
               <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
             </button>
+          </div>
+          <h2 className={`mt-4 text-xl font-bold tracking-tight sm:text-2xl ${eventOpen === false ? 'text-slate-400' : 'text-white'}`}>{EVENT_REGISTRATION.title}</h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-3">
+              <p className={`text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'text-slate-500' : 'text-rose-200/70'}`}>Date & venue</p>
+              <p className={`mt-1.5 text-sm ${eventOpen === false ? 'text-slate-400' : 'text-slate-200'}`}>1 November 2026 · {EVENT_REGISTRATION.venue}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-3">
+              <p className={`text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'text-slate-500' : 'text-rose-200/70'}`}>Games</p>
+              <p className={`mt-1.5 text-sm ${eventOpen === false ? 'text-slate-400' : 'text-slate-200'}`}>First Half: BGMI or Free Fire · Second Half: Table Tennis or Chess</p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+            <p className="text-sm text-slate-400">Registration closes at 9:00 AM IST · Members free · Non-members from ₹30</p>
+            <Link
+              href={`/forms/${EVENT_REGISTRATION.publicFormId}`}
+              className={`inline-flex min-h-11 items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold transition ${eventOpen === false ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-rose-400 text-slate-950 hover:bg-rose-300'}`}
+            >
+              {eventOpen ? 'Register now' : 'View event'}
+            </Link>
           </div>
         </article>
       )}
