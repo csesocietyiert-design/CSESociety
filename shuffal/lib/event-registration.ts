@@ -33,10 +33,10 @@ export const EVENT_REGISTRATION = {
   rules: [
     'Choose exactly one game from each selected half: BGMI or Free Fire in the First Half, and Table Tennis or Chess in the Second Half.',
     'Table Tennis follows a best-of-2 blitz format.',
-    'Chess uses 5-minute blitz rounds.',
+    'Chess is Solo only and uses 5-minute blitz rounds.',
     'Use of hacks, cheats, or emulators is not allowed.',
     'Participants must arrive on time for their selected session.',
-    'Solo and Duo participants must enter a team name. Both Duo players submit their own registration with the same team name.',
+    'Solo and Duo participants must enter a team name. Both Duo players submit their own registration with the same team name. Chess is Solo only.',
   ],
 } as const;
 

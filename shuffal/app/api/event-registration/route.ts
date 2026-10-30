@@ -156,6 +156,9 @@ export async function POST(request: Request) {
   if (teamFormat !== 'solo' && teamFormat !== 'duo') {
     return NextResponse.json({ error: 'Choose a valid player format.' }, { status: 400 });
   }
+  if (session === 'second_half' && games.includes('Chess') && teamFormat === 'duo') {
+    return NextResponse.json({ error: 'Chess is a Solo-only event.' }, { status: 400 });
+  }
   const teamName = getString(body.teamName, 80);
   if (!teamName) {
     return NextResponse.json({ error: 'A team name is required for registration.' }, { status: 400 });
