@@ -77,7 +77,7 @@ export default function PortalFooter() {
         <div className="mx-auto flex max-w-[1428px] flex-col items-center gap-2 text-center text-xs text-slate-400 lg:flex-row lg:justify-between lg:text-left">
           <p>&copy; {new Date().getFullYear()} CSE Society, IERT Prayagraj. All Rights Reserved.</p>
           <p>Affiliated with <strong className="font-semibold text-slate-300">AKTU, Lucknow</strong> | Approved by <strong className="font-semibold text-slate-300">AICTE, New Delhi</strong></p>
-          <p>Designed &amp; developed by <a href="https://www.linkedin.com/in/vibhanshu-tiwari-a08777289/" target="_blank" rel="noreferrer" className="font-semibold text-amber-300 underline decoration-amber-400/50 underline-offset-2 transition hover:text-amber-200">VBHT08</a></p>
+          <p>Designed &amp; developed by <a href="https://www.linkedin.com/in/cse-society-iert-prayagraj-58b52a429?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_android" target="_blank" rel="noreferrer" className="font-semibold text-amber-300 underline decoration-amber-400/50 underline-offset-2 transition hover:text-amber-200">CSE Society IERT Prayagraj</a></p>
         </div>
       </div>
     </footer>

@@ -13,7 +13,7 @@ export default function PortalLegalBar() {
       <div className="mx-auto grid max-w-[1428px] grid-cols-1 items-center gap-2 text-center text-[11px] sm:text-xs lg:grid-cols-3 lg:text-left">
         <p>&copy; {new Date().getFullYear()} CSE Society, IERT Prayagraj. All Rights Reserved.</p>
         <p className="lg:text-center">Affiliated with <strong className="font-semibold text-slate-300">AKTU, Lucknow</strong> | Approved by <strong className="font-semibold text-slate-300">AICTE, New Delhi</strong></p>
-        <p className="lg:text-right">Designed &amp; developed by <a href="https://www.linkedin.com/in/vibhanshu-tiwari-a08777289/" target="_blank" rel="noreferrer" className="font-semibold text-amber-300 underline decoration-amber-400/50 underline-offset-2 transition hover:text-amber-200">VBHT08</a></p>
+        <p className="lg:text-right">Designed &amp; developed by <a href="https://www.linkedin.com/in/cse-society-iert-prayagraj-58b52a429?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_android" target="_blank" rel="noreferrer" className="font-semibold text-amber-300 underline decoration-amber-400/50 underline-offset-2 transition hover:text-amber-200">CSE Society IERT Prayagraj</a></p>
       </div>
     </footer>
   );
