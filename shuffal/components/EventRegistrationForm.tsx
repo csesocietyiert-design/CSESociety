@@ -403,8 +403,7 @@ export default function EventRegistrationForm() {
                     )}
                     {member && !hasValidWhatsappNumber(member.phone) && (
                       <TextField
-                        label="WhatsApp number"
-                        required
+                        label="WhatsApp number (optional)"
                         type="tel"
                         value={memberWhatsapp}
                         onChange={setMemberWhatsapp}

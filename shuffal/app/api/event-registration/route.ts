@@ -262,7 +262,7 @@ export async function POST(request: Request) {
   if (
     !fullName
     || !getMemberEmail(email)
-    || !validPhone(phone)
+    || (participantType === 'non_member' && !validPhone(phone))
     || (deliveryMethod === 'whatsapp' && !validPhone(phone))
   ) {
     return NextResponse.json({ error: 'Enter valid name, email, and WhatsApp contact details.' }, { status: 400 });
