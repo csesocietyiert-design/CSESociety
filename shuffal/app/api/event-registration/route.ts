@@ -24,6 +24,7 @@ type RegistrationPayload = {
   participantType?: unknown;
   societyId?: unknown;
   verificationToken?: unknown;
+  memberPhone?: unknown;
   nonMember?: unknown;
   session?: unknown;
   games?: unknown;
@@ -192,7 +193,7 @@ export async function POST(request: Request) {
 
     const { data: verifiedMember, error: memberError } = await supabase
       .from('users')
-      .select('id, cse_id, name, email, phone, department, year, is_verified')
+      .select('id, cse_id, name, email, department, year, is_verified')
       .ilike('cse_id', memberSocietyId)
       .maybeSingle();
     if (memberError) {
@@ -202,7 +203,19 @@ export async function POST(request: Request) {
     if (!verifiedMember || verifiedMember.is_verified !== true || !verifiedMember.email) {
       return NextResponse.json({ error: 'A verified Society member was not found.' }, { status: 403 });
     }
-    member = verifiedMember;
+
+    const { data: memberContact, error: contactError } = await supabase
+      .from('users')
+      .select('phone')
+      .eq('id', verifiedMember.id)
+      .maybeSingle();
+    if (contactError) {
+      console.warn('Member phone is unavailable in the users table; using the event registration contact:', contactError);
+    }
+    member = {
+      ...verifiedMember,
+      phone: memberContact?.phone || getString(body.memberPhone, 25) || null,
+    };
 
     verificationTokenHash = hashEventOtp(member.cse_id, verificationToken);
     const now = new Date();
@@ -249,7 +262,7 @@ export async function POST(request: Request) {
   if (
     !fullName
     || !getMemberEmail(email)
-    || (participantType === 'non_member' && !validPhone(phone))
+    || !validPhone(phone)
     || (deliveryMethod === 'whatsapp' && !validPhone(phone))
   ) {
     return NextResponse.json({ error: 'Enter valid name, email, and WhatsApp contact details.' }, { status: 400 });

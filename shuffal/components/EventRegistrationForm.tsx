@@ -71,6 +71,7 @@ export default function EventRegistrationForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [verificationToken, setVerificationToken] = useState('');
+  const [memberWhatsapp, setMemberWhatsapp] = useState('');
   const [nonMember, setNonMember] = useState(initialNonMember);
   const [session, setSession] = useState<EventSession | ''>('');
   const [games, setGames] = useState<EventGame[]>([]);
@@ -107,7 +108,9 @@ export default function EventRegistrationForm() {
   );
   const selectedGames = session ? getGamesForSession(session, games) : [];
   const registrationEmail = isMember ? member?.email || '' : nonMember.email;
-  const registrationPhone = isMember ? member?.phone || '' : nonMember.phone;
+  const registrationPhone = isMember
+    ? (hasValidWhatsappNumber(member?.phone || '') ? member?.phone || '' : memberWhatsapp)
+    : nonMember.phone;
   const hasWhatsappNumber = hasValidWhatsappNumber(registrationPhone);
 
   const updateNonMember = (key: keyof NonMemberDetails, value: string) => {
@@ -164,6 +167,7 @@ export default function EventRegistrationForm() {
       if (!response.ok) throw new Error(payload.error || 'Could not verify the code.');
       setMember(payload.member);
       setVerificationToken(payload.verificationToken);
+      setMemberWhatsapp('');
       setDeliveryMethod(hasValidWhatsappNumber(payload.member.phone) ? 'whatsapp' : 'email');
       setMessage({ type: 'success', text: `Society ID verified. Code sent to ${payload.member.maskedEmail}.` });
     } catch (verifyError) {
@@ -238,6 +242,7 @@ export default function EventRegistrationForm() {
       participantType,
       societyId: isMember ? member?.societyId : undefined,
       verificationToken: isMember ? verificationToken : undefined,
+      memberPhone: isMember ? memberWhatsapp.trim() : undefined,
       nonMember: isMember ? undefined : nonMember,
       session,
       games,
@@ -386,7 +391,7 @@ export default function EventRegistrationForm() {
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="font-semibold text-emerald-200">Verified: {member.name}</p>
-                          <p className="text-xs text-slate-400">{member.societyId} · {member.department} · Year {member.year}</p>
+                          <p className="text-xs text-slate-400">{member.societyId} · {member.department} · {member.year ? `Year ${member.year}` : 'Year not recorded'}</p>
                         </div>
                         <button type="button" onClick={() => {
                           setMember(null);
@@ -395,6 +400,15 @@ export default function EventRegistrationForm() {
                           setOtp('');
                         }} className="text-sm text-slate-400 underline hover:text-white">Change ID</button>
                       </div>
+                    )}
+                    {member && !hasValidWhatsappNumber(member.phone) && (
+                      <TextField
+                        label="WhatsApp number"
+                        required
+                        type="tel"
+                        value={memberWhatsapp}
+                        onChange={setMemberWhatsapp}
+                      />
                     )}
                   </div>
                 )}

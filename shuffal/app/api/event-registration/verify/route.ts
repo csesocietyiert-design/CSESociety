@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   const now = new Date();
   const { data: member, error: memberError } = await supabase
     .from('users')
-    .select('id, cse_id, name, email, phone, department, year, is_verified')
+    .select('id, cse_id, name, email, department, year, is_verified')
     .ilike('cse_id', societyId)
     .maybeSingle();
   if (memberError) {
@@ -46,6 +46,15 @@ export async function POST(request: Request) {
   }
   if (!member || member.is_verified !== true || !member.email) {
     return NextResponse.json({ error: 'The code is invalid or expired. Request a new code.' }, { status: 400 });
+  }
+
+  const { data: memberContact, error: contactError } = await supabase
+    .from('users')
+    .select('phone')
+    .eq('id', member.id)
+    .maybeSingle();
+  if (contactError) {
+    console.warn('Member phone is unavailable in the users table; collect it during event registration:', contactError);
   }
 
   const canonicalSocietyId = member.cse_id;
@@ -111,7 +120,7 @@ export async function POST(request: Request) {
       name: member.name,
       email: member.email,
       maskedEmail: maskEmail(member.email),
-      phone: member.phone || '',
+      phone: memberContact?.phone || '',
       department: member.department || 'CSE',
       year: member.year,
     },
