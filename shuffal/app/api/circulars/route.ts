@@ -13,7 +13,8 @@ export async function GET() {
     const supabase = getCircularsSupabase();
     const { data, error } = await supabase
       .from('circulars')
-      .select('id, title, description, uploaded_at')
+      .select('id, title, description, circular_date, category, uploaded_at')
+      .order('circular_date', { ascending: false })
       .order('uploaded_at', { ascending: false });
     if (error) throw error;
 
@@ -44,18 +45,33 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get('file');
     const title = formData.get('title');
+    const circularDate = formData.get('circularDate');
+    const category = formData.get('category');
     const description = formData.get('description');
     const acknowledged = formData.get('publicAcknowledged') === 'true';
 
-    if (!(file instanceof File) || typeof title !== 'string') {
-      return NextResponse.json({ error: 'Choose a PDF and enter its title' }, { status: 400 });
+    if (!(file instanceof File) || typeof title !== 'string' || typeof circularDate !== 'string' || typeof category !== 'string') {
+      return NextResponse.json({ error: 'Enter the circular title, date, and category, and choose a PDF' }, { status: 400 });
     }
 
     const cleanTitle = title.trim();
+    const cleanCategory = category.trim();
     const cleanDescription = typeof description === 'string' ? description.trim() : '';
-    if (!cleanTitle || cleanTitle.length > 150 || cleanDescription.length > 1000) {
+    const parsedCircularDate = /^\d{4}-\d{2}-\d{2}$/.test(circularDate)
+      ? new Date(`${circularDate}T00:00:00.000Z`)
+      : null;
+    if (
+      !cleanTitle ||
+      cleanTitle.length > 150 ||
+      !cleanCategory ||
+      cleanCategory.length > 80 ||
+      !parsedCircularDate ||
+      Number.isNaN(parsedCircularDate.getTime()) ||
+      parsedCircularDate.toISOString().slice(0, 10) !== circularDate ||
+      cleanDescription.length > 1000
+    ) {
       return NextResponse.json(
-        { error: 'Enter a title up to 150 characters and a description up to 1,000 characters' },
+        { error: 'Enter a title up to 150 characters, a valid date, a category up to 80 characters, and a description up to 1,000 characters' },
         { status: 400 }
       );
     }
@@ -89,11 +105,13 @@ export async function POST(request: Request) {
       .insert({
         id,
         title: cleanTitle,
+        circular_date: circularDate,
+        category: cleanCategory,
         description: cleanDescription || null,
         file_path: uploadedPath,
         uploaded_by: admin.id,
       })
-      .select('id, title, description, uploaded_at')
+      .select('id, title, description, circular_date, category, uploaded_at')
       .single();
 
     if (insertError) {

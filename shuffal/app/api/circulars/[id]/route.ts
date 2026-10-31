@@ -13,7 +13,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     const supabase = getCircularsSupabase();
     const { data, error } = await supabase
       .from('circulars')
-      .select('id, title, description, uploaded_at')
+      .select('id, title, description, circular_date, category, uploaded_at')
       .eq('id', id)
       .maybeSingle();
     if (error) throw error;

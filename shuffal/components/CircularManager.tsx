@@ -13,10 +13,17 @@ function formatUploadDate(value: string) {
   });
 }
 
+function getTodayDate() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
 export default function CircularManager() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
+  const [circularDate, setCircularDate] = useState(getTodayDate);
+  const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [publicAcknowledged, setPublicAcknowledged] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -63,6 +70,8 @@ export default function CircularManager() {
       const formData = new FormData();
       formData.set('file', file);
       formData.set('title', title);
+      formData.set('circularDate', circularDate);
+      formData.set('category', category);
       formData.set('description', description);
       formData.set('publicAcknowledged', 'true');
 
@@ -77,6 +86,8 @@ export default function CircularManager() {
       setCopied(false);
       setFile(null);
       setTitle('');
+      setCircularDate(getTodayDate());
+      setCategory('');
       setDescription('');
       setPublicAcknowledged(false);
       if (fileInput.current) fileInput.current.value = '';
@@ -109,6 +120,32 @@ export default function CircularManager() {
             className="min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white outline-none focus:border-blue-400"
             placeholder="Enter a title for this circular"
           />
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label htmlFor="circular-date" className="mb-2 block text-sm font-medium text-slate-200">Circular date</label>
+            <input
+              id="circular-date"
+              type="date"
+              value={circularDate}
+              onChange={(event) => setCircularDate(event.target.value)}
+              required
+              className="min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white outline-none focus:border-blue-400"
+            />
+          </div>
+          <div>
+            <label htmlFor="circular-category" className="mb-2 block text-sm font-medium text-slate-200">Category</label>
+            <input
+              id="circular-category"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              maxLength={80}
+              required
+              className="min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white outline-none focus:border-blue-400"
+              placeholder="e.g. Academic, Examination, Events"
+            />
+          </div>
         </div>
 
         <div>
@@ -206,7 +243,7 @@ export default function CircularManager() {
               <li key={circular.id} className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="font-medium text-white">{circular.title}</h3>
-                  <p className="mt-1 text-xs text-slate-400">Uploaded {formatUploadDate(circular.uploaded_at)}</p>
+                  <p className="mt-1 text-xs text-slate-400">{formatUploadDate(circular.circular_date)} · {circular.category} · Uploaded {formatUploadDate(circular.uploaded_at)}</p>
                 </div>
                 <Link href={`/circular/${circular.id}`} target="_blank" className="min-h-11 self-start rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-blue-300 hover:border-blue-300 sm:self-center">Open share link</Link>
               </li>

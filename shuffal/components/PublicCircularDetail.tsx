@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { CircularRecord } from '@/lib/circulars';
 
@@ -39,26 +38,27 @@ export default function PublicCircularDetail({ id }: { id: string }) {
     };
   }, [id]);
 
-  if (loading) return <p className="mt-8 text-slate-400">Loading circular...</p>;
-  if (error) return <p role="alert" className="mt-8 rounded-xl border border-rose-400/30 bg-rose-400/5 p-5 text-rose-200">{error}</p>;
-  if (!circular) return <p className="mt-8 rounded-xl border border-slate-700 bg-slate-900/70 p-5 text-slate-300">This circular could not be found.</p>;
+  if (loading) return <p role="status" className="py-8 text-slate-400">Loading circular...</p>;
+  if (error) return <p role="alert" className="border-b border-rose-400/30 py-6 text-rose-200">{error}</p>;
+  if (!circular) return <p className="border-b border-[#25445b] py-6 text-slate-300">This circular could not be found.</p>;
 
   return (
-    <article className="mt-8 rounded-2xl border border-slate-700 bg-slate-900/70 p-6 sm:p-8">
-      <p className="text-sm font-medium text-blue-300">Uploaded {formatUploadDate(circular.uploaded_at)}</p>
-      <h1 className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">{circular.title}</h1>
-      {circular.description && <p className="mt-4 whitespace-pre-wrap leading-7 text-slate-300">{circular.description}</p>}
+    <article className="border-b border-[#25445b] py-7 sm:py-9">
+      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        <p className="font-semibold text-sky-200">Date: {formatUploadDate(circular.circular_date)}</p>
+        <p className="text-slate-300">Category: {circular.category}</p>
+        <p className="text-slate-400">Uploaded: {formatUploadDate(circular.uploaded_at)}</p>
+      </div>
+      <h2 className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">{circular.title}</h2>
+      {circular.description && <p className="mt-4 max-w-4xl whitespace-pre-wrap leading-7 text-slate-300">{circular.description}</p>}
       <a
         href={`/api/circulars/${circular.id}/file`}
         target="_blank"
         rel="noreferrer"
-        className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+        className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-gradient-to-r from-sky-600 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:from-sky-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
       >
         View or download PDF
       </a>
-      <p className="mt-6 text-sm text-slate-400">
-        <Link href="/circulars" className="font-medium text-blue-300 underline underline-offset-4 hover:text-white">Back to all circulars</Link>
-      </p>
     </article>
   );
 }
