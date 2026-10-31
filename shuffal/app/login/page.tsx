@@ -331,6 +331,12 @@ export default function LoginPage() {
               Register an account
             </a>
           </p>
+          <p className="mt-2 text-center text-xs sm:text-sm text-slate-300">
+            Looking for official updates?{' '}
+            <a href="/circulars" className="relative z-10 inline-block py-1 font-semibold text-[#6bb8ff] hover:text-white">
+              View circulars
+            </a>
+          </p>
 
         </div>
 
