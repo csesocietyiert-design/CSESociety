@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PublicCircularList from '@/components/PublicCircularList';
 
 export const metadata: Metadata = {
   title: 'Circulars | CSE Society IERT',
@@ -32,9 +33,7 @@ export default function CircularsPage() {
 
       <section aria-labelledby="latest-circulars-heading">
         <h2 id="latest-circulars-heading" className="text-xl font-semibold text-white">Latest Circulars</h2>
-        <div className="mt-4 rounded-xl border border-slate-700 bg-slate-900/70 p-6">
-          <p className="text-slate-300">There are no circulars published yet. Please check back for updates.</p>
-        </div>
+        <PublicCircularList />
       </section>
 
       <section aria-labelledby="academic-documents-heading" className="mt-10">

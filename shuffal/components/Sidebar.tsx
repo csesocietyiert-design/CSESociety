@@ -35,6 +35,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Events', href: '/dashboard/events', icon: 'calendar', show: !isTreasurer },
     { label: 'Notifications', href: '/dashboard/notifications', icon: 'bell', show: !isTreasurer },
     { label: 'Approvals', href: '/dashboard/approvals', icon: 'award', show: isFacultyAdmin },
+    { label: 'Circulars', href: '/dashboard/circulars', icon: 'info', show: user.role === 'admin' },
     { label: 'Certificates', href: '/dashboard/certificates', icon: 'award', show: true },
     { label: 'Attendance', href: '/dashboard/attendance', icon: 'calendar', show: true },
     { label: 'ID Card', href: '/dashboard/id-card', icon: 'user', show: true },

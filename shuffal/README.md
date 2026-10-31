@@ -20,6 +20,13 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Society Circulars
+
+- Public circular list: `/circulars`; each published circular has a unique share link at `/circular/<id>`.
+- Admins can upload PDFs from `/dashboard/circulars` or the admin dashboard. Newer circulars appear first, with the upload date shown.
+- Apply `supabase/migrations/038_create_circulars.sql` in the Supabase SQL Editor before using circular uploads. It creates the circular metadata table and a private PDF storage bucket.
+- PDF uploads are limited to 4 MB. Published documents are publicly viewable, so only upload files approved for public sharing and remove confidential information first.
+
 ## E-Sports Event Registration
 
 - Public participant form: `/event-registration` (no dashboard login required).

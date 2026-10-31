@@ -267,7 +267,12 @@ export default function AdminDashboard({ user }: { user: User }) {
             <p className="mt-2 text-sm leading-6 text-slate-300">Manage members, events, certificates, and society operations.</p>
           </div>
           <div className="border-t border-white/10 pt-4 text-right text-sm text-slate-400 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
-            {new Date().toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
+            <p>{new Date().toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            {user?.role === 'admin' && (
+              <Link href="/dashboard/circulars" className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-blue-400/30 px-4 py-2 font-medium text-blue-300 transition hover:border-blue-300 hover:bg-blue-500/10 hover:text-white">
+                Manage circulars
+              </Link>
+            )}
           </div>
         </div>
       </section>
