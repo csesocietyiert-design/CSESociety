@@ -169,12 +169,29 @@
   right: max(4%, calc((100% - 1150px) / 2));
   width: min(41vw, 450px);
   aspect-ratio: 1;
-  border: 1px solid rgba(169, 216, 243, 0.1);
+  border: 1px solid rgba(169, 216, 243, 0.18);
   border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(196, 222, 237, 0.16), transparent 34%),
+    radial-gradient(ellipse at 70% 82%, rgba(5, 16, 27, 0.5), transparent 48%);
   box-shadow:
+    inset 10px 12px 24px rgba(205, 235, 250, 0.08),
+    inset -18px -22px 36px rgba(1, 11, 20, 0.45),
+    0 22px 55px rgba(0, 0, 0, 0.28),
     0 0 0 35px rgba(169, 216, 243, 0.025),
     0 0 0 70px rgba(169, 216, 243, 0.02);
-  transform: translateY(-50%);
+  transform: translateY(-50%) perspective(900px) rotateY(-12deg) rotateX(7deg);
+  transition: transform 450ms ease, box-shadow 450ms ease;
+}
+
+.hero:hover::after {
+  box-shadow:
+    inset 10px 12px 24px rgba(205, 235, 250, 0.11),
+    inset -18px -22px 36px rgba(1, 11, 20, 0.48),
+    0 30px 68px rgba(0, 0, 0, 0.34),
+    0 0 0 35px rgba(169, 216, 243, 0.035),
+    0 0 0 70px rgba(169, 216, 243, 0.025);
+  transform: translateY(-50%) perspective(900px) rotateY(-5deg) rotateX(3deg) scale(1.015);
 }
 
 .heroEmblem {
@@ -185,19 +202,35 @@
   width: clamp(230px, 30vw, 360px);
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid rgba(194, 222, 237, 0.2);
+  border: 1px solid rgba(194, 222, 237, 0.28);
   border-radius: 50%;
   background:
-    radial-gradient(circle, rgba(27, 71, 96, 0.6) 0%, rgba(8, 31, 48, 0.23) 66%, transparent 67%);
-  box-shadow: 0 0 90px rgba(64, 144, 188, 0.13), inset 0 0 50px rgba(64, 144, 188, 0.08);
-  transform: translateY(-50%);
+    radial-gradient(ellipse at 32% 22%, rgba(196, 222, 237, 0.2), transparent 32%),
+    radial-gradient(circle at 50% 44%, rgba(27, 71, 96, 0.76) 0%, rgba(8, 31, 48, 0.68) 63%, rgba(4, 17, 29, 0.3) 68%, transparent 69%);
+  box-shadow:
+    inset 8px 10px 20px rgba(206, 232, 247, 0.12),
+    inset -14px -18px 26px rgba(1, 12, 22, 0.55),
+    0 20px 42px rgba(0, 0, 0, 0.3),
+    0 0 90px rgba(64, 144, 188, 0.18);
+  transform: translateY(-50%) perspective(900px) rotateY(-12deg) rotateX(7deg);
+  transition: transform 450ms ease, box-shadow 450ms ease;
+}
+
+.hero:hover .heroEmblem {
+  box-shadow:
+    inset 8px 10px 20px rgba(206, 232, 247, 0.17),
+    inset -14px -18px 26px rgba(1, 12, 22, 0.6),
+    0 28px 54px rgba(0, 0, 0, 0.38),
+    0 0 110px rgba(64, 144, 188, 0.24);
+  transform: translateY(-50%) perspective(900px) rotateY(-5deg) rotateX(3deg) scale(1.025);
 }
 
 .heroEmblem img {
   width: 73%;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.22));
+  filter: drop-shadow(8px 12px 12px rgba(0, 0, 0, 0.4));
+  transform: translateZ(24px);
 }
 
 .heroContent {
@@ -655,7 +688,7 @@
     width: 112px;
     margin-bottom: 20px;
     opacity: 0.9;
-    transform: none;
+    transform: perspective(600px) rotateY(-10deg) rotateX(6deg);
   }
 
   .hero h1 {
@@ -666,7 +699,15 @@
     top: 95px;
     right: -25px;
     width: 170px;
-    transform: none;
+    transform: perspective(600px) rotateY(-12deg) rotateX(7deg);
+  }
+
+  .hero:hover::after {
+    transform: perspective(600px) rotateY(-7deg) rotateX(4deg) scale(1.01);
+  }
+
+  .hero:hover .heroEmblem {
+    transform: perspective(600px) rotateY(-5deg) rotateX(3deg) scale(1.02);
   }
 
   .hero::before {
@@ -789,6 +830,19 @@
   .closingAction > span,
   .closingAction {
     transition: none;
+  }
+
+  .hero::after,
+  .heroEmblem {
+    transition: none;
+  }
+
+  .hero:hover::after {
+    transform: translateY(-50%) perspective(900px) rotateY(-12deg) rotateX(7deg);
+  }
+
+  .hero:hover .heroEmblem {
+    transform: translateY(-50%) perspective(900px) rotateY(-12deg) rotateX(7deg);
   }
 
   .brand:hover img,
