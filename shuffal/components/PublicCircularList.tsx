@@ -152,7 +152,7 @@ export default function PublicCircularList() {
                 <td className="px-1.5 py-5 text-center sm:px-4">
                   <Link
                     href={`/circular/${circular.id}`}
-                    className="inline-flex min-h-9 items-center justify-center rounded-lg bg-gradient-to-r from-sky-600 to-blue-600 px-2 py-2 text-xs font-semibold text-white shadow-md shadow-blue-950/30 transition hover:from-sky-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:min-h-10 sm:px-4 sm:text-sm"
+                    className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#52738c] px-2 py-2 text-xs font-semibold text-slate-100 transition hover:border-transparent hover:bg-gradient-to-r hover:from-sky-600 hover:to-blue-600 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:min-h-10 sm:px-4 sm:text-sm"
                   >
                     <span className="sm:hidden">View</span>
                     <span className="hidden sm:inline">View PDF</span>
@@ -175,7 +175,7 @@ export default function PublicCircularList() {
                     href={document.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-9 items-center justify-center rounded-lg bg-gradient-to-r from-sky-600 to-blue-600 px-2 py-2 text-xs font-semibold text-white shadow-md shadow-blue-950/30 transition hover:from-sky-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:min-h-10 sm:px-4 sm:text-sm"
+                    className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#52738c] px-2 py-2 text-xs font-semibold text-slate-100 transition hover:border-transparent hover:bg-gradient-to-r hover:from-sky-600 hover:to-blue-600 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:min-h-10 sm:px-4 sm:text-sm"
                   >
                     <span className="sm:hidden">View</span>
                     <span className="hidden sm:inline">View PDF</span>
