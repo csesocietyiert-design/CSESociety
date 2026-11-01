@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { fetchPublicCirculars } from '@/lib/circulars-client';
-import { getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
+import { getCircularDisplayDescription, getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
 
 const academicDocuments = [
   {
@@ -136,14 +136,16 @@ export default function PublicCircularList() {
             </tr>
           </thead>
           <tbody>
-            {filteredCirculars.map((circular, index) => (
+            {filteredCirculars.map((circular, index) => {
+              const description = getCircularDisplayDescription(circular);
+              return (
               <tr key={circular.id} className="border-b border-[#25445b] transition-colors hover:bg-[#123653]">
                 <td className="hidden px-4 py-5 text-center text-sm text-slate-400 sm:table-cell">{index + 1}</td>
                 <td className="min-w-0 px-2 py-5 sm:px-4">
                   <Link href={`/circular/${circular.id}`} className="block font-semibold text-slate-100 [overflow-wrap:anywhere] underline decoration-slate-400/40 underline-offset-4 transition hover:text-white hover:decoration-white">
                     {getCircularDisplayTitle(circular)}
                   </Link>
-                  {circular.description && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-400 [overflow-wrap:anywhere]">{circular.description}</p>}
+                  {description && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-400 [overflow-wrap:anywhere]">{description}</p>}
                 </td>
                 <td className="min-w-0 px-1.5 py-5 text-xs leading-5 text-slate-300 sm:px-4 sm:text-sm">{formatCircularDate(circular.circular_date)}</td>
                 <td className="min-w-0 break-all px-1.5 py-5 text-xs leading-5 text-slate-300 sm:break-normal sm:px-4 sm:text-sm">{circular.category}</td>
@@ -157,7 +159,8 @@ export default function PublicCircularList() {
                   </Link>
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {filteredAcademicDocuments.map((document, index) => (
               <tr key={document.href} className="border-b border-[#25445b] transition-colors hover:bg-[#123653]">
                 <td className="hidden px-4 py-5 text-center text-sm text-slate-400 sm:table-cell">{filteredCirculars.length + index + 1}</td>
@@ -172,7 +175,7 @@ export default function PublicCircularList() {
                     href={document.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#52738c] px-2 py-2 text-xs font-semibold text-slate-100 transition hover:bg-[#173c59] hover:text-white sm:min-h-10 sm:px-4 sm:text-sm"
+                    className="inline-flex min-h-9 items-center justify-center rounded-lg bg-gradient-to-r from-sky-600 to-blue-600 px-2 py-2 text-xs font-semibold text-white shadow-md shadow-blue-950/30 transition hover:from-sky-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:min-h-10 sm:px-4 sm:text-sm"
                   >
                     <span className="sm:hidden">View</span>
                     <span className="hidden sm:inline">View PDF</span>

@@ -8,8 +8,13 @@ export interface CircularRecord {
 }
 
 export function getCircularDisplayTitle(circular: Pick<CircularRecord, 'title' | 'description'>) {
-  const title = circular.title.trim();
-  const looksLikeFilename = /\.pdf$/i.test(title) || (title.length >= 48 && !/\s/.test(title));
-  if (!looksLikeFilename) return title;
-  return circular.description?.trim() || 'Official circular';
+  return circular.title.trim();
+}
+
+export function getCircularDisplayDescription(circular: Pick<CircularRecord, 'title' | 'description'>) {
+  const description = circular.description?.trim();
+  if (!description || description.toLocaleLowerCase() === getCircularDisplayTitle(circular).toLocaleLowerCase()) {
+    return null;
+  }
+  return description;
 }

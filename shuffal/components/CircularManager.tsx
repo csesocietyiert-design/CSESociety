@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
+import { getCircularDisplayDescription, getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
 import { fetchPublicCirculars } from '@/lib/circulars-client';
 
 function formatUploadDate(value: string) {
@@ -69,7 +69,7 @@ export default function CircularManager() {
 
   const startEditing = (circular: CircularRecord) => {
     setEditingId(circular.id);
-    setEditTitle(circular.title);
+    setEditTitle(getCircularDisplayTitle(circular));
     setEditDate(circular.circular_date);
     setEditCategory(circular.category);
     setEditDescription(circular.description || '');
@@ -344,7 +344,7 @@ export default function CircularManager() {
                     <div className="min-w-0">
                       <h3 className="font-medium text-white [overflow-wrap:anywhere]">{getCircularDisplayTitle(circular)}</h3>
                       <p className="mt-1 text-xs text-slate-400">{formatCircularDate(circular.circular_date)} · {circular.category} · Uploaded {formatUploadDate(circular.uploaded_at)}</p>
-                      {circular.description && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-400">{circular.description}</p>}
+                      {getCircularDisplayDescription(circular) && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-400">{getCircularDisplayDescription(circular)}</p>}
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
                       <Link href={`/circular/${circular.id}`} target="_blank" className="inline-flex min-h-10 items-center rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-blue-300 hover:border-blue-300">Open link</Link>

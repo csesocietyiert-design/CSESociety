@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
+import { getCircularDisplayDescription, getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
 
 function formatUploadDate(value: string) {
   return new Date(value).toLocaleDateString('en-IN', {
@@ -50,6 +50,8 @@ export default function PublicCircularDetail({ id }: { id: string }) {
   if (error) return <p role="alert" className="border-b border-rose-400/30 py-6 text-rose-200">{error}</p>;
   if (!circular) return <p className="border-b border-[#25445b] py-6 text-slate-300">This circular could not be found.</p>;
 
+  const description = getCircularDisplayDescription(circular);
+
   return (
     <article className="border-b border-[#25445b] py-7 sm:py-9">
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -58,7 +60,7 @@ export default function PublicCircularDetail({ id }: { id: string }) {
         <p className="text-slate-400">Uploaded: {formatUploadDate(circular.uploaded_at)}</p>
       </div>
       <h2 className="mt-3 text-2xl font-bold text-white [overflow-wrap:anywhere] sm:text-3xl">{getCircularDisplayTitle(circular)}</h2>
-      {circular.description && <p className="mt-4 max-w-4xl whitespace-pre-wrap leading-7 text-slate-300">{circular.description}</p>}
+      {description && <p className="mt-4 max-w-4xl whitespace-pre-wrap leading-7 text-slate-300">{description}</p>}
       <a
         href={`/api/circulars/${circular.id}/file`}
         target="_blank"
