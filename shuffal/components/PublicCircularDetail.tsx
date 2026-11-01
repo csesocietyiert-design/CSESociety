@@ -62,7 +62,7 @@ export default function PublicCircularDetail({ id }: { id: string }) {
       <h2 className="mt-3 text-2xl font-bold text-white [overflow-wrap:anywhere] sm:text-3xl">{getCircularDisplayTitle(circular)}</h2>
       {description && <p className="mt-4 max-w-4xl whitespace-pre-wrap leading-7 text-slate-300">{description}</p>}
       <a
-        href={`/api/circulars/${circular.id}/file`}
+        href={`/circulars/${circular.id}/pdf`}
         target="_blank"
         rel="noreferrer"
         className="mt-7 inline-flex min-h-11 items-center justify-center rounded-lg bg-gradient-to-r from-sky-600 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:from-sky-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"

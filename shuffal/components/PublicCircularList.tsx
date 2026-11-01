@@ -142,7 +142,7 @@ export default function PublicCircularList() {
               <tr key={circular.id} className="border-b border-[#25445b] transition-colors hover:bg-[#123653]">
                 <td className="hidden px-4 py-5 text-center text-sm text-slate-400 sm:table-cell">{index + 1}</td>
                 <td className="min-w-0 px-2 py-5 sm:px-4">
-                  <Link href={`/circular/${circular.id}`} className="block font-semibold text-slate-100 [overflow-wrap:anywhere] underline decoration-slate-400/40 underline-offset-4 transition hover:text-white hover:decoration-white">
+                  <Link href={`/circulars/${circular.id}`} className="block font-semibold text-slate-100 [overflow-wrap:anywhere] underline decoration-slate-400/40 underline-offset-4 transition hover:text-white hover:decoration-white">
                     {getCircularDisplayTitle(circular)}
                   </Link>
                   {description && <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-400 [overflow-wrap:anywhere]">{description}</p>}
@@ -151,7 +151,7 @@ export default function PublicCircularList() {
                 <td className="min-w-0 break-all px-1.5 py-5 text-xs leading-5 text-slate-300 sm:break-normal sm:px-4 sm:text-sm">{circular.category}</td>
                 <td className="px-1.5 py-5 text-center sm:px-4">
                   <Link
-                    href={`/circular/${circular.id}`}
+                    href={`/circulars/${circular.id}/pdf`}
                     className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#52738c] px-2 py-2 text-xs font-semibold text-slate-100 transition hover:border-transparent hover:bg-gradient-to-r hover:from-sky-600 hover:to-blue-600 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:min-h-10 sm:px-4 sm:text-sm"
                   >
                     <span className="sm:hidden">View</span>

@@ -22,7 +22,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Society Circulars
 
-- Public circular list: `/circulars`; each published circular has a unique share link at `/circular/<id>`.
+- Public circular list: `/circulars`; each published circular has a unique share link at `/circulars/<id>`. PDF files are served through the society domain rather than redirecting to a storage-provider URL.
 - Admins can upload PDFs from `/dashboard/circulars` or the admin dashboard, entering an official title (separate from the PDF filename), circular date, and category. Published circular details can be edited or deleted from the admin list. The public list shows date and category in separate columns, while each circular also retains its upload timestamp.
 - Apply `supabase/migrations/038_create_circulars.sql` in the Supabase SQL Editor before using circular uploads. It creates the circular metadata table and a private PDF storage bucket.
 - Apply `supabase/migrations/039_add_circular_date_and_category.sql` after migration 038 to add circular dates and categories. Existing circulars are backfilled with their upload date and the `General` category.

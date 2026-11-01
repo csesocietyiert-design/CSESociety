@@ -149,7 +149,7 @@ export default function CircularManager() {
         throw new Error(payload.error || 'Could not publish circular');
       }
 
-      const shareUrl = `${window.location.origin}/circular/${payload.circular.id}`;
+      const shareUrl = `${window.location.origin}/circulars/${payload.circular.id}`;
       setSuccess(shareUrl);
       setCopied(false);
       setFile(null);
@@ -347,7 +347,7 @@ export default function CircularManager() {
                       {getCircularDisplayDescription(circular) && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-400">{getCircularDisplayDescription(circular)}</p>}
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
-                      <Link href={`/circular/${circular.id}`} target="_blank" className="inline-flex min-h-10 items-center rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-blue-300 hover:border-blue-300">Open link</Link>
+                      <Link href={`/circulars/${circular.id}`} target="_blank" className="inline-flex min-h-10 items-center rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-blue-300 hover:border-blue-300">Open link</Link>
                       <button type="button" onClick={() => startEditing(circular)} disabled={activeAction === circular.id} className="min-h-10 rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-slate-200 hover:border-slate-400 disabled:opacity-60">Edit</button>
                       <button type="button" onClick={() => void deleteCircular(circular)} disabled={activeAction === circular.id} className="min-h-10 rounded-lg border border-rose-400/40 px-3 py-2 text-sm font-medium text-rose-300 hover:border-rose-300 hover:bg-rose-400/10 disabled:opacity-60">
                         {activeAction === circular.id ? 'Deleting...' : 'Delete'}
