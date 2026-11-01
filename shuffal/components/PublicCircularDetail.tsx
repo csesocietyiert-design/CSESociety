@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { CircularRecord } from '@/lib/circulars';
+import { getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
 
 function formatUploadDate(value: string) {
   return new Date(value).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatCircularDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -45,11 +53,11 @@ export default function PublicCircularDetail({ id }: { id: string }) {
   return (
     <article className="border-b border-[#25445b] py-7 sm:py-9">
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-        <p className="font-semibold text-sky-200">Date: {formatUploadDate(circular.circular_date)}</p>
+        <p className="font-semibold text-sky-200">Date: {formatCircularDate(circular.circular_date)}</p>
         <p className="text-slate-300">Category: {circular.category}</p>
         <p className="text-slate-400">Uploaded: {formatUploadDate(circular.uploaded_at)}</p>
       </div>
-      <h2 className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">{circular.title}</h2>
+      <h2 className="mt-3 text-2xl font-bold text-white [overflow-wrap:anywhere] sm:text-3xl">{getCircularDisplayTitle(circular)}</h2>
       {circular.description && <p className="mt-4 max-w-4xl whitespace-pre-wrap leading-7 text-slate-300">{circular.description}</p>}
       <a
         href={`/api/circulars/${circular.id}/file`}

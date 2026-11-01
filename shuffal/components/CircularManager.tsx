@@ -2,11 +2,19 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import type { CircularRecord } from '@/lib/circulars';
+import { getCircularDisplayTitle, type CircularRecord } from '@/lib/circulars';
 import { fetchPublicCirculars } from '@/lib/circulars-client';
 
 function formatUploadDate(value: string) {
   return new Date(value).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatCircularDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -33,6 +41,13 @@ export default function CircularManager() {
   const [copied, setCopied] = useState(false);
   const [circulars, setCirculars] = useState<CircularRecord[]>([]);
   const [listError, setListError] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [activeAction, setActiveAction] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -47,9 +62,62 @@ export default function CircularManager() {
   const selectFile = (selected: File | undefined) => {
     if (!selected) return;
     setFile(selected);
-    setTitle(selected.name.replace(/\.pdf$/i, '').slice(0, 150));
+    setTitle('');
     setError('');
     setSuccess('');
+  };
+
+  const startEditing = (circular: CircularRecord) => {
+    setEditingId(circular.id);
+    setEditTitle(circular.title);
+    setEditDate(circular.circular_date);
+    setEditCategory(circular.category);
+    setEditDescription(circular.description || '');
+    setActionError('');
+  };
+
+  const saveCircularDetails = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingId) return;
+    setActiveAction(editingId);
+    setActionError('');
+    try {
+      const response = await fetch(`/api/circulars/${encodeURIComponent(editingId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          circularDate: editDate,
+          category: editCategory,
+          description: editDescription,
+        }),
+      });
+      const payload = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(payload.error || 'Could not update circular');
+      setCirculars(await fetchPublicCirculars());
+      setEditingId(null);
+    } catch (saveError) {
+      setActionError(saveError instanceof Error ? saveError.message : 'Could not update circular');
+    } finally {
+      setActiveAction(null);
+    }
+  };
+
+  const deleteCircular = async (circular: CircularRecord) => {
+    if (!window.confirm(`Delete "${circular.title}"? This will remove its public link and PDF.`)) return;
+    setActiveAction(circular.id);
+    setActionError('');
+    try {
+      const response = await fetch(`/api/circulars/${encodeURIComponent(circular.id)}`, { method: 'DELETE' });
+      const payload = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(payload.error || 'Could not delete circular');
+      setCirculars((items) => items.filter((item) => item.id !== circular.id));
+      if (editingId === circular.id) setEditingId(null);
+    } catch (deleteError) {
+      setActionError(deleteError instanceof Error ? deleteError.message : 'Could not delete circular');
+    } finally {
+      setActiveAction(null);
+    }
   };
 
   const uploadCircular = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -118,7 +186,7 @@ export default function CircularManager() {
             maxLength={150}
             required
             className="min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white outline-none focus:border-blue-400"
-            placeholder="Enter a title for this circular"
+            placeholder="Enter the official circular title (not the PDF filename)"
           />
         </div>
 
@@ -235,17 +303,58 @@ export default function CircularManager() {
           <Link href="/circulars" target="_blank" className="text-sm font-medium text-blue-300 underline underline-offset-4 hover:text-white">Open public circulars</Link>
         </div>
         {listError && <p role="alert" className="mt-4 text-sm text-rose-200">{listError}</p>}
+        {actionError && <p role="alert" className="mt-4 rounded-lg border border-rose-400/30 bg-rose-400/5 p-3 text-sm text-rose-200">{actionError}</p>}
         {circulars.length === 0 && !listError ? (
           <p className="mt-4 rounded-xl border border-slate-700 bg-slate-900/70 p-5 text-sm text-slate-400">No circulars have been published yet.</p>
         ) : (
           <ol className="mt-4 space-y-3">
             {circulars.map((circular) => (
-              <li key={circular.id} className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="font-medium text-white">{circular.title}</h3>
-                  <p className="mt-1 text-xs text-slate-400">{formatUploadDate(circular.circular_date)} · {circular.category} · Uploaded {formatUploadDate(circular.uploaded_at)}</p>
-                </div>
-                <Link href={`/circular/${circular.id}`} target="_blank" className="min-h-11 self-start rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-blue-300 hover:border-blue-300 sm:self-center">Open share link</Link>
+              <li key={circular.id} className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+                {editingId === circular.id ? (
+                  <form onSubmit={saveCircularDetails} className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-slate-200 sm:col-span-2">
+                        Circular title
+                        <input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} maxLength={150} required className="mt-2 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white" />
+                      </label>
+                      <label className="text-sm font-medium text-slate-200">
+                        Date
+                        <input type="date" value={editDate} onChange={(event) => setEditDate(event.target.value)} required className="mt-2 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white" />
+                      </label>
+                      <label className="text-sm font-medium text-slate-200">
+                        Category
+                        <input value={editCategory} onChange={(event) => setEditCategory(event.target.value)} maxLength={80} required className="mt-2 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white" />
+                      </label>
+                      <label className="text-sm font-medium text-slate-200 sm:col-span-2">
+                        Description
+                        <textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={1000} rows={3} className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-white" />
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button type="submit" disabled={activeAction === circular.id} className="min-h-10 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-60">
+                        {activeAction === circular.id ? 'Saving...' : 'Save details'}
+                      </button>
+                      <button type="button" onClick={() => setEditingId(null)} className="min-h-10 rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-200 hover:border-slate-400">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <h3 className="font-medium text-white [overflow-wrap:anywhere]">{getCircularDisplayTitle(circular)}</h3>
+                      <p className="mt-1 text-xs text-slate-400">{formatCircularDate(circular.circular_date)} · {circular.category} · Uploaded {formatUploadDate(circular.uploaded_at)}</p>
+                      {circular.description && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-400">{circular.description}</p>}
+                    </div>
+                    <div className="flex shrink-0 flex-wrap gap-2">
+                      <Link href={`/circular/${circular.id}`} target="_blank" className="inline-flex min-h-10 items-center rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-blue-300 hover:border-blue-300">Open link</Link>
+                      <button type="button" onClick={() => startEditing(circular)} disabled={activeAction === circular.id} className="min-h-10 rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-slate-200 hover:border-slate-400 disabled:opacity-60">Edit</button>
+                      <button type="button" onClick={() => void deleteCircular(circular)} disabled={activeAction === circular.id} className="min-h-10 rounded-lg border border-rose-400/40 px-3 py-2 text-sm font-medium text-rose-300 hover:border-rose-300 hover:bg-rose-400/10 disabled:opacity-60">
+                        {activeAction === circular.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ol>

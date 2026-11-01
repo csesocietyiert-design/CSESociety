@@ -57,12 +57,15 @@ export async function POST(request: Request) {
     const cleanTitle = title.trim();
     const cleanCategory = category.trim();
     const cleanDescription = typeof description === 'string' ? description.trim() : '';
+    const uploadBaseName = file.name.replace(/\.pdf$/i, '').trim();
     const parsedCircularDate = /^\d{4}-\d{2}-\d{2}$/.test(circularDate)
       ? new Date(`${circularDate}T00:00:00.000Z`)
       : null;
     if (
       !cleanTitle ||
       cleanTitle.length > 150 ||
+      /\.pdf$/i.test(cleanTitle) ||
+      cleanTitle.toLocaleLowerCase() === uploadBaseName.toLocaleLowerCase() ||
       !cleanCategory ||
       cleanCategory.length > 80 ||
       !parsedCircularDate ||
@@ -71,7 +74,7 @@ export async function POST(request: Request) {
       cleanDescription.length > 1000
     ) {
       return NextResponse.json(
-        { error: 'Enter a title up to 150 characters, a valid date, a category up to 80 characters, and a description up to 1,000 characters' },
+        { error: 'Enter an official circular title (not the PDF filename), a valid date, a category up to 80 characters, and a description up to 1,000 characters' },
         { status: 400 }
       );
     }
