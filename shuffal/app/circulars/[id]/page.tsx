@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CircularPageHeader from '@/components/CircularPageHeader';
+import CircularBackButton from '@/components/CircularBackButton';
 import PublicCircularDetail from '@/components/PublicCircularDetail';
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default async function CircularPage({ params }: PageProps) {
         description="Published by the CSE Society, IERT Prayagraj."
       />
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-12">
+        <CircularBackButton />
         <PublicCircularDetail id={id} />
         <p className="mt-8 text-sm text-slate-400">
           <Link href="/circulars" className="font-medium text-sky-300 underline underline-offset-4 hover:text-white">All circulars</Link>
