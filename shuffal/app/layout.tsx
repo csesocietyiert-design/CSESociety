@@ -14,8 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://csesociety.iert.ac.in",
+  ),
   title: "CSE Society Portal",
   description: "CSE Society Management System",
+  openGraph: {
+    title: "CSE Society Portal",
+    description: "CSE Society Management System",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CSE Society Portal",
+    description: "CSE Society Management System",
+  },
 };
 
 interface LayoutProps {
