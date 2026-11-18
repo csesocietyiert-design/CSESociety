@@ -100,6 +100,8 @@ export default function UniverseExperience() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [heroThought, setHeroThought] = useState(heroThoughts[0]);
+  const [activeSection, setActiveSection] = useState('home');
+  const [navbarScrolled, setNavbarScrolled] = useState(false);
   const [albums, setAlbums] = useState<EventAlbum[]>([]);
   const [selectedAlbum, setSelectedAlbum] = useState<EventAlbum | null>(null);
   const [gallerySpinning, setGallerySpinning] = useState(false);
@@ -223,6 +225,28 @@ export default function UniverseExperience() {
   }, []);
 
   useEffect(() => {
+    const updateScrolledState = () => setNavbarScrolled(window.scrollY > 48);
+    updateScrolledState();
+    window.addEventListener('scroll', updateScrolledState, { passive: true });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleSection = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+        if (visibleSection) setActiveSection(visibleSection.target.id);
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: [0, 0.1, 0.25] },
+    );
+    document.querySelectorAll<HTMLElement>('.section[id]').forEach((section) => observer.observe(section));
+
+    return () => {
+      window.removeEventListener('scroll', updateScrolledState);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     fetch('/api/event-photos')
       .then((response) => (response.ok ? response.json() : { albums: [] }))
       .then((payload: { albums?: EventAlbum[] }) => setAlbums(payload.albums || []))
@@ -316,7 +340,7 @@ export default function UniverseExperience() {
       <UniverseScene />
       <div className={styles.noise} aria-hidden="true" />
 
-      <header className={styles.navbar}>
+      <header className={`${styles.navbar} ${navbarScrolled ? styles.navbarScrolled : ''}`}>
         <Link className={styles.brand} href="/" aria-label="CSE Society home">
           <img src="/logo_CSESociety_IERT.png" alt="" />
           <span>
@@ -328,12 +352,18 @@ export default function UniverseExperience() {
           className={styles.menuButton}
           type="button"
           aria-expanded={menuOpen}
+          aria-controls="primary-navigation"
+          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           onClick={() => setMenuOpen((open) => !open)}
         >
           <span />
           <span />
         </button>
-        <nav className={menuOpen ? `${styles.navLinks} ${styles.navOpen}` : styles.navLinks}>
+        <nav
+          id="primary-navigation"
+          className={menuOpen ? `${styles.navLinks} ${styles.navOpen}` : styles.navLinks}
+          aria-label="Main navigation"
+        >
           {[
             ['Home', 'home'],
             ['About', 'about'],
@@ -350,9 +380,11 @@ export default function UniverseExperience() {
               onClick={(event) => {
                 event.preventDefault();
                 setMenuOpen(false);
+                setActiveSection(id);
                 document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 window.history.replaceState(null, '', `#${id}`);
               }}
+              aria-current={activeSection === id ? 'location' : undefined}
             >
               {label}
             </a>
