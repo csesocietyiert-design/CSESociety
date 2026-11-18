@@ -21,6 +21,20 @@ interface EventAlbum {
   photos: EventPhoto[];
 }
 
+const emptyForm = {
+  eventName: '',
+  eventDate: '',
+  description: '',
+  photoUrls: '',
+};
+
+async function loadEventAlbums() {
+  const response = await fetch('/api/event-photos');
+  const payload = await response.json() as { albums?: EventAlbum[]; error?: string };
+  if (!response.ok) throw new Error(payload.error || 'Could not load event photos');
+  return payload.albums || [];
+}
+
 export default function EventPhotosPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -30,13 +44,9 @@ export default function EventPhotosPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingAlbumId, setDeletingAlbumId] = useState<string | null>(null);
+  const [editingAlbumId, setEditingAlbumId] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({
-    eventName: '',
-    eventDate: '',
-    description: '',
-    photoUrls: '',
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const isAdmin = Boolean(user && user.role.toLowerCase() === 'admin');
 
@@ -53,11 +63,20 @@ export default function EventPhotosPage() {
 
   useEffect(() => {
     if (!hasHydrated || !isAdmin) return;
-    fetch('/api/event-photos')
-      .then((response) => response.json())
-      .then((payload) => setAlbums(payload.albums || []))
-      .catch(() => setAlbums([]))
-      .finally(() => setLoading(false));
+    let active = true;
+    loadEventAlbums()
+      .then((loadedAlbums) => {
+        if (active) setAlbums(loadedAlbums);
+      })
+      .catch((loadError: unknown) => {
+        if (active) setError(loadError instanceof Error ? loadError.message : 'Could not load event photos');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [hasHydrated, isAdmin]);
 
   if (!hasHydrated || !isAuthenticated || !user || !isAdmin) {
@@ -74,21 +93,38 @@ export default function EventPhotosPage() {
         .map((url) => url.trim())
         .filter(Boolean);
       const response = await fetch('/api/event-photos', {
-        method: 'POST',
+        method: editingAlbumId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, photoUrls }),
+        body: JSON.stringify({ ...form, photoUrls, albumId: editingAlbumId }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || 'Could not add event photos');
-      setForm({ eventName: '', eventDate: '', description: '', photoUrls: '' });
-      const refresh = await fetch('/api/event-photos');
-      const refreshed = await refresh.json();
-      setAlbums(refreshed.albums || []);
+      if (!response.ok) throw new Error(payload.error || 'Could not save event photos');
+      setForm({ ...emptyForm });
+      setEditingAlbumId(null);
+      setAlbums(await loadEventAlbums());
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Could not add event photos');
+      setError(submitError instanceof Error ? submitError.message : 'Could not save event photos');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEdit = (album: EventAlbum) => {
+    setEditingAlbumId(album.id);
+    setForm({
+      eventName: album.event_name,
+      eventDate: album.event_date,
+      description: album.description || '',
+      photoUrls: album.photos.map((photo) => photo.photo_url).join('\n'),
+    });
+    setError('');
+    document.getElementById('event-photo-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleCancelEditing = () => {
+    setEditingAlbumId(null);
+    setForm({ ...emptyForm });
+    setError('');
   };
 
   const handleDelete = async (album: EventAlbum) => {
@@ -104,6 +140,7 @@ export default function EventPhotosPage() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not remove album');
       setAlbums((current) => current.filter((item) => item.id !== album.id));
+      if (editingAlbumId === album.id) handleCancelEditing();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : 'Could not remove album');
     } finally {
@@ -129,10 +166,10 @@ export default function EventPhotosPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-xl border border-cyan-400/20 bg-slate-900/70 p-6 shadow-2xl shadow-black/20">
+        <form id="event-photo-form" onSubmit={handleSubmit} className="scroll-mt-24 rounded-xl border border-cyan-400/20 bg-slate-900/70 p-6 shadow-2xl shadow-black/20">
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-cyan-300">Add event album</p>
-            <h2 className="mt-1 text-xl font-semibold text-white">Create photo card</h2>
+            <p className="text-xs uppercase tracking-[0.16em] text-cyan-300">{editingAlbumId ? 'Edit event album' : 'Add event album'}</p>
+            <h2 className="mt-1 text-xl font-semibold text-white">{editingAlbumId ? 'Update photo card' : 'Create photo card'}</h2>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="grid gap-2 text-sm text-slate-300">
@@ -154,9 +191,16 @@ export default function EventPhotosPage() {
             </label>
           </div>
           {error && <p className="mt-4 text-sm text-rose-300">{error}</p>}
-          <button disabled={saving} type="submit" className="mt-5 rounded-lg border border-cyan-300/30 bg-cyan-500/15 px-5 py-3 text-sm font-semibold text-cyan-200 disabled:opacity-50">
-            {saving ? 'Adding...' : 'Add Event Photos'}
-          </button>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button disabled={saving} type="submit" className="rounded-lg border border-cyan-300/30 bg-cyan-500/15 px-5 py-3 text-sm font-semibold text-cyan-200 disabled:opacity-50">
+              {saving ? 'Saving...' : editingAlbumId ? 'Save Changes' : 'Add Event Photos'}
+            </button>
+            {editingAlbumId && (
+              <button disabled={saving} type="button" onClick={handleCancelEditing} className="rounded-lg border border-slate-600 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-200 disabled:opacity-50">
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
 
         <section className="space-y-4">
@@ -175,14 +219,24 @@ export default function EventPhotosPage() {
                     <h3 className="mt-2 text-lg font-semibold text-white">{album.event_name}</h3>
                     {album.description && <p className="mt-2 text-sm text-slate-400">{album.description}</p>}
                     <p className="mt-3 text-xs text-slate-500">{album.photos.length} photo{album.photos.length === 1 ? '' : 's'}</p>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(album)}
-                      disabled={deletingAlbumId === album.id}
-                      className="mt-4 rounded-lg border border-rose-400/40 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25 disabled:cursor-wait disabled:opacity-50"
-                    >
-                      {deletingAlbumId === album.id ? 'Deleting photos...' : 'Delete event and photos'}
-                    </button>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(album)}
+                        disabled={saving || deletingAlbumId === album.id}
+                        className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Edit Photos / Links
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(album)}
+                        disabled={deletingAlbumId === album.id || saving}
+                        className="rounded-lg border border-rose-400/40 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25 disabled:cursor-wait disabled:opacity-50"
+                      >
+                        {deletingAlbumId === album.id ? 'Deleting photos...' : 'Delete event and photos'}
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}
