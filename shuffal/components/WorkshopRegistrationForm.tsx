@@ -294,12 +294,23 @@ export default function WorkshopRegistrationForm() {
                         <option value="">Select year</option><option value="1">1st year</option><option value="2">2nd year</option><option value="3">3rd year</option><option value="4">4th year</option>
                       </select>
                     </label>
+                    <label className="text-sm text-slate-300">WhatsApp number
+                      <input required type="tel" autoComplete="tel" value={whatsappPhone} onChange={(event) => setWhatsappPhone(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                    </label>
                     <label className="text-sm text-slate-300">Payment transaction ID
                       <input required value={transactionId} onChange={(event) => setTransactionId(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
-                    <div className="sm:col-span-2 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm">
-                      <p className="font-bold text-amber-200">Registration fee: ₹149</p>
-                      <p className="mt-1 text-slate-300">Submit the UPI/payment transaction ID after completing the payment.</p>
+                    <div className="sm:col-span-2 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-center text-sm">
+                      <p className="font-bold text-amber-200">Pay ₹149 using this UPI QR</p>
+                      <Image
+                        src="/workshop-registration/iert-payment-qr.png"
+                        alt="UPI payment QR for the IERT workshop registration fee of 149 rupees"
+                        width={405}
+                        height={516}
+                        className="mx-auto mt-3 w-full max-w-[320px] rounded-lg"
+                      />
+                      <p className="mt-3 text-slate-200">UPI ID: <strong>vbht2006@okicici</strong></p>
+                      <p className="mt-1 text-slate-300">Complete payment, then enter the transaction ID above. All IERT participant details are required.</p>
                     </div>
                   </div>
                 )}

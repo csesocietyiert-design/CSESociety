@@ -63,8 +63,19 @@ export async function POST(request: Request) {
     whatsappPhone = typeof body.whatsappPhone === 'string' ? body.whatsappPhone.trim() : null;
     transactionId = typeof body.transactionId === 'string' ? body.transactionId.trim().slice(0, 80) : '';
     feeAmount = 149;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !aktuRollNumber || !branch || !year || !transactionId) {
-      return NextResponse.json({ error: 'Complete all IERT participant details and transaction ID.' }, { status: 400 });
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      || !aktuRollNumber
+      || !branch
+      || year === null
+      || !Number.isInteger(year)
+      || year < 1
+      || year > 4
+      || !whatsappPhone
+      || !/^\+?[0-9 ()-]{8,25}$/.test(whatsappPhone)
+      || !transactionId
+    ) {
+      return NextResponse.json({ error: 'Complete every IERT field, including WhatsApp number and payment transaction ID.' }, { status: 400 });
     }
   } else {
     iitRollNumber = typeof body.iitRollNumber === 'string' ? body.iitRollNumber.trim().toUpperCase() : '';
