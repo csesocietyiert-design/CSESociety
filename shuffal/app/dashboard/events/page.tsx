@@ -76,6 +76,15 @@ export default function EventsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Society updates</p>
           <h1 className="text-3xl font-bold leading-tight">Upcoming events</h1>
         </div>
+        {user?.role === 'admin' && (
+          <button
+            type="button"
+            onClick={() => router.push('/event/photos')}
+            className="ml-auto rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-300 transition hover:border-cyan-300 hover:bg-cyan-500/20"
+          >
+            Photos
+          </button>
+        )}
       </div>
 
       {canCreate && (
