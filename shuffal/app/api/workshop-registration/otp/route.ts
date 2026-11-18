@@ -7,6 +7,28 @@ import {
 } from '@/lib/event-registration-server';
 import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 
+function getEmailFailureMessage(error: unknown): string {
+  if (!(error instanceof Error)) return 'Email delivery failed. Please contact the event organisers.';
+
+  if (error.message.includes('SMTP settings are not configured')) {
+    return 'Email delivery is not configured on the server. Ask the site administrator to check the production SMTP variables.';
+  }
+
+  const mailError = error as Error & { code?: string; responseCode?: number };
+  if (mailError.responseCode === 535 || mailError.responseCode === 534) {
+    return 'The email server rejected its login. Ask the site administrator to recheck the production SMTP username and password.';
+  }
+  if (mailError.responseCode && mailError.responseCode >= 500) {
+    return `The email server rejected the message (SMTP ${mailError.responseCode}). Ask the site administrator to check the sender address and provider logs.`;
+  }
+  if (mailError.code === 'ETIMEDOUT' || mailError.code === 'ECONNECTION' || mailError.code === 'ESOCKET') {
+    return 'The server could not connect to the email provider. Ask the site administrator to check the SMTP host, port, and provider availability.';
+  }
+
+  console.error('Unclassified workshop email delivery error:', mailError.code || 'unknown');
+  return 'Email delivery failed. Ask the site administrator to check the production email-provider logs.';
+}
+
 export async function POST(request: Request) {
   if (!isWorkshopRegistrationOpen()) {
     return NextResponse.json({ error: 'Workshop registration is closed.' }, { status: 410 });
@@ -105,7 +127,7 @@ export async function POST(request: Request) {
   } catch (error) {
     await supabase.from('workshop_registration_otps').update({ expires_at: now.toISOString(), updated_at: now.toISOString() }).eq('identity_key', identityKey);
     console.error('Workshop OTP delivery failed:', error);
-    return NextResponse.json({ error: 'Could not send the verification email.' }, { status: 503 });
+    return NextResponse.json({ error: getEmailFailureMessage(error) }, { status: 503 });
   }
 
   return NextResponse.json({ message: 'A six-digit verification code was sent to the verified email address.' });
