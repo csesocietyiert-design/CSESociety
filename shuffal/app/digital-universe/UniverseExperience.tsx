@@ -238,7 +238,7 @@ export default function UniverseExperience() {
       },
       { rootMargin: '-30% 0px -55% 0px', threshold: [0, 0.1, 0.25] },
     );
-    document.querySelectorAll<HTMLElement>('.section[id]').forEach((section) => observer.observe(section));
+    document.querySelectorAll<HTMLElement>('main > section[id]').forEach((section) => observer.observe(section));
 
     return () => {
       window.removeEventListener('scroll', updateScrolledState);
