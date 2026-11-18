@@ -234,7 +234,7 @@ export default function WorkshopRegistrationForm() {
                       </label>
                     )}
                     {category === 'iert' && (
-                      <label className="block text-sm text-slate-300">IERT email address
+                      <label className="block text-sm text-slate-300">IERT email address *
                         <input required type="email" value={iertEmail} onChange={(event) => { setIertEmail(event.target.value); resetVerification(); }} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-400" placeholder="yourname@example.com" />
                       </label>
                     )}
@@ -247,7 +247,7 @@ export default function WorkshopRegistrationForm() {
                     <button disabled={busy} type="button" onClick={() => void sendOtp()} className="rounded-lg border border-teal-400/50 px-4 py-3 text-sm font-bold text-teal-200 disabled:opacity-50">{busy ? 'Sending…' : 'Send OTP'}</button>
                     {otpSent && (
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <label className="flex-1 text-sm text-slate-300">Six-digit OTP
+                        <label className="flex-1 text-sm text-slate-300">Six-digit OTP *
                           <input required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-400" />
                         </label>
                         <button disabled={busy} type="button" onClick={() => void verifyOtp()} className="rounded-lg bg-teal-400 px-5 py-3 text-sm font-bold text-slate-950 disabled:opacity-50">{busy ? 'Verifying…' : 'Verify OTP'}</button>
@@ -277,27 +277,27 @@ export default function WorkshopRegistrationForm() {
 
                 {category === 'iert' && (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="text-sm text-slate-300">Full name
+                    <label className="text-sm text-slate-300">Full name *
                       <input required value={fullName} onChange={(event) => setFullName(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
-                    <label className="text-sm text-slate-300">AKTU roll number
+                    <label className="text-sm text-slate-300">AKTU roll number *
                       <input required value={aktuRollNumber} onChange={(event) => setAktuRollNumber(event.target.value.toUpperCase())} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
-                    <label className="text-sm text-slate-300">Branch
+                    <label className="text-sm text-slate-300">Branch *
                       <select required value={branch} onChange={(event) => setBranch(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white">
                         <option value="">Select branch</option>
-                        <option>Computer Science & Engineering</option><option>Information Technology</option><option>Electrical Engineering</option><option>Mechanical Engineering</option><option>Civil Engineering</option><option>Other</option>
+                        <option value="CSE">CSE</option><option value="IC">IC</option><option value="IP">IP</option><option value="Electrical">Electrical</option><option value="Mechanical">Mechanical</option><option value="ECE">ECE</option><option value="Civil">Civil</option>
                       </select>
                     </label>
-                    <label className="text-sm text-slate-300">Year
+                    <label className="text-sm text-slate-300">Year *
                       <select required value={year} onChange={(event) => setYear(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white">
                         <option value="">Select year</option><option value="1">1st year</option><option value="2">2nd year</option><option value="3">3rd year</option><option value="4">4th year</option>
                       </select>
                     </label>
-                    <label className="text-sm text-slate-300">WhatsApp number
+                    <label className="text-sm text-slate-300">WhatsApp number *
                       <input required type="tel" autoComplete="tel" value={whatsappPhone} onChange={(event) => setWhatsappPhone(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
-                    <label className="text-sm text-slate-300">Payment transaction ID
+                    <label className="text-sm text-slate-300">Payment transaction ID *
                       <input required value={transactionId} onChange={(event) => setTransactionId(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
                     <div className="sm:col-span-2 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-center text-sm">
@@ -355,7 +355,7 @@ export default function WorkshopRegistrationForm() {
 
                 <label className="flex items-start gap-3 rounded-xl border border-slate-700 bg-slate-950/30 p-4 text-sm text-slate-200">
                   <input required type="checkbox" checked={rulesAccepted} onChange={(event) => setRulesAccepted(event.target.checked)} className="mt-1" />
-                  <span>I accept the workshop rules and confirm that the submitted information is accurate.</span>
+                  <span>I accept the workshop rules and confirm that the submitted information is accurate. *</span>
                 </label>
 
                 {message && <p className={`rounded-lg border px-4 py-3 text-sm ${message.type === 'error' ? 'border-rose-500/30 bg-rose-500/10 text-rose-200' : 'border-teal-500/30 bg-teal-500/10 text-teal-200'}`}>{message.text}</p>}

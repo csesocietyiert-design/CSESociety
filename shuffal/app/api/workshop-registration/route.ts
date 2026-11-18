@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createEventSupabase, hashEventOtp } from '@/lib/event-registration-server';
 import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 
+const IERT_BRANCHES = new Set(['CSE', 'IC', 'IP', 'ELECTRICAL', 'MECHANICAL', 'ECE', 'CIVIL']);
+
 export async function GET() {
   return NextResponse.json({ error: 'Method not implemented.' }, { status: 405 });
 }
@@ -67,6 +69,7 @@ export async function POST(request: Request) {
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       || !aktuRollNumber
       || !branch
+      || !IERT_BRANCHES.has(branch.toUpperCase())
       || year === null
       || !Number.isInteger(year)
       || year < 1
