@@ -138,6 +138,31 @@ export async function sendEventOtp(email: string, name: string, otp: string): Pr
   });
 }
 
+export async function sendWorkshopOtp(email: string, name: string, otp: string): Promise<void> {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || '587');
+  const user = process.env.SMTP_USER;
+  const password = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM || user;
+  if (!host || !Number.isInteger(port) || !user || !password || !from) {
+    throw new Error('SMTP settings are not configured');
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass: password },
+  });
+  await transporter.sendMail({
+    from,
+    to: email,
+    subject: 'Technical Workshop & Meetup verification code',
+    text: `Hello ${name}, your Technical Workshop & Meetup verification code is ${otp}. It expires in 5 minutes.`,
+    html: `<p>Hello ${escapeHtml(name)},</p><p>Your verification code is <strong>${otp}</strong>.</p><p>This code expires in 5 minutes.</p>`,
+  });
+}
+
 export async function sendEventRegistrationNotice(
   email: string,
   name: string,

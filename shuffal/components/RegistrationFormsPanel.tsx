@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { EVENT_REGISTRATION, isEventRegistrationOpen } from '@/lib/event-registration';
+import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 import { FORM_CREATOR_ROLES, isFormExpired, normalizeFormRole, type RegistrationForm } from '@/lib/forms';
 import type { User } from '@/lib/store';
 
@@ -22,6 +23,7 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [eventOpen, setEventOpen] = useState(isEventRegistrationOpen);
+  const [workshopOpen, setWorkshopOpen] = useState(isWorkshopRegistrationOpen);
 
   const isAdmin = user?.role === 'admin';
   const canCreate = user ? FORM_CREATOR_ROLES.has(normalizeFormRole(user.role)) : false;
@@ -46,7 +48,10 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
   }, [loadForms]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setEventOpen(isEventRegistrationOpen()), 15_000);
+    const timer = window.setInterval(() => {
+      setEventOpen(isEventRegistrationOpen());
+      setWorkshopOpen(isWorkshopRegistrationOpen());
+    }, 15_000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -135,6 +140,23 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
     }
   };
 
+  const handleShareWorkshop = async () => {
+    const url = `${window.location.origin}/forms/${WORKSHOP_REGISTRATION.publicFormId}`;
+    setError('');
+    setNotice('');
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: WORKSHOP_REGISTRATION.title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setNotice('Workshop registration link copied to clipboard.');
+      }
+    } catch (shareError) {
+      if (shareError instanceof Error && shareError.name === 'AbortError') return;
+      setError('Could not share the workshop registration link.');
+    }
+  };
+
   const handleShareEvent = async () => {
     const url = `${window.location.origin}/forms/${EVENT_REGISTRATION.publicFormId}`;
     setError('');
@@ -192,6 +214,30 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
       {error && <p role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>}
       {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</p>}
 
+      {!publicPage && <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+        <div className="flex items-start justify-between gap-4">
+          <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'border-teal-300/30 bg-teal-300/10 text-teal-200' : 'border-slate-600 bg-slate-800/60 text-slate-400'}`}>{workshopOpen ? 'Open for registration' : 'Registration closed'}</p>
+          <button type="button" onClick={() => void handleShareWorkshop()} aria-label="Share Technical Workshop & Meetup registration" title="Share workshop registration" className="shrink-0 rounded-lg border border-[#52738c] p-2.5 text-sky-100 transition hover:border-sky-300 hover:bg-sky-300/10">
+            <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+          </button>
+        </div>
+        <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-2xl">{WORKSHOP_REGISTRATION.title}</h2>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-200/70">Date & venue</p>
+            <p className="mt-1.5 text-sm text-slate-200">24 November 2026 · PPT Hall, IERT Prayagraj</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-200/70">Workshop</p>
+            <p className="mt-1.5 text-sm text-slate-200">Beginner · Web 2 & Web 3 · No prerequisites</p>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+          <p className="text-sm text-slate-400">Reporting 8:30 AM · Starts 9:00 AM · Sponsored by Anjaan Musafir</p>
+          <Link href={`/forms/${WORKSHOP_REGISTRATION.publicFormId}`} className={`inline-flex min-h-11 items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold ${workshopOpen ? 'bg-teal-300 text-[#071b2b] hover:bg-teal-200' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>{workshopOpen ? 'Register now' : 'View workshop'}</Link>
+        </div>
+      </article>}
+
       {!publicPage && <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-[#52738c] bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white'}`}>
           <div className="flex items-start justify-between gap-4">
             <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'border-slate-600 bg-slate-800/60 text-slate-400' : 'border-sky-300/30 bg-sky-300/10 text-sky-200'}`}>
@@ -236,6 +282,13 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
         </div>
         {publicPage ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <article className={`flex flex-col rounded-xl border p-5 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'text-teal-200' : 'text-slate-500'}`}>{workshopOpen ? 'Open for registration' : 'Closed'}</p>
+              <h3 className="mt-2 text-lg font-semibold">{WORKSHOP_REGISTRATION.title}</h3>
+              <p className="mt-3 text-sm text-slate-300">24 November 2026 · Reporting 8:30 AM · Starts 9:00 AM</p>
+              <p className="mt-1 text-sm text-slate-400">PPT Hall, IERT Prayagraj · Beginner · Web 2 & Web 3</p>
+              <Link href={`/forms/${WORKSHOP_REGISTRATION.publicFormId}`} className={`mt-5 inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold ${workshopOpen ? 'bg-teal-300 text-slate-950' : 'bg-slate-700 text-slate-200'}`}>{workshopOpen ? 'Register now' : 'View workshop'}</Link>
+            </article>
             <article className="flex flex-col rounded-xl border border-slate-700 bg-slate-900/50 p-5 text-slate-400">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Closed</p>
               <h3 className="mt-2 text-lg font-semibold text-slate-400">{EVENT_REGISTRATION.title}</h3>
