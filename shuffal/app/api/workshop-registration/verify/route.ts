@@ -39,9 +39,9 @@ export async function POST(request: Request) {
   let identifier = '';
   let email = '';
   let memberName = '';
-  let department = '';
-  let memberYear: number | null = null;
-  let memberPhone = '';
+  const department = '';
+  const memberYear: number | null = null;
+  const memberPhone = '';
 
   if (category === 'society') {
     identifier = typeof body.societyId === 'string' ? body.societyId.trim().toUpperCase() : '';
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   if (category === 'society') {
     const { data: member, error: memberError } = await supabase
       .from('users')
-      .select('id,cse_id,name,email,department,year,is_verified')
+      .select('cse_id,name,email,is_verified')
       .ilike('cse_id', identifier)
       .maybeSingle();
     if (memberError) {
@@ -75,18 +75,6 @@ export async function POST(request: Request) {
     identifier = String(member.cse_id).toUpperCase();
     email = member.email;
     memberName = member.name || '';
-    department = member.department || '';
-    memberYear = typeof member.year === 'number' ? member.year : null;
-    const { data: memberContact, error: contactError } = await supabase
-      .from('users')
-      .select('phone')
-      .eq('id', member.id)
-      .maybeSingle();
-    if (contactError) {
-      console.warn('Workshop member phone is unavailable; collect it during registration:', contactError);
-    } else {
-      memberPhone = memberContact?.phone || '';
-    }
   } else if (category === 'iert') {
     email = identifier;
   } else {
