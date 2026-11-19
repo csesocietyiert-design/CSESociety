@@ -374,6 +374,7 @@ export default function EventRegistrationForm() {
                               Six-digit email code
                               <input
                                 required
+                                autoComplete="one-time-code"
                                 inputMode="numeric"
                                 pattern="[0-9]{6}"
                                 maxLength={6}

@@ -3,6 +3,7 @@ import {
   createEventOtp,
   createEventSupabase,
   hashEventOtp,
+  OTP_VALIDITY_MS,
   sendWorkshopOtp,
 } from '@/lib/event-registration-server';
 import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
     .upsert({
       identity_key: identityKey,
       code_hash: hashEventOtp(identityKey, code),
-      expires_at: new Date(now.getTime() + 5 * 60_000).toISOString(),
+      expires_at: new Date(now.getTime() + OTP_VALIDITY_MS).toISOString(),
       last_sent_at: now.toISOString(),
       attempts: 0,
       verified_at: null,

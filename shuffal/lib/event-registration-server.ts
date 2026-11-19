@@ -4,6 +4,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { getSessionUserId } from '@/lib/session';
 
+export const OTP_VALIDITY_MS = 10 * 60_000;
+
 export const EVENT_REGISTRATION_MANAGER_ROLES = new Set([
   'admin',
   'general_secretary',
@@ -133,8 +135,8 @@ export async function sendEventOtp(email: string, name: string, otp: string): Pr
     from,
     to: email,
     subject: 'Your CSE Society event registration code',
-    text: `Hello ${name}, your verification code is ${otp}. It expires in 5 minutes. If you did not request this code, you can ignore this message.`,
-    html: `<p>Hello ${escapeHtml(name)},</p><p>Your CSE Society event registration code is <strong>${otp}</strong>.</p><p>This code expires in 5 minutes. If you did not request it, you can ignore this message.</p>`,
+    text: `Hello ${name}, your verification code is ${otp}. It expires in 10 minutes. If you did not request this code, you can ignore this message.`,
+    html: `<p>Hello ${escapeHtml(name)},</p><p>Your CSE Society event registration code is <strong>${otp}</strong>.</p><p>This code expires in 10 minutes. If you did not request it, you can ignore this message.</p>`,
   });
 }
 
@@ -158,8 +160,8 @@ export async function sendWorkshopOtp(email: string, name: string, otp: string):
     from,
     to: email,
     subject: 'Technical Workshop & Meetup verification code',
-    text: `Hello ${name}, your Technical Workshop & Meetup verification code is ${otp}. It expires in 5 minutes.`,
-    html: `<p>Hello ${escapeHtml(name)},</p><p>Your verification code is <strong>${otp}</strong>.</p><p>This code expires in 5 minutes.</p>`,
+    text: `Hello ${name}, your Technical Workshop & Meetup verification code is ${otp}. It expires in 10 minutes.`,
+    html: `<p>Hello ${escapeHtml(name)},</p><p>Your verification code is <strong>${otp}</strong>.</p><p>This code expires in 10 minutes.</p>`,
   });
 }
 

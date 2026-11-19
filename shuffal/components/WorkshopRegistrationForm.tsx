@@ -308,7 +308,7 @@ export default function WorkshopRegistrationForm() {
                     {otpSent && (
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                         <label className="flex-1 text-sm text-slate-300">Six-digit OTP *
-                          <input required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-400" />
+                          <input required autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-400" />
                         </label>
                         <button disabled={busy} type="button" onClick={() => void verifyOtp()} className="rounded-lg bg-teal-400 px-5 py-3 text-sm font-bold text-slate-950 disabled:opacity-50">{busy ? 'Verifying…' : 'Verify OTP'}</button>
                       </div>

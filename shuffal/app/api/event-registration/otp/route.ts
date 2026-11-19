@@ -4,6 +4,7 @@ import {
   createEventOtp,
   createEventSupabase,
   hashEventOtp,
+  OTP_VALIDITY_MS,
   sendEventOtp,
 } from '@/lib/event-registration-server';
 
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
     .upsert({
       society_id: member.cse_id,
       code_hash: hashEventOtp(member.cse_id, code),
-      expires_at: new Date(now.getTime() + 5 * 60_000).toISOString(),
+      expires_at: new Date(now.getTime() + OTP_VALIDITY_MS).toISOString(),
       last_sent_at: now.toISOString(),
       attempts: 0,
       verified_at: null,
