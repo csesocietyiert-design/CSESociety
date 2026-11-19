@@ -111,41 +111,109 @@ export async function DELETE(
     return NextResponse.json({ error: 'Could not verify delete permission.' }, { status: 500 });
   }
   if (String(requester?.role).toLowerCase() !== 'admin') {
-    return NextResponse.json({ error: 'Only admins can delete event registrations.' }, { status: 403 });
+    return NextResponse.json({ error: 'Only admins can cancel event registrations.' }, { status: 403 });
   }
 
   const { id } = await context.params;
+  const url = new URL(request.url);
+  const eventType = url.searchParams.get('eventType') || 'esports';
+  const eventKey = url.searchParams.get('eventKey') || '';
+  if ((eventType !== 'esports' && eventType !== 'workshop') || !eventKey || eventKey.length > 120) {
+    return NextResponse.json({ error: 'Choose a valid event registration.' }, { status: 400 });
+  }
+
+  if (eventType === 'workshop') {
+    const { data: registration, error: loadError } = await auth.supabase
+      .from('workshop_registrations')
+      .select('id, participant_category, society_id, email, iit_roll_number')
+      .eq('id', id)
+      .eq('event_key', eventKey)
+      .maybeSingle();
+    if (loadError) {
+      console.error('Workshop registration could not be loaded for cancellation:', loadError);
+      return NextResponse.json({ error: 'Could not cancel workshop registration.' }, { status: 500 });
+    }
+    if (!registration) return NextResponse.json({ error: 'Workshop registration not found.' }, { status: 404 });
+
+    const { data: deleted, error: deleteError } = await auth.supabase
+      .from('workshop_registrations')
+      .delete()
+      .eq('id', id)
+      .eq('event_key', eventKey)
+      .select('id')
+      .maybeSingle();
+    if (deleteError) {
+      console.error('Workshop registration cancellation failed:', deleteError);
+      return NextResponse.json({ error: 'Could not cancel workshop registration.' }, { status: 500 });
+    }
+    if (!deleted) return NextResponse.json({ error: 'Workshop registration not found.' }, { status: 404 });
+
+    const identity = registration.participant_category === 'society'
+      ? registration.society_id
+      : registration.participant_category === 'iert'
+        ? registration.email
+        : registration.iit_roll_number;
+    let cleanupWarning: string | null = null;
+    if (identity) {
+      const { error: otpCleanupError } = await auth.supabase
+        .from('workshop_registration_otps')
+        .delete()
+        .eq('identity_key', `${registration.participant_category}:${identity}`);
+      if (otpCleanupError) {
+        console.error('Workshop verification data cleanup failed after cancellation:', otpCleanupError);
+        cleanupWarning = 'Registration removed, but its verification data could not be deleted.';
+      }
+    } else {
+      cleanupWarning = 'Registration removed, but its verification data could not be matched for cleanup.';
+    }
+    return NextResponse.json({ success: true, cleanupWarning });
+  }
+
   const { data: registration, error: loadError } = await auth.supabase
     .from('esports_event_registrations')
-    .select('id, event_key, payment_screenshot_path')
+    .select('id, event_key, payment_screenshot_path, society_id')
     .eq('id', id)
+    .eq('event_key', eventKey)
     .maybeSingle();
   if (loadError) {
-    console.error('Event registration could not be loaded for deletion:', loadError);
-    return NextResponse.json({ error: 'Could not delete event registration.' }, { status: 500 });
+    console.error('Event registration could not be loaded for cancellation:', loadError);
+    return NextResponse.json({ error: 'Could not cancel event registration.' }, { status: 500 });
   }
   if (!registration) return NextResponse.json({ error: 'Event registration not found.' }, { status: 404 });
 
-  const { error: deleteError } = await auth.supabase
+  const { data: deleted, error: deleteError } = await auth.supabase
     .from('esports_event_registrations')
     .delete()
     .eq('id', id)
-    .eq('event_key', registration.event_key);
+    .eq('event_key', registration.event_key)
+    .select('id')
+    .maybeSingle();
   if (deleteError) {
-    console.error('Event registration deletion failed:', deleteError);
-    return NextResponse.json({ error: 'Could not delete event registration.' }, { status: 500 });
+    console.error('Event registration cancellation failed:', deleteError);
+    return NextResponse.json({ error: 'Could not cancel event registration.' }, { status: 500 });
   }
+  if (!deleted) return NextResponse.json({ error: 'Event registration not found.' }, { status: 404 });
 
-  let cleanupWarning: string | null = null;
+  const cleanupWarnings: string[] = [];
+  if (registration.society_id) {
+    const { error: otpCleanupError } = await auth.supabase
+      .from('esports_event_registration_otps')
+      .delete()
+      .eq('society_id', registration.society_id);
+    if (otpCleanupError) {
+      console.error('Event verification data cleanup failed after cancellation:', otpCleanupError);
+      cleanupWarnings.push('Registration removed, but its verification data could not be deleted.');
+    }
+  }
   if (registration.payment_screenshot_path) {
     const { error: cleanupError } = await auth.supabase.storage
       .from('event-payment-proofs')
       .remove([registration.payment_screenshot_path]);
     if (cleanupError) {
-      console.error('Payment screenshot cleanup failed after registration deletion:', cleanupError);
-      cleanupWarning = 'Registration deleted, but its payment screenshot could not be removed.';
+      console.error('Payment screenshot cleanup failed after cancellation:', cleanupError);
+      cleanupWarnings.push('Registration removed, but its payment screenshot could not be removed.');
     }
   }
 
-  return NextResponse.json({ success: true, cleanupWarning });
+  return NextResponse.json({ success: true, cleanupWarning: cleanupWarnings.join(' ') || null });
 }

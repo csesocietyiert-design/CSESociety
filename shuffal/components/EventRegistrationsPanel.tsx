@@ -252,24 +252,32 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
     }
   };
 
-  const deleteRegistration = async (row: EventRegistration) => {
-    if (!window.confirm(`Delete the registration for ${row.full_name}? This cannot be undone.`)) return;
+  const cancelRegistration = async (
+    row: { id: string; event_key: string; full_name: string },
+    eventType: 'esports' | 'workshop',
+  ) => {
+    if (!window.confirm(`Cancel and permanently remove ${row.full_name}'s registration? They can register again afterward.`)) return;
     setDeletingId(row.id);
     setError('');
     setNotice('');
     try {
-      const response = await fetch(`/api/event-registration/${row.id}`, { method: 'DELETE' });
+      const params = new URLSearchParams({ eventType, eventKey: row.event_key });
+      const response = await fetch(`/api/event-registration/${row.id}?${params}`, { method: 'DELETE' });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || 'Could not delete registration.');
-      setRegistrations((current) => current.filter((item) => item.id !== row.id));
+      if (!response.ok) throw new Error(payload.error || 'Could not cancel registration.');
+      if (eventType === 'workshop') {
+        setWorkshopRegistrations((current) => current.filter((item) => item.id !== row.id));
+      } else {
+        setRegistrations((current) => current.filter((item) => item.id !== row.id));
+      }
       setDrafts((current) => {
         const next = { ...current };
         delete next[row.id];
         return next;
       });
-      setNotice(payload.cleanupWarning || `Registration for ${row.full_name} deleted.`);
-    } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'Could not delete registration.');
+      setNotice(payload.cleanupWarning || `Registration for ${row.full_name} cancelled and removed.`);
+    } catch (cancelError) {
+      setError(cancelError instanceof Error ? cancelError.message : 'Could not cancel registration.');
     } finally {
       setDeletingId('');
     }
@@ -548,7 +556,14 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
       ) : selectedEventType === 'workshop' ? (
         <section className="space-y-4">
           {visibleWorkshopRegistrations.map((row, index) => (
-            <WorkshopRegistrationCard key={row.id} row={row} index={index + 1} />
+            <WorkshopRegistrationCard
+              key={row.id}
+              row={row}
+              index={index + 1}
+              canCancel={isAdmin}
+              deleting={deletingId === row.id}
+              onCancel={() => void cancelRegistration(row, 'workshop')}
+            />
           ))}
         </section>
       ) : (
@@ -564,7 +579,7 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
               canDelete={isAdmin}
               onUpdate={(changes, message) => void updateRegistration(row, changes, message)}
               onSendPass={(method) => void sendEntryPass(row, method)}
-              onDelete={() => void deleteRegistration(row)}
+              onDelete={() => void cancelRegistration(row, 'esports')}
               onDraftChange={(draft) => setDrafts((current) => ({ ...current, [row.id]: draft }))}
               onSaveEvaluation={() => saveEvaluation(row)}
               canSendPass={selectedEventKey === EVENT_REGISTRATION.key}
@@ -587,7 +602,19 @@ function getWorkshopCategoryLabel(category: WorkshopRegistration['participant_ca
   return category === 'iert' ? 'IERT participant' : 'IIT Madras participant';
 }
 
-function WorkshopRegistrationCard({ row, index }: { row: WorkshopRegistration; index: number }) {
+function WorkshopRegistrationCard({
+  row,
+  index,
+  canCancel,
+  deleting,
+  onCancel,
+}: {
+  row: WorkshopRegistration;
+  index: number;
+  canCancel: boolean;
+  deleting: boolean;
+  onCancel: () => void;
+}) {
   const identifier = row.society_id || row.aktu_roll_number || row.iit_roll_number || 'No student ID';
 
   return (
@@ -617,8 +644,11 @@ function WorkshopRegistrationCard({ row, index }: { row: WorkshopRegistration; i
         </div>
         <div className="grid min-w-48 gap-2 text-sm">
           <p className="font-bold text-white">₹{row.fee_amount}</p>
-          {row.payment_transaction_id && (
-            <p className="break-all text-xs text-slate-400">Transaction ID: {row.payment_transaction_id}</p>
+          {row.payment_transaction_id && <p className="break-all text-xs text-slate-400">Transaction ID: {row.payment_transaction_id}</p>}
+          {canCancel && (
+            <button type="button" disabled={deleting} onClick={onCancel} className="mt-1 rounded-md border border-rose-500/40 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-40">
+              {deleting ? 'Cancelling…' : 'Cancel registration'}
+            </button>
           )}
         </div>
       </div>
@@ -714,7 +744,7 @@ function RegistrationCard({
               {whatsappNumber && <button type="button" disabled={saving || row.payment_status !== 'verified'} onClick={() => onSendPass('whatsapp')} className="rounded-md border border-emerald-700/50 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-900/30 disabled:cursor-not-allowed disabled:opacity-40">WhatsApp pass</button>}
             </div>
           </>}
-          {canDelete && <button type="button" disabled={saving || deleting} onClick={onDelete} className="mt-1 rounded-md border border-rose-500/40 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-40">{deleting ? 'Deleting…' : 'Delete registration'}</button>}
+          {canDelete && <button type="button" disabled={saving || deleting} onClick={onDelete} className="mt-1 rounded-md border border-rose-500/40 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-40">{deleting ? 'Cancelling…' : 'Cancel registration'}</button>}
         </div>
       </div>
 
