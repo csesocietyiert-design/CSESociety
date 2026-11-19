@@ -4,28 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import Image from 'next/image';
+import Link from 'next/link';
 import PortalFooter from '@/components/PortalFooter';
+import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 const upcomingEvents = [
   {
-    number: 2,
-    date: 'Saturday, 31 October 2026',
-    title: 'Inter-Branch Chess Championship / E-sport Championship',
-    category: 'Sports',  
-  },
-  {
-    number: 3,
-    date: 'Saturday, 7 November 2026',
-    title: 'Winter Code-Rush',
-    category: 'Technical',
-  },
-  {
-    number: 4,
-    date: 'Saturday, 13 February 2027',
-    title: 'Table Tennis Smash Tournament / E-sports Championship',
-    category: 'Sports',
+    number: 1,
+    date: 'Tuesday, 24 November 2026',
+    title: WORKSHOP_REGISTRATION.title,
+    category: 'Technical · IERT CSE Society × IIT Madras Kanha House',
+    details: 'PPT Hall, IERT Prayagraj · Report 8:30 AM · Starts 9:00 AM',
+    sponsor: 'Sponsored by Anjaan Musafir',
+    formHref: `/forms/${WORKSHOP_REGISTRATION.publicFormId}`,
   },
 ] as const;
 
@@ -352,6 +345,9 @@ export default function LoginPage() {
                 <p className="text-[10px] font-semibold uppercase text-slate-500">{event.number} · {event.date}</p>
                 <h3 className="mt-1 text-xs font-semibold text-slate-900">{event.title}</h3>
                 <p className="mt-1 text-[10px] text-slate-600">{event.category}</p>
+                <p className="mt-1 text-[10px] text-slate-600">{event.details}</p>
+                <p className="mt-1 text-[10px] font-medium text-slate-600">{event.sponsor}</p>
+                <Link href={event.formHref} className="mt-2 inline-block text-[10px] font-semibold text-slate-700 underline decoration-slate-400 underline-offset-2 hover:text-slate-950">Open registration form</Link>
               </article>
             ))}
           </div>
@@ -371,6 +367,9 @@ export default function LoginPage() {
                   <p className="text-xs font-semibold uppercase text-slate-500">{event.number} · {event.date}</p>
                   <h3 className="mt-1 text-sm font-semibold text-slate-900 sm:text-base">{event.title}</h3>
                   <p className="mt-1 text-xs text-slate-600">{event.category}</p>
+                  <p className="mt-1 text-xs text-slate-600">{event.details}</p>
+                  <p className="mt-1 text-xs font-medium text-slate-600">{event.sponsor}</p>
+                  <Link href={event.formHref} className="mt-2 inline-block text-xs font-semibold text-slate-700 underline decoration-slate-400 underline-offset-2 hover:text-slate-950">Open registration form</Link>
                 </article>
               ))}
             </div>

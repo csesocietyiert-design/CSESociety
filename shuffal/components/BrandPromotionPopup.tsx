@@ -57,8 +57,8 @@ export default function BrandPromotionPopup() {
       </div>
 
       <div className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-16 min-w-0 flex-1 items-center justify-center rounded-xl border border-white/10 bg-slate-900/80 p-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <div className="flex h-20 min-w-0 items-center justify-center rounded-xl border border-white/10 bg-slate-900/80 p-2">
             <Image
               src="/workshop-partners/collaboration-logo.png"
               alt="IERT CSE Society and IIT Madras Kanha House collaboration"
@@ -68,7 +68,7 @@ export default function BrandPromotionPopup() {
             />
           </div>
           <span aria-hidden="true" className="text-lg font-light text-slate-500">+</span>
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-amber-200/20 bg-slate-900/80 p-1.5">
+          <div className="flex h-20 min-w-0 items-center justify-center rounded-xl border border-amber-200/20 bg-slate-900/80 p-2">
             <Image
               src="/workshop-partners/anjaan-musafir.png"
               alt="Anjaan Musafir logo"

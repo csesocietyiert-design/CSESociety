@@ -215,6 +215,9 @@ export default function WorkshopRegistrationForm() {
                   <a href="https://chat.whatsapp.com/BnnLnGEdfnN3PhlTkK0x8z" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-emerald-300">Join WhatsApp community</a>
                   <a href="https://www.instagram.com/anjaannmusafir?dmpr=MTc4cGxzemc3a2Nicg==" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-amber-200/30 px-4 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-200/10">Follow on Instagram</a>
                 </div>
+                <p className="mt-3 rounded-lg border border-amber-200/15 bg-amber-200/5 p-3 text-sm leading-6 text-amber-100">
+                  Follow Anjaan Musafir on Instagram and show your CSE Society ID card to get 10% off every Anjaan Musafir trip taken before June 2027.
+                </p>
               </div>
             </div>
           </section>
