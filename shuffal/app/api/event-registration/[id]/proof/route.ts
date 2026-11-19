@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { EVENT_REGISTRATION } from '@/lib/event-registration';
 import { getEventRegistrationManager } from '@/lib/event-registration-server';
 
 export async function GET(
@@ -14,7 +13,6 @@ export async function GET(
     .from('esports_event_registrations')
     .select('payment_screenshot_path')
     .eq('id', id)
-    .eq('event_key', EVENT_REGISTRATION.key)
     .maybeSingle();
   if (error) {
     console.error('Event payment proof lookup failed:', error);

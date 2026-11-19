@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { EVENT_REGISTRATION } from '@/lib/event-registration';
 import { getEventRegistrationManager } from '@/lib/event-registration-server';
 
 const attendanceStatuses = new Set(['registered', 'checked_in', 'no_show']);
@@ -59,9 +58,8 @@ export async function PATCH(
 
   const { data: current, error: currentError } = await auth.supabase
     .from('esports_event_registrations')
-    .select('id, payment_status, participant_type')
+    .select('id, event_key, payment_status, participant_type')
     .eq('id', id)
-    .eq('event_key', EVENT_REGISTRATION.key)
     .maybeSingle();
   if (currentError) {
     console.error('Could not load event registration for update:', currentError);
@@ -85,7 +83,7 @@ export async function PATCH(
     .from('esports_event_registrations')
     .update(changes)
     .eq('id', id)
-    .eq('event_key', EVENT_REGISTRATION.key)
+    .eq('event_key', current.event_key)
     .select('*')
     .single();
   if (error) {
@@ -119,9 +117,8 @@ export async function DELETE(
   const { id } = await context.params;
   const { data: registration, error: loadError } = await auth.supabase
     .from('esports_event_registrations')
-    .select('id, payment_screenshot_path')
+    .select('id, event_key, payment_screenshot_path')
     .eq('id', id)
-    .eq('event_key', EVENT_REGISTRATION.key)
     .maybeSingle();
   if (loadError) {
     console.error('Event registration could not be loaded for deletion:', loadError);
@@ -133,7 +130,7 @@ export async function DELETE(
     .from('esports_event_registrations')
     .delete()
     .eq('id', id)
-    .eq('event_key', EVENT_REGISTRATION.key);
+    .eq('event_key', registration.event_key);
   if (deleteError) {
     console.error('Event registration deletion failed:', deleteError);
     return NextResponse.json({ error: 'Could not delete event registration.' }, { status: 500 });

@@ -78,10 +78,47 @@ export async function GET(request: Request) {
   const auth = await getEventRegistrationManager(request);
   if (auth.error) return auth.error;
 
+  const { data: eventRows, error: eventError } = await auth.supabase
+    .from('esports_event_registrations')
+    .select('event_key, created_at')
+    .order('created_at', { ascending: false })
+    .limit(10000);
+
+  if (eventError) {
+    console.error('Event registration events could not be loaded:', eventError);
+    return NextResponse.json({
+      error: isMissingRegistrationSchema(eventError)
+        ? 'Event registration tables are missing. Apply migration 036_create_event_registration.sql.'
+        : 'Could not load event registrations.',
+    }, { status: 500 });
+  }
+
+  const latestRegistrationByEvent = new Map<string, string>();
+  for (const row of eventRows || []) {
+    if (typeof row.event_key === 'string' && !latestRegistrationByEvent.has(row.event_key)) {
+      latestRegistrationByEvent.set(row.event_key, row.created_at);
+    }
+  }
+  if (!latestRegistrationByEvent.has(EVENT_REGISTRATION.key)) {
+    latestRegistrationByEvent.set(EVENT_REGISTRATION.key, EVENT_REGISTRATION.startsAt);
+  }
+
+  const events = Array.from(latestRegistrationByEvent, ([key, latestRegistrationAt]) => ({
+    key,
+    latestRegistrationAt,
+  })).sort((first, second) =>
+    second.latestRegistrationAt.localeCompare(first.latestRegistrationAt)
+    || first.key.localeCompare(second.key));
+  const requestedEventKey = new URL(request.url).searchParams.get('eventKey');
+  if (requestedEventKey && !latestRegistrationByEvent.has(requestedEventKey)) {
+    return NextResponse.json({ error: 'The selected event was not found.' }, { status: 404 });
+  }
+  const eventKey = requestedEventKey || events[0]?.key || EVENT_REGISTRATION.key;
+
   const { data, error } = await auth.supabase
     .from('esports_event_registrations')
     .select('*')
-    .eq('event_key', EVENT_REGISTRATION.key)
+    .eq('event_key', eventKey)
     .order('participant_type', { ascending: true })
     .order('created_at', { ascending: true })
     .limit(2000);
@@ -95,7 +132,7 @@ export async function GET(request: Request) {
     }, { status: 500 });
   }
 
-  return NextResponse.json({ registrations: data || [] });
+  return NextResponse.json({ events, eventKey, registrations: data || [] });
 }
 
 export async function POST(request: Request) {

@@ -389,6 +389,9 @@ export default function UniverseExperience() {
               {label}
             </a>
           ))}
+          <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+            Dashboard
+          </Link>
         </nav>
       </header>
 

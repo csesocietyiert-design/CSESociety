@@ -7,6 +7,7 @@ import { EVENT_REGISTRATION } from '@/lib/event-registration';
 
 type EventRegistration = {
   id: string;
+  event_key: string;
   participant_type: 'member' | 'non_member';
   society_id: string | null;
   full_name: string;
@@ -37,6 +38,12 @@ type EventRegistration = {
 
 type EvaluationDraft = { score: string; notes: string };
 type RosterFilter = 'all' | 'member' | 'non_member';
+type EventOption = { key: string; latestRegistrationAt: string };
+type RegistrationResponse = {
+  events: EventOption[];
+  eventKey: string;
+  registrations: EventRegistration[];
+};
 
 const sessionLabels: Record<EventRegistration['session_selection'], string> = {
   first_half: 'First Half',
@@ -51,6 +58,8 @@ function getGamesLabel(row: EventRegistration): string {
 }
 
 export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean }) {
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [selectedEventKey, setSelectedEventKey] = useState('');
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -61,12 +70,18 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
   const [deletingId, setDeletingId] = useState('');
   const [drafts, setDrafts] = useState<Record<string, EvaluationDraft>>({});
 
-  const loadRegistrations = useCallback(async () => {
-    const response = await fetch('/api/event-registration', { cache: 'no-store' });
+  const loadRegistrations = useCallback(async (eventKey?: string): Promise<RegistrationResponse> => {
+    const url = eventKey
+      ? `/api/event-registration?eventKey=${encodeURIComponent(eventKey)}`
+      : '/api/event-registration';
+    const response = await fetch(url, { cache: 'no-store' });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || 'Could not load event registrations.');
+    if (!Array.isArray(payload.events) || typeof payload.eventKey !== 'string') {
+      throw new Error('The event registration response was invalid.');
+    }
     if (!Array.isArray(payload.registrations)) throw new Error('The event registration response was invalid.');
-    return payload.registrations as EventRegistration[];
+    return payload as RegistrationResponse;
   }, []);
 
   const applyRows = useCallback((rows: EventRegistration[]) => {
@@ -80,8 +95,12 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
   useEffect(() => {
     let active = true;
     loadRegistrations()
-      .then((rows) => {
-        if (active) applyRows(rows);
+      .then((payload) => {
+        if (active) {
+          setEvents(payload.events);
+          setSelectedEventKey(payload.eventKey);
+          applyRows(payload.registrations);
+        }
       })
       .catch((loadError: unknown) => {
         if (active) setError(loadError instanceof Error ? loadError.message : 'Could not load event registrations.');
@@ -93,6 +112,30 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
       active = false;
     };
   }, [applyRows, loadRegistrations]);
+
+  const selectEvent = async (eventKey: string) => {
+    setSelectedEventKey(eventKey);
+    setRegistrations([]);
+    setDrafts({});
+    setLoading(true);
+    setError('');
+    setNotice('');
+    try {
+      const payload = await loadRegistrations(eventKey);
+      setEvents(payload.events);
+      setSelectedEventKey(payload.eventKey);
+      applyRows(payload.registrations);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Could not load event registrations.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const eventTitle = selectedEventKey === EVENT_REGISTRATION.key
+    ? EVENT_REGISTRATION.title
+    : selectedEventKey.split(/[-_]/).filter(Boolean).map((part) => part[0].toUpperCase() + part.slice(1)).join(' ');
+  const exportSlug = selectedEventKey.replace(/[^a-z0-9-]+/gi, '-').replace(/^-|-$/g, '') || 'event';
 
   const visibleRegistrations = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -206,7 +249,7 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
     const pageHeight = pdf.internal.pageSize.getHeight();
     let y = 16;
     pdf.setFontSize(16);
-    pdf.text(EVENT_REGISTRATION.title, 14, y);
+    pdf.text(eventTitle, 14, y);
     y += 7;
     pdf.setFontSize(9);
     pdf.text(`Roster exported ${new Date().toLocaleString('en-IN')} · Members are listed before non-members`, 14, y);
@@ -233,7 +276,7 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
       pdf.line(14, y - 2, pageWidth - 14, y - 2);
     });
 
-    pdf.save(`esports-registration-roster-${new Date().toISOString().slice(0, 10)}.pdf`);
+    pdf.save(`${exportSlug}-registration-roster-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   const downloadDocx = async () => {
@@ -241,8 +284,10 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
     setNotice('');
     try {
       const paragraphs = [
-        new Paragraph({ text: EVENT_REGISTRATION.title, heading: HeadingLevel.TITLE }),
-        new Paragraph(`Venue: ${EVENT_REGISTRATION.venue} · Event date: 1 November 2026`),
+        new Paragraph({ text: eventTitle, heading: HeadingLevel.TITLE }),
+        ...(selectedEventKey === EVENT_REGISTRATION.key
+          ? [new Paragraph(`Venue: ${EVENT_REGISTRATION.venue} · Event date: 1 November 2026`)]
+          : []),
         new Paragraph(`Exported: ${new Date().toLocaleString('en-IN')} · Members are listed before non-members`),
         new Paragraph(' '),
         ...visibleRegistrations.flatMap((row, index) => [
@@ -269,7 +314,7 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
         }],
       });
       const blob = await Packer.toBlob(document);
-      downloadBlob(blob, `esports-registration-roster-${new Date().toISOString().slice(0, 10)}.docx`);
+      downloadBlob(blob, `${exportSlug}-registration-roster-${new Date().toISOString().slice(0, 10)}.docx`);
     } catch (exportError) {
       setError(exportError instanceof Error ? exportError.message : 'Could not create the DOCX roster.');
     }
@@ -298,9 +343,9 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
         <td>${escapeHtml(String(row.evaluation_score ?? '-'))}</td>
         <td>${escapeHtml(row.evaluation_notes || '-')}</td>
       </tr>`).join('');
-    printWindow.document.write(`<!doctype html><html><head><title>${escapeHtml(EVENT_REGISTRATION.title)} roster</title>
+    printWindow.document.write(`<!doctype html><html><head><title>${escapeHtml(eventTitle)} roster</title>
       <style>body{font:12px Arial,sans-serif;color:#111;padding:20px}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:5px;text-align:left;vertical-align:top}th{background:#eee} @page{size:landscape}</style>
-      </head><body><h1>${escapeHtml(EVENT_REGISTRATION.title)} — registration roster</h1><p>Members listed before non-members · ${new Date().toLocaleString('en-IN')}</p>
+      </head><body><h1>${escapeHtml(eventTitle)} — registration roster</h1><p>Members listed before non-members · ${new Date().toLocaleString('en-IN')}</p>
       <table><thead><tr><th>#</th><th>Type</th><th>Participant name</th><th>ID</th><th>Branch/year</th><th>Team name</th><th>Session</th><th>Games</th><th>Email</th><th>WhatsApp</th><th>Payment</th><th>Attendance</th><th>Score</th><th>Evaluation notes</th></tr></thead><tbody>${rows}</tbody></table>
       <script>window.onload=()=>{window.print();window.close()}</script></body></html>`);
     printWindow.document.close();
@@ -311,8 +356,8 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Event management</p>
-          <h1 className="mt-2 text-3xl font-bold leading-tight">E-Sports registrations</h1>
-          <p className="mt-2 text-sm text-slate-400">{EVENT_REGISTRATION.venue} · 1 November 2026 · Members appear before non-members</p>
+          <h1 className="mt-2 text-3xl font-bold leading-tight">Event registrations</h1>
+          <p className="mt-2 text-sm text-slate-400">{eventTitle || 'Select an event'} · Members appear before non-members</p>
         </div>
         <div className="flex flex-wrap gap-2 print:hidden">
           <button type="button" onClick={printRoster} disabled={!visibleRegistrations.length} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-40">Print</button>
@@ -332,7 +377,22 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
       {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</p>}
 
       <section className="space-y-4 rounded-xl border border-slate-700/60 bg-slate-900/50 p-4 sm:p-6 print:hidden">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px_auto]">
+        <div className="grid gap-3 sm:grid-cols-[220px_minmax(0,1fr)_220px_auto]">
+          <select
+            value={selectedEventKey}
+            onChange={(event) => void selectEvent(event.target.value)}
+            aria-label="Select event"
+            className="rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-teal-400"
+          >
+            {events.map((event) => (
+              <option key={event.key} value={event.key}>
+                {event.key === EVENT_REGISTRATION.key
+                  ? EVENT_REGISTRATION.title
+                  : event.key.split(/[-_]/).filter(Boolean).map((part) => part[0].toUpperCase() + part.slice(1)).join(' ')}
+                {event.key === events[0]?.key ? ' (Latest)' : ''}
+              </option>
+            ))}
+          </select>
           <input value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Search registrations" className="rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-teal-400" />
           <select value={filter} onChange={(event) => setFilter(event.target.value as RosterFilter)} aria-label="Filter registrations" className="rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-teal-400">
             <option value="all">Members + non-members</option>
@@ -341,11 +401,15 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
           </select>
           <button type="button" onClick={() => {
             setLoading(true);
-            loadRegistrations()
-              .then(applyRows)
+            loadRegistrations(selectedEventKey)
+              .then((payload) => {
+                setEvents(payload.events);
+                setSelectedEventKey(payload.eventKey);
+                applyRows(payload.registrations);
+              })
               .catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : 'Could not refresh roster.'))
               .finally(() => setLoading(false));
-          }} className="rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-800">Refresh roster</button>
+          }} disabled={loading} className="rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50">Refresh roster</button>
         </div>
         <p className="text-xs text-slate-500">The roster is member-first. Payment screenshots are private and visible only to authorized dashboard roles.</p>
       </section>
@@ -370,6 +434,7 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
               onDelete={() => void deleteRegistration(row)}
               onDraftChange={(draft) => setDrafts((current) => ({ ...current, [row.id]: draft }))}
               onSaveEvaluation={() => saveEvaluation(row)}
+              canSendPass={selectedEventKey === EVENT_REGISTRATION.key}
             />
           ))}
         </section>
@@ -390,6 +455,7 @@ function RegistrationCard({
   onDelete,
   onDraftChange,
   onSaveEvaluation,
+  canSendPass,
 }: {
   row: EventRegistration;
   index: number;
@@ -402,6 +468,7 @@ function RegistrationCard({
   onDelete: () => void;
   onDraftChange: (draft: EvaluationDraft) => void;
   onSaveEvaluation: () => void;
+  canSendPass: boolean;
 }) {
   const member = row.participant_type === 'member';
   const phoneDigits = (row.whatsapp_phone || '').replace(/\D/g, '');
@@ -454,7 +521,7 @@ function RegistrationCard({
             <option value="checked_in">Checked in</option>
             <option value="no_show">No show</option>
           </select>
-          {!member && <>
+          {!member && canSendPass && <>
             <select value={row.pass_status} disabled={saving || row.payment_status !== 'verified'} onChange={(event) => onUpdate({ passStatus: event.target.value }, `Pass status updated for ${row.full_name}.`)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white">
               <option value="pending">Pass not sent</option>
               <option value="sent">Pass sent</option>
