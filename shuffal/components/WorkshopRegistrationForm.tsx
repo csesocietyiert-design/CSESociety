@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import {
   formatWorkshopDeadline,
   WORKSHOP_REGISTRATION,
@@ -50,6 +50,7 @@ export default function WorkshopRegistrationForm() {
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
   const [registeredId, setRegisteredId] = useState('');
+  const otpRequestInFlight = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -92,8 +93,10 @@ export default function WorkshopRegistrationForm() {
   };
 
   const sendOtp = async () => {
-    if (!category) return;
+    if (!category || otpRequestInFlight.current) return;
+    otpRequestInFlight.current = true;
     setBusy(true);
+    setOtp('');
     setMessage(null);
     try {
       const response = await fetch('/api/workshop-registration/otp', {
@@ -113,12 +116,14 @@ export default function WorkshopRegistrationForm() {
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Could not send verification code.' });
     } finally {
+      otpRequestInFlight.current = false;
       setBusy(false);
     }
   };
 
   const verifyOtp = async () => {
-    if (!category) return;
+    if (!category || otpRequestInFlight.current) return;
+    otpRequestInFlight.current = true;
     setBusy(true);
     setMessage(null);
     try {
@@ -146,6 +151,7 @@ export default function WorkshopRegistrationForm() {
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Could not verify the code.' });
     } finally {
+      otpRequestInFlight.current = false;
       setBusy(false);
     }
   };

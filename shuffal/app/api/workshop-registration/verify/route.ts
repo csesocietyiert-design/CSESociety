@@ -60,11 +60,15 @@ export async function POST(request: Request) {
   }
 
   if (category === 'society') {
-    const { data: member } = await supabase
+    const { data: member, error: memberError } = await supabase
       .from('users')
       .select('id,cse_id,name,email,department,year,phone,is_verified')
       .ilike('cse_id', identifier)
       .maybeSingle();
+    if (memberError) {
+      console.error('Workshop OTP member lookup failed:', memberError);
+      return NextResponse.json({ error: 'Member verification is temporarily unavailable.' }, { status: 503 });
+    }
     if (!member || member.is_verified !== true || !member.email) {
       return NextResponse.json({ error: 'The code is invalid or expired.' }, { status: 400 });
     }
@@ -82,26 +86,49 @@ export async function POST(request: Request) {
 
   const identityKey = `${category}:${identifier}`;
   const now = new Date();
-  const { data: otp } = await supabase
+  const { data: otp, error: otpError } = await supabase
     .from('workshop_registration_otps')
     .select('code_hash,expires_at,attempts,verified_at,used_at')
     .eq('identity_key', identityKey)
     .maybeSingle();
-  if (!otp || otp.used_at || otp.verified_at || otp.attempts >= 5 || new Date(otp.expires_at).getTime() <= now.getTime()) {
+  if (otpError) {
+    console.error('Workshop OTP lookup failed:', otpError);
+    return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
+  }
+  if (!otp) {
+    console.warn('Workshop OTP rejected: not found.');
+    return NextResponse.json({ error: 'The code is invalid or expired. Request a new code.' }, { status: 400 });
+  }
+  const rejectionReason = otp.used_at
+    ? 'already used'
+    : otp.verified_at
+      ? 'already verified'
+      : otp.attempts >= 5
+        ? 'attempt limit reached'
+        : new Date(otp.expires_at).getTime() <= now.getTime()
+          ? 'expired'
+          : null;
+  if (rejectionReason) {
+    console.warn(`Workshop OTP rejected: ${rejectionReason}.`);
     return NextResponse.json({ error: 'The code is invalid or expired. Request a new code.' }, { status: 400 });
   }
 
   const expectedHash = hashEventOtp(identityKey, code);
   if (!secureStringEquals(otp.code_hash, expectedHash)) {
-    await supabase
+    console.warn('Workshop OTP rejected: code did not match.');
+    const { error: attemptError } = await supabase
       .from('workshop_registration_otps')
       .update({ attempts: otp.attempts + 1, updated_at: now.toISOString() })
       .eq('identity_key', identityKey);
+    if (attemptError) {
+      console.error('Workshop OTP attempt could not be recorded:', attemptError);
+      return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
+    }
     return NextResponse.json({ error: 'The code is invalid or expired.' }, { status: 400 });
   }
 
   const token = createVerificationToken();
-  const { data: updated } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('workshop_registration_otps')
     .update({
       verified_at: now.toISOString(),
@@ -114,7 +141,11 @@ export async function POST(request: Request) {
     .is('used_at', null)
     .select('identity_key')
     .maybeSingle();
-  if (!updated) return NextResponse.json({ error: 'The code is invalid or expired.' }, { status: 400 });
+  if (updateError) {
+    console.error('Workshop OTP could not be marked verified:', updateError);
+    return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
+  }
+  if (!updated) return NextResponse.json({ error: 'The code is invalid or expired. Request a new code.' }, { status: 400 });
 
   return NextResponse.json({
     verificationToken: token,
