@@ -343,13 +343,9 @@ export default function WorkshopRegistrationForm() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Full name</span><p className="mt-1 font-semibold">{fullName}</p></div>
                     <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Email</span><p className="mt-1 break-all font-semibold">{maskedEmail}</p></div>
-                    {branch ? (
-                      <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Department</span><p className="mt-1 font-semibold">{branch}</p></div>
-                    ) : (
-                      <label className="text-sm text-slate-300">Department *
-                        <input required value={branch} onChange={(event) => setBranch(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
-                      </label>
-                    )}
+                    <label className="text-sm text-slate-300">Department *
+                      <input required maxLength={100} value={branch} onChange={(event) => setBranch(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                    </label>
                     {year ? (
                       <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Year</span><p className="mt-1 font-semibold">Year {year}</p></div>
                     ) : (
