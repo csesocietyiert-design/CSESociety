@@ -4,7 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { EVENT_REGISTRATION, isEventRegistrationOpen } from '@/lib/event-registration';
-import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
+import {
+  formatWorkshopDeadline,
+  fromIndiaDateTimeInput,
+  isWorkshopRegistrationOpen,
+  toIndiaDateTimeInput,
+  WORKSHOP_REGISTRATION,
+} from '@/lib/workshop-registration';
 import { FORM_CREATOR_ROLES, isFormExpired, normalizeFormRole, type RegistrationForm } from '@/lib/forms';
 import type { User } from '@/lib/store';
 
@@ -25,9 +31,21 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
   const [notice, setNotice] = useState('');
   const [eventOpen, setEventOpen] = useState(isEventRegistrationOpen);
   const [workshopOpen, setWorkshopOpen] = useState(isWorkshopRegistrationOpen);
+  const [workshopClosesAt, setWorkshopClosesAt] = useState(WORKSHOP_REGISTRATION.closesAt);
+  const [workshopDeadlineInput, setWorkshopDeadlineInput] = useState(toIndiaDateTimeInput(WORKSHOP_REGISTRATION.closesAt));
+  const [savingWorkshopDeadline, setSavingWorkshopDeadline] = useState(false);
 
   const isAdmin = user?.role === 'admin';
   const canCreate = user ? FORM_CREATOR_ROLES.has(normalizeFormRole(user.role)) : false;
+
+  const loadWorkshopSettings = useCallback(async (syncInput = false) => {
+    const response = await fetch('/api/workshop-registration/settings', { cache: 'no-store' });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Could not load workshop registration settings');
+    setWorkshopClosesAt(payload.closesAt);
+    setWorkshopOpen(payload.isOpen === true);
+    if (syncInput) setWorkshopDeadlineInput(toIndiaDateTimeInput(payload.closesAt));
+  }, []);
 
   const loadForms = useCallback(async () => {
     setLoading(true);
@@ -49,12 +67,44 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
   }, [loadForms]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
+    const refresh = (syncInput: boolean) => {
       setEventOpen(isEventRegistrationOpen());
-      setWorkshopOpen(isWorkshopRegistrationOpen());
+      void loadWorkshopSettings(syncInput).catch((loadError) => {
+        setWorkshopOpen(false);
+        setError(loadError instanceof Error ? loadError.message : 'Could not load workshop registration settings');
+      });
+    };
+    refresh(true);
+    const timer = window.setInterval(() => {
+      refresh(false);
     }, 15_000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [loadWorkshopSettings]);
+
+  const handleUpdateWorkshopDeadline = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSavingWorkshopDeadline(true);
+    setError('');
+    setNotice('');
+    try {
+      const closesAt = fromIndiaDateTimeInput(workshopDeadlineInput);
+      const response = await fetch('/api/workshop-registration/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ closesAt }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not update workshop deadline');
+      setWorkshopClosesAt(payload.closesAt);
+      setWorkshopOpen(payload.isOpen === true);
+      setWorkshopDeadlineInput(toIndiaDateTimeInput(payload.closesAt));
+      setNotice(payload.isOpen ? 'Workshop deadline updated.' : 'Workshop registration is closed.');
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : 'Could not update workshop deadline');
+    } finally {
+      setSavingWorkshopDeadline(false);
+    }
+  };
 
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -240,9 +290,30 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <p className="text-sm text-slate-400">Reporting 8:30 AM · Starts 9:00 AM</p>
+          <div className="text-sm text-slate-400">
+            <p>Reporting 8:30 AM · Starts 9:00 AM</p>
+            <p className="mt-1">Registration closes {formatWorkshopDeadline(workshopClosesAt)}</p>
+          </div>
           <Link href={`/forms/${WORKSHOP_REGISTRATION.publicFormId}`} className={`inline-flex min-h-11 items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold ${workshopOpen ? 'bg-teal-300 text-[#071b2b] hover:bg-teal-200' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>{workshopOpen ? 'Register now' : 'View workshop'}</Link>
         </div>
+        {isAdmin && <form onSubmit={handleUpdateWorkshopDeadline} className="mt-5 grid gap-3 rounded-xl border border-amber-300/20 bg-amber-950/20 p-4 sm:grid-cols-[1fr_auto] sm:items-end">
+          <label className="text-sm font-medium text-amber-100">
+            Registration deadline (IST)
+            <input
+              type="datetime-local"
+              required
+              min={toIndiaDateTimeInput(new Date().toISOString())}
+              max={toIndiaDateTimeInput(WORKSHOP_REGISTRATION.startsAt)}
+              value={workshopDeadlineInput}
+              onChange={(event) => setWorkshopDeadlineInput(event.target.value)}
+              className="mt-2 min-h-11 w-full rounded-lg border border-amber-200/20 bg-slate-950/60 px-3 text-white [color-scheme:dark]"
+            />
+          </label>
+          <button type="submit" disabled={savingWorkshopDeadline} className="min-h-11 rounded-lg bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60">
+            {savingWorkshopDeadline ? 'Saving…' : workshopOpen ? 'Update deadline' : 'Reopen registration'}
+          </button>
+          <p className="text-xs text-slate-400 sm:col-span-2">You can set a new deadline up to the workshop start time.</p>
+        </form>}
       </article>}
 
       {!publicPage && <article className={`group flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-[#52738c] bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white'}`}>

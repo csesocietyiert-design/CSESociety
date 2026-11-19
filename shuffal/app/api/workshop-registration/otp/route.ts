@@ -5,7 +5,8 @@ import {
   hashEventOtp,
   sendWorkshopOtp,
 } from '@/lib/event-registration-server';
-import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
+import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
+import { getWorkshopRegistrationClosesAt } from '@/lib/workshop-registration-server';
 
 function getEmailFailureMessage(error: unknown): string {
   if (!(error instanceof Error)) return 'Email delivery failed. Please contact the event organisers.';
@@ -30,7 +31,21 @@ function getEmailFailureMessage(error: unknown): string {
 }
 
 export async function POST(request: Request) {
-  if (!isWorkshopRegistrationOpen()) {
+  let supabase;
+  try {
+    supabase = createEventSupabase();
+  } catch {
+    return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
+  }
+
+  let closesAt: string;
+  try {
+    closesAt = await getWorkshopRegistrationClosesAt(supabase);
+  } catch (error) {
+    console.error('Workshop OTP deadline lookup failed:', error);
+    return NextResponse.json({ error: 'Workshop registration is temporarily unavailable.' }, { status: 503 });
+  }
+  if (Date.now() >= new Date(closesAt).getTime()) {
     return NextResponse.json({ error: 'Workshop registration is closed.' }, { status: 410 });
   }
 
@@ -45,13 +60,6 @@ export async function POST(request: Request) {
   let identifier = '';
   let email = '';
   let name = 'Participant';
-
-  let supabase;
-  try {
-    supabase = createEventSupabase();
-  } catch {
-    return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
-  }
 
   if (category === 'society') {
     identifier = typeof body.societyId === 'string' ? body.societyId.trim().toUpperCase() : '';

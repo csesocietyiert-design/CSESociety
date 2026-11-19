@@ -77,7 +77,7 @@ export default function RegisterPage() {
       <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
-            <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
+            <Image src="/logo-compact.png" alt="CSE Society Logo" width={302} height={317} className="h-full w-full object-cover object-center scale-110" />
           </div>
           <div>
             <h1 className="text-base sm:text-xl font-bold text-white leading-tight">CSE Society</h1>
@@ -98,7 +98,7 @@ export default function RegisterPage() {
         <div className="auth-card w-[90%] sm:w-full max-w-[420px] rounded-[20px] border p-5 sm:p-6 md:p-8 backdrop-blur-sm">
           <div className="mb-5 flex justify-center">
             <div className="flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5">
-              <Image src="/logo.png" alt="CSE Society Logo" width={60} height={60} className="h-full w-full object-cover object-center scale-110" />
+              <Image src="/logo-compact.png" alt="CSE Society Logo" width={302} height={317} className="h-full w-full object-cover object-center scale-110" />
             </div>
           </div>
 

@@ -23,7 +23,7 @@ export default function PendingVerificationPage() {
       <div className="auth-topbar fixed top-0 left-0 right-0 h-16 sm:h-[70px] border-b flex items-center px-4 sm:px-8 z-50">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
-            <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
+            <Image src="/logo-compact.png" alt="CSE Society Logo" width={302} height={317} className="h-full w-full object-cover object-center scale-110" />
           </div>
           <div>
             <h1 className="text-base sm:text-xl font-bold text-white leading-tight">CSE Society</h1>

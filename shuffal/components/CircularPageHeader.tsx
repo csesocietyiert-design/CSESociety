@@ -10,10 +10,10 @@ export default function CircularPageHeader({ title, description }: CircularPageH
     <header className="relative isolate overflow-hidden border-b border-[#25445b] bg-[#071b2b]">
       <div className="mx-auto flex min-h-56 w-full max-w-6xl items-center gap-6 px-5 py-10 sm:gap-8 sm:px-8 sm:py-12">
         <Image
-          src="/logo.png"
+          src="/logo-compact.png"
           alt="CSE Society IERT logo"
-          width={128}
-          height={128}
+          width={302}
+          height={317}
           className="size-24 shrink-0 object-contain drop-shadow-lg sm:size-32"
           priority
         />

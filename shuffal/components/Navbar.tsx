@@ -106,7 +106,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
           <div className="flex items-center gap-3">
             <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-slate-950/40 p-1 shadow-[0_0_14px_rgba(255,255,255,0.12)]">
               <Image
-                src="/logo.png"
+                src="/logo-compact.png"
                 alt="CSE Society Logo"
                 fill
                 sizes="48px"

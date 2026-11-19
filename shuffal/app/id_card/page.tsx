@@ -21,7 +21,7 @@ export default async function PublicIdCardPage({ searchParams }: PublicIdCardPag
         <header className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-blue-600/20 via-slate-900/40 to-teal-500/10 px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-teal-300/40 bg-white/95 shadow-lg shadow-blue-950/40 sm:h-14 sm:w-14">
-              <Image src="/logo.png" alt="CSE Society logo" width={56} height={56} className="h-full w-full object-cover" priority />
+              <Image src="/logo-compact.png" alt="CSE Society logo" width={302} height={317} className="h-full w-full object-cover" priority />
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-teal-300 sm:text-xs">CSE Society, IERT</p>

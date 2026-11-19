@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createEventSupabase, hashEventOtp } from '@/lib/event-registration-server';
-import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
+import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
+import { getWorkshopRegistrationClosesAt } from '@/lib/workshop-registration-server';
 
 const IERT_BRANCHES = new Set(['CSE', 'IC', 'IP', 'ELECTRICAL', 'MECHANICAL', 'ECE', 'CIVIL']);
 
@@ -9,7 +10,21 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!isWorkshopRegistrationOpen()) {
+  let supabase;
+  try {
+    supabase = createEventSupabase();
+  } catch {
+    return NextResponse.json({ error: 'Registration is temporarily unavailable.' }, { status: 503 });
+  }
+
+  let closesAt: string;
+  try {
+    closesAt = await getWorkshopRegistrationClosesAt(supabase);
+  } catch (error) {
+    console.error('Workshop registration deadline lookup failed:', error);
+    return NextResponse.json({ error: 'Registration is temporarily unavailable.' }, { status: 503 });
+  }
+  if (Date.now() >= new Date(closesAt).getTime()) {
     return NextResponse.json({ error: 'Workshop registration is closed.' }, { status: 410 });
   }
 
@@ -38,13 +53,6 @@ export async function POST(request: Request) {
   let joinChance: string | null = null;
   let transactionId: string | null = null;
   let feeAmount = 0;
-
-  let supabase;
-  try {
-    supabase = createEventSupabase();
-  } catch {
-    return NextResponse.json({ error: 'Registration is temporarily unavailable.' }, { status: 503 });
-  }
 
   if (category === 'society') {
     societyId = typeof body.societyId === 'string' ? body.societyId.trim().toUpperCase() : '';

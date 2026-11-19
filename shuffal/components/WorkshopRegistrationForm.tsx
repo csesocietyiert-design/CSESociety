@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FormEvent, useEffect, useState } from 'react';
 import {
-  isWorkshopRegistrationOpen,
+  formatWorkshopDeadline,
   WORKSHOP_REGISTRATION,
   type WorkshopCategory,
   type WorkshopJoinChance,
@@ -27,6 +27,7 @@ const TERMS = [
 
 export default function WorkshopRegistrationForm() {
   const [isOpen, setIsOpen] = useState<boolean | null>(null);
+  const [closesAt, setClosesAt] = useState(WORKSHOP_REGISTRATION.closesAt);
   const [category, setCategory] = useState<WorkshopCategory | null>(null);
   const [societyId, setSocietyId] = useState('');
   const [iertEmail, setIertEmail] = useState('');
@@ -51,10 +52,30 @@ export default function WorkshopRegistrationForm() {
   const [registeredId, setRegisteredId] = useState('');
 
   useEffect(() => {
-    const update = () => setIsOpen(isWorkshopRegistrationOpen());
-    update();
-    const timer = window.setInterval(update, 15_000);
-    return () => window.clearInterval(timer);
+    let active = true;
+    const update = async () => {
+      try {
+        const response = await fetch('/api/workshop-registration/settings', { cache: 'no-store' });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Could not load registration availability.');
+        if (!active) return;
+        setClosesAt(payload.closesAt);
+        setIsOpen(payload.isOpen === true);
+      } catch (loadError) {
+        if (!active) return;
+        setIsOpen(false);
+        setMessage({
+          type: 'error',
+          text: loadError instanceof Error ? loadError.message : 'Could not load registration availability.',
+        });
+      }
+    };
+    void update();
+    const timer = window.setInterval(() => void update(), 15_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
   }, []);
 
   const resetVerification = () => {
@@ -183,6 +204,20 @@ export default function WorkshopRegistrationForm() {
           <p className="mt-4 text-sm text-slate-300">Reference: <strong className="text-white">{registeredId}</strong></p>
           <p className="mt-4 text-sm leading-6 text-slate-300">Please bring your ID card and report at 8:30 AM on 24 November.</p>
           <p className="mt-3 text-sm leading-6 text-slate-300">For any doubt, connect with the core team CSE at <a href="mailto:csesociety.iert@gmail.com" className="text-teal-300 underline">csesociety.iert@gmail.com</a> or <a href="tel:+918273993303" className="text-teal-300 underline">+91 8273993303</a>.</p>
+          <section className="mt-7 rounded-2xl border border-amber-300/25 bg-gradient-to-br from-amber-950/50 via-slate-900/80 to-slate-950/80 p-5 text-left sm:p-6">
+            <div className="flex flex-col items-center gap-5 sm:flex-row">
+              <Image src="/workshop-partners/anjaan-musafir.png" alt="Anjaan Musafir" width={797} height={749} className="h-28 w-28 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.12)]" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">Our sponsor</p>
+                <h2 className="mt-1 text-xl font-bold text-white">Explore Anjaan Musafir</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">Stay connected with Anjaan Musafir—join the WhatsApp community and follow their Instagram profile.</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <a href="https://chat.whatsapp.com/BnnLnGEdfnN3PhlTkK0x8z" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-emerald-300">Join WhatsApp community</a>
+                  <a href="https://www.instagram.com/anjaannmusafir?dmpr=MTc4cGxzemc3a2Nicg==" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-amber-200/30 px-4 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-200/10">Follow on Instagram</a>
+                </div>
+              </div>
+            </div>
+          </section>
           <Link href="/forms" className="mt-6 inline-flex rounded-lg bg-teal-400 px-5 py-3 text-sm font-bold text-slate-950">Back to forms</Link>
         </section>
       </main>
@@ -195,7 +230,7 @@ export default function WorkshopRegistrationForm() {
         <header className="auth-card relative z-10 rounded-2xl border p-6 text-center sm:p-8">
           <div className="mx-auto grid w-full max-w-3xl grid-cols-2 items-center justify-items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
             <div className="order-1 flex h-32 w-full max-w-[144px] items-center justify-center rounded-2xl border border-white/15 bg-slate-950/40 p-3 shadow-[0_0_18px_rgba(255,255,255,0.12)] ring-1 ring-white/5">
-              <Image src="/logo.png" alt="CSE Society IERT logo" width={500} height={382} className="h-full w-full object-contain" priority />
+              <Image src="/logo-compact.png" alt="CSE Society IERT logo" width={302} height={317} className="h-full w-full object-contain" priority />
             </div>
             <div className="order-3 col-span-2 flex aspect-square w-full max-w-64 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-2 shadow-[0_0_22px_rgba(255,255,255,0.14)] sm:order-2 sm:col-span-1 sm:max-w-72">
               <Image src="/workshop-partners/collaboration-logo.png" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={640} height={640} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.24)]" priority />
@@ -209,6 +244,7 @@ export default function WorkshopRegistrationForm() {
           <p className="mt-2 text-sm text-slate-300">{WORKSHOP_REGISTRATION.organisers}</p>
           <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-sky-200">Collaboration · IERT CSE Society × IIT Madras Kanha House</p>
           <p className="mt-1 text-sm text-amber-200">Sponsored by {WORKSHOP_REGISTRATION.sponsor}</p>
+          <p className="mt-2 text-sm font-semibold text-teal-200">Registration closes {formatWorkshopDeadline(closesAt)}</p>
           <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
             <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4"><strong className="text-white">Level</strong><br />{WORKSHOP_REGISTRATION.level}</div>
             <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4"><strong className="text-white">24 November 2026</strong><br />Reporting 8:30 AM · Start 9:00 AM</div>
@@ -222,7 +258,8 @@ export default function WorkshopRegistrationForm() {
         ) : !isOpen ? (
           <section className="auth-card rounded-2xl border p-8 text-center">
             <h2 className="text-xl font-bold">Registration is closed</h2>
-            <p className="mt-2 text-slate-400">Registration closed at 8:30 AM IST on 24 November 2026.</p>
+            <p className="mt-2 text-slate-400">Registration closed at {formatWorkshopDeadline(closesAt)}.</p>
+            {message?.type === 'error' && <p role="alert" className="mt-4 rounded-lg border border-red-400/30 bg-red-950/30 p-3 text-left text-sm text-red-200">{message.text}</p>}
           </section>
         ) : (
           <form onSubmit={submit} className="auth-card relative z-10 space-y-6 rounded-2xl border p-5 sm:p-7">

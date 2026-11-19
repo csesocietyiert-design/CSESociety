@@ -209,7 +209,7 @@ export default function LoginPage() {
           className="flex items-center gap-3 sm:gap-4 rounded-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
         >
           <div className="h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
-            <Image src="/logo.png" alt="CSE Society Logo" width={36} height={36} className="h-full w-full object-cover object-center scale-110" />
+            <Image src="/logo-compact.png" alt="CSE Society Logo" width={302} height={317} className="h-full w-full object-cover object-center scale-110" />
           </div>
           <div>
             <h1 className="text-base sm:text-xl font-bold text-white leading-tight">CSE Society</h1>
@@ -234,7 +234,7 @@ export default function LoginPage() {
               aria-label="Go to CSE Society home"
               className="block rounded-full transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
             >
-              <Image src="/logo.png" alt="CSE Society Logo" width={140} height={140} className="h-32 sm:h-40 md:h-48 w-32 sm:w-40 md:w-48 object-contain" priority />
+              <Image src="/logo-compact.png" alt="CSE Society Logo" width={302} height={317} className="h-32 sm:h-40 md:h-48 w-32 sm:w-40 md:w-48 object-contain" priority />
             </a>
           </div>
 

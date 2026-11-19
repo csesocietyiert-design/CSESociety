@@ -6,10 +6,24 @@ import {
   maskEmail,
   secureStringEquals,
 } from '@/lib/event-registration-server';
-import { isWorkshopRegistrationOpen } from '@/lib/workshop-registration';
+import { getWorkshopRegistrationClosesAt } from '@/lib/workshop-registration-server';
 
 export async function POST(request: Request) {
-  if (!isWorkshopRegistrationOpen()) {
+  let supabase;
+  try {
+    supabase = createEventSupabase();
+  } catch {
+    return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
+  }
+
+  let closesAt: string;
+  try {
+    closesAt = await getWorkshopRegistrationClosesAt(supabase);
+  } catch (error) {
+    console.error('Workshop OTP verification deadline lookup failed:', error);
+    return NextResponse.json({ error: 'Workshop registration is temporarily unavailable.' }, { status: 503 });
+  }
+  if (Date.now() >= new Date(closesAt).getTime()) {
     return NextResponse.json({ error: 'Workshop registration is closed.' }, { status: 410 });
   }
 
@@ -43,13 +57,6 @@ export async function POST(request: Request) {
   }
   if (!identifier || !/^\d{6}$/.test(code)) {
     return NextResponse.json({ error: 'Enter the identity and six-digit code.' }, { status: 400 });
-  }
-
-  let supabase;
-  try {
-    supabase = createEventSupabase();
-  } catch {
-    return NextResponse.json({ error: 'Verification is temporarily unavailable.' }, { status: 503 });
   }
 
   if (category === 'society') {

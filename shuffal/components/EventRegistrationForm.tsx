@@ -298,7 +298,7 @@ export default function EventRegistrationForm() {
       <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7 lg:space-y-8">
         <header className="auth-card relative z-10 rounded-2xl border p-6 sm:p-7 md:p-9">
           <div className="flex flex-col items-center text-center">
-            <Image src="/logo.png" alt="CSE Society logo" width={104} height={104} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
+            <Image src="/logo-compact.png" alt="CSE Society logo" width={302} height={317} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
             <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-sky-300 sm:text-xs">CSE Society · IERT</p>
             <h1 className="mt-2 max-w-3xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl lg:text-4xl">{EVENT_REGISTRATION.title}</h1>
           </div>
