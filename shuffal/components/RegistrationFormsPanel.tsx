@@ -223,8 +223,8 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
           </button>
         </div>
         <div className="mt-4">
-          <div className="mx-auto flex h-28 max-w-sm items-center justify-center rounded-xl border border-white/10 bg-white p-2">
-            <Image src="/workshop-partners/collaboration-logo.jpg" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={220} height={140} className="h-full w-full object-contain" />
+          <div className="mx-auto flex h-28 max-w-sm items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-2 shadow-[0_0_18px_rgba(255,255,255,0.10)]">
+            <Image src="/workshop-partners/collaboration-logo.png" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={220} height={140} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.22)]" />
           </div>
         </div>
         <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-sky-200">Collaboration: IERT CSE Society × IIT Madras Kanha House</p>
@@ -292,8 +292,8 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
             <article className={`flex flex-col rounded-xl border p-5 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'text-teal-200' : 'text-slate-500'}`}>{workshopOpen ? 'Open for registration' : 'Closed'}</p>
               <div className="mt-3">
-                <div className="mx-auto flex h-24 max-w-[280px] items-center justify-center rounded-lg bg-white p-1.5">
-                  <Image src="/workshop-partners/collaboration-logo.jpg" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={180} height={120} className="h-full w-full object-contain" />
+                <div className="mx-auto flex h-24 max-w-[280px] items-center justify-center rounded-lg border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_14px_rgba(255,255,255,0.10)]">
+                  <Image src="/workshop-partners/collaboration-logo.png" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={180} height={120} className="h-full w-full object-contain drop-shadow-[0_0_4px_rgba(255,255,255,0.20)]" />
                 </div>
               </div>
               <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-sky-200">IERT CSE Society × IIT Madras Kanha House</p>

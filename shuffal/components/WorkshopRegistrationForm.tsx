@@ -197,8 +197,8 @@ export default function WorkshopRegistrationForm() {
             <div className="flex h-20 items-center justify-center sm:h-24">
               <Image src="/logo.png" alt="CSE Society IERT logo" width={96} height={96} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
             </div>
-            <div className="flex h-20 items-center justify-center rounded-xl border border-white/10 bg-white p-1.5 sm:h-24">
-              <Image src="/workshop-partners/collaboration-logo.jpg" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={200} height={128} className="h-full w-full object-contain" priority />
+            <div className="flex h-20 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:h-24">
+              <Image src="/workshop-partners/collaboration-logo.png" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.24)]" priority />
             </div>
             <div className="flex h-20 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:h-24">
               <Image src="/workshop-partners/anjaan-musafir.png" alt="Anjaan Musafir, sponsored company" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.28)]" priority />
