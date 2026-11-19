@@ -346,22 +346,14 @@ export default function WorkshopRegistrationForm() {
                     <label className="text-sm text-slate-300">Department *
                       <input required maxLength={100} value={branch} onChange={(event) => setBranch(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
-                    {year ? (
-                      <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Year</span><p className="mt-1 font-semibold">Year {year}</p></div>
-                    ) : (
-                      <label className="text-sm text-slate-300">Year *
-                        <select required value={year} onChange={(event) => setYear(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white">
-                          <option value="">Select year</option><option value="1">1st year</option><option value="2">2nd year</option><option value="3">3rd year</option><option value="4">4th year</option>
-                        </select>
-                      </label>
-                    )}
-                    {whatsappPhone ? (
-                      <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">WhatsApp number</span><p className="mt-1 font-semibold">{whatsappPhone}</p></div>
-                    ) : (
-                      <label className="text-sm text-slate-300">WhatsApp number *
-                        <input required type="tel" autoComplete="tel" value={whatsappPhone} onChange={(event) => setWhatsappPhone(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
-                      </label>
-                    )}
+                    <label className="text-sm text-slate-300">Year *
+                      <select required value={year} onChange={(event) => setYear(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white">
+                        <option value="">Select year</option><option value="1">1st year</option><option value="2">2nd year</option><option value="3">3rd year</option><option value="4">4th year</option>
+                      </select>
+                    </label>
+                    <label className="text-sm text-slate-300">WhatsApp number *
+                      <input required type="tel" autoComplete="tel" value={whatsappPhone} onChange={(event) => setWhatsappPhone(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                    </label>
                     <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Workshop level</span><p className="mt-1 font-semibold">Beginner</p></div>
                   </div>
                 )}
