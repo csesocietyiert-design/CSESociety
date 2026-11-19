@@ -193,15 +193,17 @@ export default function WorkshopRegistrationForm() {
     <main className="auth-page relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="auth-card relative z-10 rounded-2xl border p-6 text-center sm:p-8">
-          <div className="mx-auto grid max-w-xl grid-cols-3 items-center gap-3 sm:gap-5">
-            <div className="flex h-20 items-center justify-center sm:h-24">
-              <Image src="/logo.png" alt="CSE Society IERT logo" width={96} height={96} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
+          <div className="mx-auto flex max-w-xl flex-col items-center gap-4">
+            <div className="flex h-32 w-36 items-center justify-center rounded-2xl border border-sky-200/25 bg-gradient-to-br from-slate-950 via-slate-900 to-[#123653] p-3 shadow-[0_0_18px_rgba(125,211,252,0.12)] ring-1 ring-white/5 sm:h-36 sm:w-40">
+              <Image src="/logo.png" alt="CSE Society IERT logo" width={500} height={382} className="h-full w-full object-contain brightness-110 drop-shadow-[0_0_4px_rgba(125,211,252,0.24)]" priority />
             </div>
-            <div className="flex h-20 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:h-24">
-              <Image src="/workshop-partners/collaboration-logo.png" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.24)]" priority />
-            </div>
-            <div className="flex h-20 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:h-24">
-              <Image src="/workshop-partners/anjaan-musafir.png" alt="Anjaan Musafir, sponsored company" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.28)]" priority />
+            <div className="grid w-full max-w-sm grid-cols-2 items-center gap-3">
+              <div className="flex h-20 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:h-24">
+                <Image src="/workshop-partners/collaboration-logo.png" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.24)]" priority />
+              </div>
+              <div className="flex h-20 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:h-24">
+                <Image src="/workshop-partners/anjaan-musafir.png" alt="Anjaan Musafir, sponsored company" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.28)]" priority />
+              </div>
             </div>
           </div>
           <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-sky-300">CSE Society · IERT</p>
