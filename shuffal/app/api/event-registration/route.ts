@@ -8,6 +8,7 @@ import {
   SECOND_HALF_GAMES,
   type EventGame,
 } from '@/lib/event-registration';
+import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 import {
   createEventSupabase,
   getEventRegistrationManager,
@@ -21,6 +22,26 @@ const imageExtensions: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
+const registrationPageSize = 1000;
+
+type RegistrationQueryError = { code?: string; message?: string };
+type RegistrationPage<T> = {
+  data: T[] | null;
+  error: RegistrationQueryError | null;
+};
+
+async function loadAllPages<T>(
+  loadPage: (from: number, to: number) => Promise<RegistrationPage<T>>,
+): Promise<RegistrationPage<T>> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += registrationPageSize) {
+    const { data, error } = await loadPage(from, from + registrationPageSize - 1);
+    if (error) return { data: null, error };
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < registrationPageSize) return { data: rows, error: null };
+  }
+}
 
 type RegistrationPayload = {
   participantType?: unknown;
@@ -71,68 +92,140 @@ function hasValidImageSignature(buffer: Buffer, mimeType: string): boolean {
 function isMissingRegistrationSchema(error: { code?: string; message?: string }): boolean {
   return error.code === '42P01'
     || error.code === 'PGRST205'
-    || error.message?.toLowerCase().includes('esports_event_registrations') === true;
+    || error.message?.toLowerCase().includes('esports_event_registrations') === true
+    || error.message?.toLowerCase().includes('workshop_registrations') === true;
 }
 
 export async function GET(request: Request) {
   const auth = await getEventRegistrationManager(request);
   if (auth.error) return auth.error;
 
-  const { data: eventRows, error: eventError } = await auth.supabase
-    .from('esports_event_registrations')
-    .select('event_key, created_at')
-    .order('created_at', { ascending: false })
-    .limit(10000);
+  const [esportsEvents, workshopEvents] = await Promise.all([
+    loadAllPages(async (from, to) => {
+      const { data, error } = await auth.supabase
+        .from('esports_event_registrations')
+        .select('event_key, created_at')
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to);
+      return { data: data as Array<{ event_key: string; created_at: string }> | null, error };
+    }),
+    loadAllPages(async (from, to) => {
+      const { data, error } = await auth.supabase
+        .from('workshop_registrations')
+        .select('event_key, created_at')
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to);
+      return { data: data as Array<{ event_key: string; created_at: string }> | null, error };
+    }),
+  ]);
 
+  const eventError = esportsEvents.error || workshopEvents.error;
   if (eventError) {
-    console.error('Event registration events could not be loaded:', eventError);
+    console.error('Registration events could not be loaded:', eventError);
+    const isWorkshopError = Boolean(workshopEvents.error);
     return NextResponse.json({
       error: isMissingRegistrationSchema(eventError)
-        ? 'Event registration tables are missing. Apply migration 036_create_event_registration.sql.'
+        ? `Event registration tables are missing. Apply migration ${isWorkshopError ? '040_create_workshop_registration.sql' : '036_create_event_registration.sql'}.`
         : 'Could not load event registrations.',
     }, { status: 500 });
   }
 
-  const latestRegistrationByEvent = new Map<string, string>();
-  for (const row of eventRows || []) {
-    if (typeof row.event_key === 'string' && !latestRegistrationByEvent.has(row.event_key)) {
-      latestRegistrationByEvent.set(row.event_key, row.created_at);
+  const eventsByIdentity = new Map<string, {
+    key: string;
+    type: 'esports' | 'workshop';
+    latestRegistrationAt: string;
+    sortAt: string;
+  }>();
+  const addEventRows = (
+    type: 'esports' | 'workshop',
+    rows: Array<{ event_key: string; created_at: string }> | null,
+  ) => {
+    for (const row of rows || []) {
+      const identity = `${type}:${row.event_key}`;
+      if (!eventsByIdentity.has(identity)) {
+        eventsByIdentity.set(identity, {
+          key: row.event_key,
+          type,
+          latestRegistrationAt: row.created_at,
+          sortAt: row.created_at,
+        });
+      }
     }
-  }
-  if (!latestRegistrationByEvent.has(EVENT_REGISTRATION.key)) {
-    latestRegistrationByEvent.set(EVENT_REGISTRATION.key, EVENT_REGISTRATION.startsAt);
-  }
+  };
+  addEventRows('esports', esportsEvents.data);
+  addEventRows('workshop', workshopEvents.data);
+  eventsByIdentity.set(`esports:${EVENT_REGISTRATION.key}`, {
+    key: EVENT_REGISTRATION.key,
+    type: 'esports',
+    latestRegistrationAt: eventsByIdentity.get(`esports:${EVENT_REGISTRATION.key}`)?.latestRegistrationAt || EVENT_REGISTRATION.startsAt,
+    sortAt: EVENT_REGISTRATION.startsAt,
+  });
+  eventsByIdentity.set(`workshop:${WORKSHOP_REGISTRATION.key}`, {
+    key: WORKSHOP_REGISTRATION.key,
+    type: 'workshop',
+    latestRegistrationAt: eventsByIdentity.get(`workshop:${WORKSHOP_REGISTRATION.key}`)?.latestRegistrationAt || WORKSHOP_REGISTRATION.startsAt,
+    sortAt: WORKSHOP_REGISTRATION.startsAt,
+  });
 
-  const events = Array.from(latestRegistrationByEvent, ([key, latestRegistrationAt]) => ({
-    key,
-    latestRegistrationAt,
-  })).sort((first, second) =>
-    second.latestRegistrationAt.localeCompare(first.latestRegistrationAt)
-    || first.key.localeCompare(second.key));
-  const requestedEventKey = new URL(request.url).searchParams.get('eventKey');
-  if (requestedEventKey && !latestRegistrationByEvent.has(requestedEventKey)) {
+  const orderedEvents = Array.from(eventsByIdentity.values()).sort((first, second) =>
+    second.sortAt.localeCompare(first.sortAt) || first.key.localeCompare(second.key));
+  const events = orderedEvents.map((event) => ({
+    key: event.key,
+    type: event.type,
+    latestRegistrationAt: event.latestRegistrationAt,
+  }));
+  const url = new URL(request.url);
+  const requestedEventKey = url.searchParams.get('eventKey');
+  const requestedEventType = url.searchParams.get('eventType');
+  const selectedEvent = requestedEventKey
+    ? orderedEvents.find((event) => event.key === requestedEventKey && (!requestedEventType || event.type === requestedEventType))
+    : orderedEvents[0];
+  if (!selectedEvent) {
     return NextResponse.json({ error: 'The selected event was not found.' }, { status: 404 });
   }
-  const eventKey = requestedEventKey || events[0]?.key || EVENT_REGISTRATION.key;
 
-  const { data, error } = await auth.supabase
-    .from('esports_event_registrations')
-    .select('*')
-    .eq('event_key', eventKey)
-    .order('participant_type', { ascending: true })
-    .order('created_at', { ascending: true })
-    .limit(2000);
+  const roster = selectedEvent.type === 'workshop'
+    ? await loadAllPages(async (from, to) => {
+      const { data, error } = await auth.supabase
+        .from('workshop_registrations')
+        .select('*')
+        .eq('event_key', selectedEvent.key)
+        .order('participant_category', { ascending: true })
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to);
+      return { data: data as unknown[] | null, error };
+    })
+    : await loadAllPages(async (from, to) => {
+      const { data, error } = await auth.supabase
+        .from('esports_event_registrations')
+        .select('*')
+        .eq('event_key', selectedEvent.key)
+        .order('participant_type', { ascending: true })
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to);
+      return { data: data as unknown[] | null, error };
+    });
+  const { data, error } = roster;
 
   if (error) {
     console.error('Event registrations could not be loaded:', error);
     return NextResponse.json({
       error: isMissingRegistrationSchema(error)
-        ? 'Event registration tables are missing. Apply migration 036_create_event_registration.sql.'
+        ? `Event registration tables are missing. Apply migration ${selectedEvent.type === 'workshop' ? '040_create_workshop_registration.sql' : '036_create_event_registration.sql'}.`
         : 'Could not load event registrations.',
     }, { status: 500 });
   }
 
-  return NextResponse.json({ events, eventKey, registrations: data || [] });
+  return NextResponse.json({
+    events,
+    eventKey: selectedEvent.key,
+    eventType: selectedEvent.type,
+    registrations: data || [],
+  });
 }
 
 export async function POST(request: Request) {
