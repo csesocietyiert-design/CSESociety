@@ -295,6 +295,12 @@ export async function POST(request: Request) {
   }
 
   const identity = validIdentity(body.identity);
+  if (games.includes('BGMI') && (!identity.bgmiIgn || !identity.bgmiUid)) {
+    return NextResponse.json({ error: 'BGMI IGN and Character UID are required.' }, { status: 400 });
+  }
+  if (games.includes('Free Fire') && (!identity.freeFireIgn || !identity.freeFireUid)) {
+    return NextResponse.json({ error: 'Free Fire IGN and UID are required.' }, { status: 400 });
+  }
 
   const deliveryMethod = participantType === 'member' ? 'email' : body.deliveryMethod;
   if (deliveryMethod !== 'email' && deliveryMethod !== 'whatsapp') {

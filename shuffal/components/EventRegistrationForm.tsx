@@ -463,15 +463,15 @@ export default function EventRegistrationForm() {
                         {selectedGames.includes('BGMI') && (
                           <div className="grid gap-4 rounded-xl border border-slate-800/80 bg-slate-950/25 p-4 sm:grid-cols-2 sm:p-5">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">BGMI · Your player details</p>
-                            <TextField label="BGMI IGN (optional)" value={identity.bgmiIgn} onChange={(value) => updateIdentity('bgmiIgn', value)} />
-                            <TextField label="BGMI Character UID (optional)" value={identity.bgmiUid} onChange={(value) => updateIdentity('bgmiUid', value)} />
+                            <TextField label="BGMI IGN" required value={identity.bgmiIgn} onChange={(value) => updateIdentity('bgmiIgn', value)} />
+                            <TextField label="BGMI Character UID" required value={identity.bgmiUid} onChange={(value) => updateIdentity('bgmiUid', value)} />
                           </div>
                         )}
                         {selectedGames.includes('Free Fire') && (
                           <div className="grid gap-4 rounded-xl border border-slate-800/80 bg-slate-950/25 p-4 sm:grid-cols-2 sm:p-5">
                             <p className="sm:col-span-2 text-sm font-semibold text-white">Free Fire · Your player details</p>
-                            <TextField label="Free Fire IGN (optional)" value={identity.freeFireIgn} onChange={(value) => updateIdentity('freeFireIgn', value)} />
-                            <TextField label="Free Fire UID (optional)" value={identity.freeFireUid} onChange={(value) => updateIdentity('freeFireUid', value)} />
+                            <TextField label="Free Fire IGN" required value={identity.freeFireIgn} onChange={(value) => updateIdentity('freeFireIgn', value)} />
+                            <TextField label="Free Fire UID" required value={identity.freeFireUid} onChange={(value) => updateIdentity('freeFireUid', value)} />
                           </div>
                         )}
                       </div>

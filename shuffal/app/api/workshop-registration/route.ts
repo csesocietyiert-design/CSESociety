@@ -138,6 +138,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Accept the declaration and terms before submitting.' }, { status: 400 });
   }
 
+  const suggestion = typeof body.suggestion === 'string' ? body.suggestion.trim().slice(0, 2000) : '';
+  if (category === 'iit_madras' && !suggestion) {
+    return NextResponse.json({ error: 'Suggestions are required for IIT Madras participants.' }, { status: 400 });
+  }
+
   const { data: registration, error: insertError } = await supabase
     .from('workshop_registrations')
     .insert({
@@ -153,7 +158,7 @@ export async function POST(request: Request) {
       whatsapp_phone: whatsappPhone,
       iit_roll_number: iitRollNumber,
       join_chance: joinChance,
-      suggestion: typeof body.suggestion === 'string' ? body.suggestion.trim().slice(0, 2000) : null,
+      suggestion: suggestion || null,
       fee_amount: feeAmount,
       payment_transaction_id: transactionId,
       declaration_accepted: true,

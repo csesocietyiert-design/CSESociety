@@ -410,8 +410,8 @@ export default function WorkshopRegistrationForm() {
                         ))}
                       </div>
                     </fieldset>
-                    <label className="sm:col-span-2 text-sm text-slate-300">Suggestions
-                      <textarea rows={4} value={suggestion} onChange={(event) => setSuggestion(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" placeholder="Anything you would like to suggest?" />
+                    <label className="sm:col-span-2 text-sm text-slate-300">Suggestions *
+                      <textarea required rows={4} value={suggestion} onChange={(event) => setSuggestion(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" placeholder="Anything you would like to suggest?" />
                     </label>
                   </div>
                 )}

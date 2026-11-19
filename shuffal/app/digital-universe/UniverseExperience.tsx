@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { startTransition, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { domains, heroThoughts, projects } from './data';
+import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 import MemberAvatar from '@/components/MemberAvatar';
 import styles from './universe.module.css';
 
@@ -637,7 +638,7 @@ export default function UniverseExperience() {
           <p className={styles.sectionIndex}>03 // EVENT ARENA</p>
           <h2>Learn. Build. Compete.</h2>
           <p>Workshops, technical sessions and collaborative challenges live here.</p>
-          <Link href="/event-registration">Open event registration <span>↗</span></Link>
+          <Link href={`/forms/${WORKSHOP_REGISTRATION.publicFormId}`}>Open workshop registration <span>↗</span></Link>
         </motion.div>
       </section>
 
