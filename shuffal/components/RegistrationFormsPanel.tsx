@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { EVENT_REGISTRATION, isEventRegistrationOpen } from '@/lib/event-registration';
 import { isWorkshopRegistrationOpen, WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
@@ -221,6 +222,15 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
             <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
           </button>
         </div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="flex h-24 items-center justify-center rounded-xl border border-white/10 bg-white p-2">
+            <Image src="/workshop-partners/collaboration-logo.jpg" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={220} height={140} className="h-full w-full object-contain" />
+          </div>
+          <div className="flex h-24 flex-col items-center justify-center rounded-xl border border-white/10 bg-white p-2">
+            <Image src="/workshop-partners/anjaan-musafir.jpg" alt="Anjaan Musafir sponsor" width={220} height={140} className="h-full w-full object-contain" />
+          </div>
+        </div>
+        <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-sky-200">Collaboration: IERT CSE Society × IIT Madras Kanha House</p>
         <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-2xl">{WORKSHOP_REGISTRATION.title}</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-3">
@@ -284,6 +294,15 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <article className={`flex flex-col rounded-xl border p-5 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'text-teal-200' : 'text-slate-500'}`}>{workshopOpen ? 'Open for registration' : 'Closed'}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="flex h-20 items-center justify-center rounded-lg bg-white p-1.5">
+                  <Image src="/workshop-partners/collaboration-logo.jpg" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={180} height={120} className="h-full w-full object-contain" />
+                </div>
+                <div className="flex h-20 items-center justify-center rounded-lg bg-white p-1.5">
+                  <Image src="/workshop-partners/anjaan-musafir.jpg" alt="Anjaan Musafir sponsor" width={180} height={120} className="h-full w-full object-contain" />
+                </div>
+              </div>
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-sky-200">Collaboration × Sponsored by Anjaan Musafir</p>
               <h3 className="mt-2 text-lg font-semibold">{WORKSHOP_REGISTRATION.title}</h3>
               <p className="mt-3 text-sm text-slate-300">24 November 2026 · Reporting 8:30 AM · Starts 9:00 AM</p>
               <p className="mt-1 text-sm text-slate-400">PPT Hall, IERT Prayagraj · Beginner · Web 2 & Web 3</p>

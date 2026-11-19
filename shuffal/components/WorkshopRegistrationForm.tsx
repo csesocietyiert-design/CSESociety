@@ -193,11 +193,22 @@ export default function WorkshopRegistrationForm() {
     <main className="auth-page relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="auth-card relative z-10 rounded-2xl border p-6 text-center sm:p-8">
-          <Image src="/logo.png" alt="CSE Society logo" width={96} height={96} className="mx-auto h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
+          <div className="mx-auto grid max-w-xl grid-cols-3 items-center gap-3 sm:gap-5">
+            <div className="flex h-20 items-center justify-center sm:h-24">
+              <Image src="/logo.png" alt="CSE Society IERT logo" width={96} height={96} className="h-16 w-16 object-contain sm:h-20 sm:w-20" priority />
+            </div>
+            <div className="flex h-20 items-center justify-center rounded-xl border border-white/10 bg-white p-1.5 sm:h-24">
+              <Image src="/workshop-partners/collaboration-logo.jpg" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={200} height={128} className="h-full w-full object-contain" priority />
+            </div>
+            <div className="flex h-20 items-center justify-center rounded-xl border border-white/10 bg-white p-1.5 sm:h-24">
+              <Image src="/workshop-partners/anjaan-musafir.jpg" alt="Anjaan Musafir, sponsored company" width={200} height={128} className="h-full w-full object-contain" priority />
+            </div>
+          </div>
           <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-sky-300">CSE Society · IERT</p>
           <h1 className="mt-2 text-2xl font-extrabold sm:text-4xl">{WORKSHOP_REGISTRATION.title}</h1>
           <p className="mt-2 text-sm text-slate-300">{WORKSHOP_REGISTRATION.organisers}</p>
-          <p className="mt-1 text-sm text-sky-200">Sponsored by {WORKSHOP_REGISTRATION.sponsor}</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-sky-200">Collaboration · IERT CSE Society × IIT Madras Kanha House</p>
+          <p className="mt-1 text-sm text-amber-200">Sponsored by {WORKSHOP_REGISTRATION.sponsor}</p>
           <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
             <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4"><strong className="text-white">Level</strong><br />{WORKSHOP_REGISTRATION.level}</div>
             <div className="rounded-xl border border-white/10 bg-slate-950/30 p-4"><strong className="text-white">24 November 2026</strong><br />Reporting 8:30 AM · Start 9:00 AM</div>
