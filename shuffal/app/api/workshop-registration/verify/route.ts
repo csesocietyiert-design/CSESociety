@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   if (category === 'society') {
     const { data: member, error: memberError } = await supabase
       .from('users')
-      .select('id,cse_id,name,email,department,year,phone,is_verified')
+      .select('id,cse_id,name,email,department,year,is_verified')
       .ilike('cse_id', identifier)
       .maybeSingle();
     if (memberError) {
@@ -77,7 +77,16 @@ export async function POST(request: Request) {
     memberName = member.name || '';
     department = member.department || '';
     memberYear = typeof member.year === 'number' ? member.year : null;
-    memberPhone = member.phone || '';
+    const { data: memberContact, error: contactError } = await supabase
+      .from('users')
+      .select('phone')
+      .eq('id', member.id)
+      .maybeSingle();
+    if (contactError) {
+      console.warn('Workshop member phone is unavailable; collect it during registration:', contactError);
+    } else {
+      memberPhone = memberContact?.phone || '';
+    }
   } else if (category === 'iert') {
     email = identifier;
   } else {
