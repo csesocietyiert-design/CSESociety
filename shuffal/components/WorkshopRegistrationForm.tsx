@@ -194,14 +194,14 @@ export default function WorkshopRegistrationForm() {
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="auth-card relative z-10 rounded-2xl border p-6 text-center sm:p-8">
           <div className="mx-auto grid w-full max-w-3xl grid-cols-2 items-center justify-items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
-            <div className="order-1 flex h-32 w-36 items-center justify-center rounded-2xl border border-white/15 bg-slate-950/40 p-3 shadow-[0_0_18px_rgba(255,255,255,0.12)] ring-1 ring-white/5 sm:h-36 sm:w-40">
+            <div className="order-1 flex h-32 w-full max-w-[144px] items-center justify-center rounded-2xl border border-white/15 bg-slate-950/40 p-3 shadow-[0_0_18px_rgba(255,255,255,0.12)] ring-1 ring-white/5">
               <Image src="/logo.png" alt="CSE Society IERT logo" width={500} height={382} className="h-full w-full object-contain" priority />
             </div>
-            <div className="order-3 col-span-2 flex h-52 w-52 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-2 shadow-[0_0_22px_rgba(255,255,255,0.14)] sm:order-2 sm:col-span-1 sm:h-60 sm:w-60">
+            <div className="order-3 col-span-2 flex aspect-square w-full max-w-64 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-2 shadow-[0_0_22px_rgba(255,255,255,0.14)] sm:order-2 sm:col-span-1 sm:max-w-72">
               <Image src="/workshop-partners/collaboration-logo.png" alt="Collaboration between IERT CSE Society and IIT Madras Kanha House" width={640} height={640} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.24)]" priority />
             </div>
-            <div className="order-2 flex h-24 w-36 items-center justify-center rounded-xl border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:order-3">
-              <Image src="/workshop-partners/anjaan-musafir.png" alt="Anjaan Musafir, sponsored company" width={200} height={128} className="h-full w-full object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.28)]" priority />
+            <div className="order-2 flex h-32 w-full max-w-[144px] items-center justify-center rounded-2xl border border-white/15 bg-slate-950/40 p-3 shadow-[0_0_18px_rgba(255,255,255,0.12)] sm:order-3">
+              <Image src="/workshop-partners/anjaan-musafir.png" alt="Anjaan Musafir, sponsored company" width={797} height={749} className="h-full w-full object-contain drop-shadow-[0_0_3px_rgba(255,255,255,0.16)]" priority />
             </div>
           </div>
           <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-sky-300">CSE Society · IERT</p>
