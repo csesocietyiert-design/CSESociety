@@ -215,11 +215,11 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
       {error && <p role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>}
       {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</p>}
 
-      {!publicPage && <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+      {!publicPage && <article className={`group flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
         <div className="flex items-start justify-between gap-4">
           <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'border-teal-300/30 bg-teal-300/10 text-teal-200' : 'border-slate-600 bg-slate-800/60 text-slate-400'}`}>{workshopOpen ? 'Open for registration' : 'Registration closed'}</p>
-          <button type="button" onClick={() => void handleShareWorkshop()} aria-label="Share Technical Workshop & Meetup registration" title="Share workshop registration" className="shrink-0 rounded-lg border border-[#52738c] p-2.5 text-sky-100 transition hover:border-sky-300 hover:bg-sky-300/10">
-            <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+          <button type="button" onClick={() => void handleShareWorkshop()} aria-label="Share Technical Workshop & Meetup registration" title="Share workshop registration" className="shrink-0 rounded-lg border border-[#52738c] p-2 text-sky-100 opacity-100 transition hover:border-sky-300 hover:bg-sky-300/10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100">
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" strokeWidth="2" /><circle cx="6" cy="12" r="3" strokeWidth="2" /><circle cx="18" cy="19" r="3" strokeWidth="2" /><path strokeWidth="2" d="m8.7 10.7 6.6-4.4m-6.6 9 6.6 4.4" /></svg>
           </button>
         </div>
         <div className="mt-4">
@@ -245,7 +245,7 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
         </div>
       </article>}
 
-      {!publicPage && <article className={`flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-[#52738c] bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white'}`}>
+      {!publicPage && <article className={`group flex flex-col overflow-hidden rounded-2xl border p-5 shadow-lg shadow-black/10 backdrop-blur-md transition sm:p-6 ${eventOpen === false ? 'border-slate-700 bg-slate-900/50 text-slate-400' : 'border-[#52738c] bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] text-white'}`}>
           <div className="flex items-start justify-between gap-4">
             <p className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${eventOpen === false ? 'border-slate-600 bg-slate-800/60 text-slate-400' : 'border-sky-300/30 bg-sky-300/10 text-sky-200'}`}>
               {eventOpen ? 'Open for registration' : 'Registration closed'}
@@ -255,9 +255,9 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
               onClick={() => void handleShareEvent()}
               aria-label="Share E-Sports Swiss-League Tournament registration"
               title="Share event registration"
-              className={`shrink-0 rounded-lg border p-2.5 transition ${eventOpen === false ? 'border-slate-600/70 text-slate-400 hover:border-slate-500 hover:text-slate-200' : 'border-[#52738c] bg-slate-950/20 text-sky-100 hover:border-sky-300 hover:bg-sky-300/10'}`}
+              className={`shrink-0 rounded-lg border p-2 transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 ${eventOpen === false ? 'border-slate-600/70 text-slate-400 hover:border-slate-500 hover:text-slate-200' : 'border-[#52738c] bg-slate-950/20 text-sky-100 hover:border-sky-300 hover:bg-sky-300/10'}`}
             >
-              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" strokeWidth="2" /><circle cx="6" cy="12" r="3" strokeWidth="2" /><circle cx="18" cy="19" r="3" strokeWidth="2" /><path strokeWidth="2" d="m8.7 10.7 6.6-4.4m-6.6 9 6.6 4.4" /></svg>
             </button>
           </div>
           <h2 className={`mt-4 text-xl font-bold tracking-tight sm:text-2xl ${eventOpen === false ? 'text-slate-400' : 'text-white'}`}>{EVENT_REGISTRATION.title}</h2>
@@ -289,8 +289,13 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
         </div>
         {publicPage ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <article className={`flex flex-col rounded-xl border p-5 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
-              <p className={`text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'text-teal-200' : 'text-slate-500'}`}>{workshopOpen ? 'Open for registration' : 'Closed'}</p>
+            <article className={`group flex flex-col rounded-xl border p-5 ${workshopOpen ? 'border-teal-400/40 bg-gradient-to-br from-[#123653] to-[#071b2b] text-white' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+              <div className="flex items-center justify-between gap-2">
+                <p className={`text-xs font-semibold uppercase tracking-wider ${workshopOpen ? 'text-teal-200' : 'text-slate-500'}`}>{workshopOpen ? 'Open for registration' : 'Closed'}</p>
+                <button type="button" onClick={() => void handleShareWorkshop()} aria-label="Share workshop registration link" title="Share workshop registration" className="rounded-lg border border-[#52738c] p-2 text-sky-100 opacity-100 transition hover:border-sky-300 hover:bg-sky-300/10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100">
+                  <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" strokeWidth="2" /><circle cx="6" cy="12" r="3" strokeWidth="2" /><circle cx="18" cy="19" r="3" strokeWidth="2" /><path strokeWidth="2" d="m8.7 10.7 6.6-4.4m-6.6 9 6.6 4.4" /></svg>
+                </button>
+              </div>
               <div className="mt-3">
                 <div className="mx-auto flex h-24 max-w-[280px] items-center justify-center rounded-lg border border-white/15 bg-slate-950/40 p-1.5 shadow-[0_0_14px_rgba(255,255,255,0.10)]">
                   <Image src="/workshop-partners/collaboration-logo.png" alt="IERT CSE Society and IIT Madras Kanha House collaboration" width={180} height={120} className="h-full w-full object-contain drop-shadow-[0_0_4px_rgba(255,255,255,0.20)]" />
@@ -318,14 +323,14 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
               const expired = isFormExpired(form.end_date);
               const link = `/forms/${form.id}${expired && isAdmin ? '?admin=1' : ''}`;
               return (
-                <article key={form.id} className={`flex flex-col rounded-xl border p-5 transition ${expired ? 'border-slate-700 bg-slate-900/35 text-slate-400' : 'border-[#36546b] bg-gradient-to-br from-[#123653] to-[#071b2b] text-white shadow-lg shadow-black/10'}`}>
+                <article key={form.id} className={`group flex flex-col rounded-xl border p-5 transition ${expired ? 'border-slate-700 bg-slate-900/35 text-slate-400' : 'border-[#36546b] bg-gradient-to-br from-[#123653] to-[#071b2b] text-white shadow-lg shadow-black/10'}`}>
                   <div className="flex items-start justify-between gap-3">
                     <Link href={link} className="min-w-0 flex-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sky-300">
                       <p className={`text-xs font-semibold uppercase tracking-wider ${expired ? 'text-slate-500' : 'text-sky-200'}`}>{expired ? 'Closed' : 'Open for registration'}</p>
                       <h3 className={`mt-2 break-words text-lg font-semibold ${expired ? 'text-slate-400' : 'text-white'}`}>{form.title}</h3>
                     </Link>
-                    <button type="button" onClick={() => void handleShare(form)} aria-label={`Share ${form.title}`} title="Share form link" className="shrink-0 rounded-lg border border-[#52738c] p-2 text-slate-300 transition hover:border-sky-300 hover:text-sky-200">
-                      <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16V4m0 0L8 8m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+                    <button type="button" onClick={() => void handleShare(form)} aria-label={`Share ${form.title}`} title="Share form link" className="shrink-0 rounded-lg border border-[#52738c] p-1.5 text-slate-300 opacity-100 transition hover:border-sky-300 hover:text-sky-200 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100">
+                      <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" strokeWidth="2" /><circle cx="6" cy="12" r="3" strokeWidth="2" /><circle cx="18" cy="19" r="3" strokeWidth="2" /><path strokeWidth="2" d="m8.7 10.7 6.6-4.4m-6.6 9 6.6 4.4" /></svg>
                     </button>
                   </div>
                   <Link href={link} className="mt-4 text-sm">

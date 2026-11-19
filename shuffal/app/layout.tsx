@@ -23,11 +23,13 @@ export const metadata: Metadata = {
     title: "CSE Society Portal",
     description: "CSE Society Management System",
     type: "website",
+    images: [{ url: "/logo.png", width: 500, height: 382, alt: "CSE Society logo" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "CSE Society Portal",
     description: "CSE Society Management System",
+    images: ["/logo.png"],
   },
 };
 
