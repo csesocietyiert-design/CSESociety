@@ -194,7 +194,7 @@ export default function WorkshopRegistrationForm() {
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="auth-card relative z-10 rounded-2xl border p-6 text-center sm:p-8">
           <div className="mx-auto grid w-full max-w-3xl grid-cols-2 items-center justify-items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
-            <div className="order-1 flex h-32 w-36 items-center justify-center rounded-2xl border border-sky-200/35 bg-gradient-to-br from-slate-100 via-slate-200 to-sky-100 p-3 shadow-[0_0_16px_rgba(125,211,252,0.14)] ring-1 ring-white/10 sm:h-36 sm:w-40">
+            <div className="order-1 flex h-32 w-36 items-center justify-center rounded-2xl border border-white/15 bg-slate-950/40 p-3 shadow-[0_0_18px_rgba(255,255,255,0.12)] ring-1 ring-white/5 sm:h-36 sm:w-40">
               <Image src="/logo.png" alt="CSE Society IERT logo" width={500} height={382} className="h-full w-full object-contain" priority />
             </div>
             <div className="order-3 col-span-2 flex h-52 w-52 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-2 shadow-[0_0_22px_rgba(255,255,255,0.14)] sm:order-2 sm:col-span-1 sm:h-60 sm:w-60">
