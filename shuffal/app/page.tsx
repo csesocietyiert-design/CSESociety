@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import BrandPromotionPopup from '@/components/BrandPromotionPopup';
 import UniverseExperience from './digital-universe/UniverseExperience';
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <UniverseExperience />;
+  return (
+    <>
+      <UniverseExperience />
+      <BrandPromotionPopup />
+    </>
+  );
 }

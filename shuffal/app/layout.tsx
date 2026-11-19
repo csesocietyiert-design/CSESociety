@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import BrandPromotionPopup from "@/components/BrandPromotionPopup";
 import PortalLegalBar from "@/components/PortalLegalBar";
 import "./globals.css";
 
@@ -57,7 +56,6 @@ export default function RootLayout({ children }: LayoutProps) {
       </head>
       <body className="min-h-full flex flex-col bg-slate-950">
         {children}
-        <BrandPromotionPopup />
         <PortalLegalBar />
       </body>
     </html>
