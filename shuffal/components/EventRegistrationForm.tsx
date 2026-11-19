@@ -67,6 +67,7 @@ export default function EventRegistrationForm() {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [member, setMember] = useState<MemberDetails | null>(null);
+  const [memberPhone, setMemberPhone] = useState('');
   const [verificationToken, setVerificationToken] = useState('');
   const [nonMember, setNonMember] = useState(initialNonMember);
   const [session, setSession] = useState<EventSession | ''>('');
@@ -156,6 +157,7 @@ export default function EventRegistrationForm() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not verify the code.');
       setMember(payload.member);
+      setMemberPhone(payload.member.phone || '');
       setVerificationToken(payload.verificationToken);
       setMessage({ type: 'success', text: `Society ID verified. Code sent to ${payload.member.maskedEmail}.` });
     } catch (verifyError) {
@@ -196,6 +198,10 @@ export default function EventRegistrationForm() {
       setMessage({ type: 'error', text: 'Verify your Society ID by email OTP before continuing.' });
       return;
     }
+    if (isMember && !hasValidWhatsappNumber(memberPhone)) {
+      setMessage({ type: 'error', text: 'Enter a valid WhatsApp number for your Society account.' });
+      return;
+    }
     if ((hasFirstHalf && !selectedGames.some((game) => FIRST_HALF_GAMES.includes(game)))
       || (hasSecondHalf && !selectedGames.some((game) => SECOND_HALF_GAMES.includes(game)))) {
       setMessage({ type: 'error', text: 'Choose exactly one game for each selected half.' });
@@ -222,7 +228,7 @@ export default function EventRegistrationForm() {
       participantType,
       societyId: isMember ? member?.societyId : undefined,
       verificationToken: isMember ? verificationToken : undefined,
-      memberPhone: undefined,
+      memberPhone: isMember ? memberPhone.trim() : undefined,
       nonMember: isMember ? undefined : nonMember,
       session,
       games: selectedGames,
@@ -263,8 +269,8 @@ export default function EventRegistrationForm() {
         </div>
         <section className="auth-card relative z-10 mx-auto max-w-xl rounded-2xl border p-6 text-center shadow-2xl sm:p-8">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-2xl text-emerald-300">✓</div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Registration received</p>
-          <h1 className="mt-3 text-2xl font-bold">You are registered</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Thank you</p>
+          <h1 className="mt-3 text-2xl font-bold">Thank you from CSE Society</h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
             Reference: <strong className="text-white">{registered.id}</strong>
           </p>
@@ -273,6 +279,8 @@ export default function EventRegistrationForm() {
               ? 'Please bring your CSE Society ID card. It will be used for attendance during entry.'
               : 'Please keep your UPI transaction ID. Your entry-pass update will be sent through your selected email or WhatsApp contact after verification.'}
           </p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">Please bring your ID card and report at 8:30 AM on 24 November.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">For any doubt, connect with the core team CSE at <a href="mailto:csesociety.iert@gmail.com" className="text-teal-300 underline">csesociety.iert@gmail.com</a> or <a href="tel:+918273993303" className="text-teal-300 underline">+91 8273993303</a>.</p>
           {message && <MessageBanner message={message} />}
           <Link href="/forms" className="mt-6 inline-flex rounded-lg bg-teal-400 px-5 py-3 text-sm font-bold text-slate-950 hover:bg-teal-300">Back to forms</Link>
         </section>
@@ -359,7 +367,7 @@ export default function EventRegistrationForm() {
                             {busyOtp ? 'Sending…' : 'Send email code'}
                           </button>
                         </div>
-                        <p className="text-xs leading-5 text-slate-400">If the code doesn’t arrive, check your spam or junk folder.</p>
+                        <p className="text-xs leading-5 text-slate-400">If you don’t receive the OTP, check your spam or junk folder or contact the core team.</p>
                         {otpSent && (
                           <div className="flex flex-col gap-3 sm:flex-row">
                             <label className="flex-1 text-sm font-medium text-slate-300">
@@ -381,13 +389,21 @@ export default function EventRegistrationForm() {
                         )}
                       </>
                     ) : (
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="font-semibold text-emerald-200">Verified: {member.name}</p>
-                          <p className="text-xs text-slate-400">{member.societyId} · {member.department} · {member.year ? `Year ${member.year}` : 'Year not recorded'}</p>
+                      <div className="space-y-4">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-3"><span className="text-xs text-slate-400">Full name</span><p className="mt-1 font-semibold text-emerald-200">{member.name}</p></div>
+                          <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-3"><span className="text-xs text-slate-400">Society ID</span><p className="mt-1 font-medium">{member.societyId}</p></div>
+                          <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-3"><span className="text-xs text-slate-400">Email</span><p className="mt-1 break-all font-medium">{member.email}</p></div>
+                          <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-3"><span className="text-xs text-slate-400">Department / Year</span><p className="mt-1 font-medium">{member.department} · {member.year ? `Year ${member.year}` : 'Year not recorded'}</p></div>
                         </div>
+                        {memberPhone ? (
+                          <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-3"><span className="text-xs text-slate-400">WhatsApp number</span><p className="mt-1 font-medium">{memberPhone}</p></div>
+                        ) : (
+                          <TextField label="WhatsApp number *" required type="tel" value={memberPhone} onChange={setMemberPhone} />
+                        )}
                         <button type="button" onClick={() => {
                           setMember(null);
+                          setMemberPhone('');
                           setVerificationToken('');
                           setOtpSent(false);
                           setOtp('');

@@ -22,9 +22,9 @@ export async function POST(request: Request) {
 
   const category = body.category;
   const verificationToken = typeof body.verificationToken === 'string' ? body.verificationToken : '';
-  const fullName = typeof body.fullName === 'string' ? body.fullName.trim().slice(0, 255) : '';
-  if (!['society', 'iert', 'iit_madras'].includes(String(category)) || !verificationToken || !fullName) {
-    return NextResponse.json({ error: 'Complete verification and enter your name.' }, { status: 400 });
+  let fullName = typeof body.fullName === 'string' ? body.fullName.trim().slice(0, 255) : '';
+  if (!['society', 'iert', 'iit_madras'].includes(String(category)) || !verificationToken) {
+    return NextResponse.json({ error: 'Complete verification before submitting.' }, { status: 400 });
   }
 
   let societyId = '';
@@ -50,13 +50,29 @@ export async function POST(request: Request) {
     societyId = typeof body.societyId === 'string' ? body.societyId.trim().toUpperCase() : '';
     const { data: member } = await supabase
       .from('users')
-      .select('id,cse_id,name,email,is_verified')
+      .select('id,cse_id,name,email,department,year,phone,is_verified')
       .ilike('cse_id', societyId)
       .maybeSingle();
     if (!member || member.is_verified !== true) return NextResponse.json({ error: 'Society verification is required.' }, { status: 400 });
+    if (!member.name || !member.email) return NextResponse.json({ error: 'Your registered name and email are missing. Contact the core team.' }, { status: 400 });
     memberUserId = member.id;
     societyId = String(member.cse_id).toUpperCase();
     email = member.email;
+    fullName = member.name.trim();
+    branch = member.department?.trim() || (typeof body.branch === 'string' ? body.branch.trim() : '');
+    year = typeof member.year === 'number' ? member.year : (typeof body.year === 'number' ? body.year : null);
+    whatsappPhone = member.phone?.trim() || (typeof body.whatsappPhone === 'string' ? body.whatsappPhone.trim() : null);
+    if (
+      !branch
+      || year === null
+      || !Number.isInteger(year)
+      || year < 1
+      || year > 6
+      || !whatsappPhone
+      || !/^\+?[0-9 ()-]{8,25}$/.test(whatsappPhone)
+    ) {
+      return NextResponse.json({ error: 'Complete your registered department, year, and WhatsApp number before submitting.' }, { status: 400 });
+    }
   } else if (category === 'iert') {
     email = typeof body.iertEmail === 'string' ? body.iertEmail.trim().toLowerCase() : '';
     aktuRollNumber = typeof body.aktuRollNumber === 'string' ? body.aktuRollNumber.trim().toUpperCase() : '';
@@ -67,7 +83,7 @@ export async function POST(request: Request) {
     feeAmount = 149;
     if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-      || !aktuRollNumber
+      || (year !== 1 && !aktuRollNumber)
       || !branch
       || !IERT_BRANCHES.has(branch.toUpperCase())
       || year === null
@@ -90,11 +106,14 @@ export async function POST(request: Request) {
     }
   }
 
+  if (!fullName) {
+    return NextResponse.json({ error: 'Your full name is required.' }, { status: 400 });
+  }
+
   let identityKey = '';
-  let identifier = '';
-  if (category === 'society') { identityKey = `society:${societyId}`; identifier = societyId; }
-  if (category === 'iert') { identityKey = `iert:${email}`; identifier = email; }
-  if (category === 'iit_madras') { identityKey = `iit_madras:${iitRollNumber}`; identifier = String(iitRollNumber); }
+  if (category === 'society') identityKey = `society:${societyId}`;
+  if (category === 'iert') identityKey = `iert:${email}`;
+  if (category === 'iit_madras') identityKey = `iit_madras:${iitRollNumber}`;
 
   const { data: otp, error: otpError } = await supabase
     .from('workshop_registration_otps')

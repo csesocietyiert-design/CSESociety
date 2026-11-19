@@ -25,6 +25,9 @@ export async function POST(request: Request) {
   let identifier = '';
   let email = '';
   let memberName = '';
+  let department = '';
+  let memberYear: number | null = null;
+  let memberPhone = '';
 
   if (category === 'society') {
     identifier = typeof body.societyId === 'string' ? body.societyId.trim().toUpperCase() : '';
@@ -52,7 +55,7 @@ export async function POST(request: Request) {
   if (category === 'society') {
     const { data: member } = await supabase
       .from('users')
-      .select('id,cse_id,name,email,is_verified')
+      .select('id,cse_id,name,email,department,year,phone,is_verified')
       .ilike('cse_id', identifier)
       .maybeSingle();
     if (!member || member.is_verified !== true || !member.email) {
@@ -61,6 +64,9 @@ export async function POST(request: Request) {
     identifier = String(member.cse_id).toUpperCase();
     email = member.email;
     memberName = member.name || '';
+    department = member.department || '';
+    memberYear = typeof member.year === 'number' ? member.year : null;
+    memberPhone = member.phone || '';
   } else if (category === 'iert') {
     email = identifier;
   } else {
@@ -105,6 +111,14 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     verificationToken: token,
-    identity: { identifier, email, maskedEmail: maskEmail(email), name: memberName },
+    identity: {
+      identifier,
+      email,
+      maskedEmail: maskEmail(email),
+      name: memberName,
+      department,
+      year: memberYear,
+      phone: memberPhone,
+    },
   });
 }

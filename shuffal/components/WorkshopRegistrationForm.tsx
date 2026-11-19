@@ -64,6 +64,9 @@ export default function WorkshopRegistrationForm() {
     setVerifiedName('');
     setFullName('');
     setMaskedEmail('');
+    setBranch('');
+    setYear('');
+    setWhatsappPhone('');
     setMessage(null);
   };
 
@@ -115,6 +118,9 @@ export default function WorkshopRegistrationForm() {
       setVerifiedName(payload.identity.name || '');
       setFullName(payload.identity.name || '');
       setMaskedEmail(payload.identity.maskedEmail);
+      setBranch(payload.identity.department || '');
+      setYear(payload.identity.year ? String(payload.identity.year) : '');
+      setWhatsappPhone(payload.identity.phone || '');
       setMessage({ type: 'success', text: `Verified through ${payload.identity.maskedEmail}.` });
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Could not verify the code.' });
@@ -172,9 +178,11 @@ export default function WorkshopRegistrationForm() {
       <main className="auth-page min-h-screen px-5 py-12 text-white">
         <section className="auth-card mx-auto max-w-xl rounded-2xl border p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-2xl text-emerald-300">✓</div>
-          <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Registration received</p>
-          <h1 className="mt-3 text-2xl font-bold">{WORKSHOP_REGISTRATION.title}</h1>
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Thank you</p>
+          <h1 className="mt-3 text-2xl font-bold">Thank you from CSE Society</h1>
           <p className="mt-4 text-sm text-slate-300">Reference: <strong className="text-white">{registeredId}</strong></p>
+          <p className="mt-4 text-sm leading-6 text-slate-300">Please bring your ID card and report at 8:30 AM on 24 November.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">For any doubt, connect with the core team CSE at <a href="mailto:csesociety.iert@gmail.com" className="text-teal-300 underline">csesociety.iert@gmail.com</a> or <a href="tel:+918273993303" className="text-teal-300 underline">+91 8273993303</a>.</p>
           <Link href="/forms" className="mt-6 inline-flex rounded-lg bg-teal-400 px-5 py-3 text-sm font-bold text-slate-950">Back to forms</Link>
         </section>
       </main>
@@ -245,6 +253,7 @@ export default function WorkshopRegistrationForm() {
                       </label>
                     )}
                     <button disabled={busy} type="button" onClick={() => void sendOtp()} className="rounded-lg border border-teal-400/50 px-4 py-3 text-sm font-bold text-teal-200 disabled:opacity-50">{busy ? 'Sending…' : 'Send OTP'}</button>
+                    <p className="text-xs leading-5 text-slate-400">If you don’t receive the OTP, check your spam or junk folder or contact the core team.</p>
                     {otpSent && (
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                         <label className="flex-1 text-sm text-slate-300">Six-digit OTP *
@@ -268,9 +277,31 @@ export default function WorkshopRegistrationForm() {
                 <h2 className="text-lg font-bold">{category === 'society' ? '03' : '03'} · Registration details</h2>
                 {category === 'society' && (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="text-sm text-slate-300">Full name
-                      <input required value={fullName} onChange={(event) => setFullName(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
-                    </label>
+                    <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Full name</span><p className="mt-1 font-semibold">{fullName}</p></div>
+                    <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Email</span><p className="mt-1 break-all font-semibold">{maskedEmail}</p></div>
+                    {branch ? (
+                      <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Department</span><p className="mt-1 font-semibold">{branch}</p></div>
+                    ) : (
+                      <label className="text-sm text-slate-300">Department *
+                        <input required value={branch} onChange={(event) => setBranch(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                      </label>
+                    )}
+                    {year ? (
+                      <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Year</span><p className="mt-1 font-semibold">Year {year}</p></div>
+                    ) : (
+                      <label className="text-sm text-slate-300">Year *
+                        <select required value={year} onChange={(event) => setYear(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white">
+                          <option value="">Select year</option><option value="1">1st year</option><option value="2">2nd year</option><option value="3">3rd year</option><option value="4">4th year</option>
+                        </select>
+                      </label>
+                    )}
+                    {whatsappPhone ? (
+                      <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">WhatsApp number</span><p className="mt-1 font-semibold">{whatsappPhone}</p></div>
+                    ) : (
+                      <label className="text-sm text-slate-300">WhatsApp number *
+                        <input required type="tel" autoComplete="tel" value={whatsappPhone} onChange={(event) => setWhatsappPhone(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                      </label>
+                    )}
                     <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm"><span className="text-slate-400">Workshop level</span><p className="mt-1 font-semibold">Beginner</p></div>
                   </div>
                 )}
@@ -280,8 +311,8 @@ export default function WorkshopRegistrationForm() {
                     <label className="text-sm text-slate-300">Full name *
                       <input required value={fullName} onChange={(event) => setFullName(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
-                    <label className="text-sm text-slate-300">AKTU roll number *
-                      <input required value={aktuRollNumber} onChange={(event) => setAktuRollNumber(event.target.value.toUpperCase())} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                    <label className="text-sm text-slate-300">AKTU roll number{year === '1' ? ' (optional for 1st year)' : ' *'}
+                      <input required={year !== '1'} value={aktuRollNumber} onChange={(event) => setAktuRollNumber(event.target.value.toUpperCase())} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
                     </label>
                     <label className="text-sm text-slate-300">Branch *
                       <select required value={branch} onChange={(event) => setBranch(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white">

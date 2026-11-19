@@ -358,6 +358,9 @@ export async function POST(request: Request) {
       ...verifiedMember,
       phone: memberContact?.phone || getString(body.memberPhone, 25) || null,
     };
+    if (!validPhone(member.phone || '')) {
+      return NextResponse.json({ error: 'A valid WhatsApp number is required for member registration.' }, { status: 400 });
+    }
 
     verificationTokenHash = hashEventOtp(member.cse_id, verificationToken);
     const now = new Date();
