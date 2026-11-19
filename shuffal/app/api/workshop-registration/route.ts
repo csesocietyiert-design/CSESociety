@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createEventSupabase, hashEventOtp } from '@/lib/event-registration-server';
+import {
+  createEventSupabase,
+  hashEventOtp,
+  sendWorkshopRegistrationConfirmation,
+} from '@/lib/event-registration-server';
 import { WORKSHOP_REGISTRATION } from '@/lib/workshop-registration';
 import { getWorkshopRegistrationClosesAt } from '@/lib/workshop-registration-server';
 
@@ -56,20 +60,24 @@ export async function POST(request: Request) {
 
   if (category === 'society') {
     societyId = typeof body.societyId === 'string' ? body.societyId.trim().toUpperCase() : '';
-    const { data: member } = await supabase
+    const { data: member, error: memberError } = await supabase
       .from('users')
-      .select('id,cse_id,name,email,department,year,phone,is_verified')
+      .select('id,cse_id,name,email,is_verified')
       .ilike('cse_id', societyId)
       .maybeSingle();
+    if (memberError) {
+      console.error('Workshop registration member lookup failed:', memberError);
+      return NextResponse.json({ error: 'Member verification is temporarily unavailable.' }, { status: 503 });
+    }
     if (!member || member.is_verified !== true) return NextResponse.json({ error: 'Society verification is required.' }, { status: 400 });
     if (!member.name || !member.email) return NextResponse.json({ error: 'Your registered name and email are missing. Contact the core team.' }, { status: 400 });
     memberUserId = member.id;
     societyId = String(member.cse_id).toUpperCase();
     email = member.email;
     fullName = member.name.trim();
-    branch = member.department?.trim() || (typeof body.branch === 'string' ? body.branch.trim() : '');
-    year = typeof member.year === 'number' ? member.year : (typeof body.year === 'number' ? body.year : null);
-    whatsappPhone = member.phone?.trim() || (typeof body.whatsappPhone === 'string' ? body.whatsappPhone.trim() : null);
+    branch = typeof body.branch === 'string' ? body.branch.trim() : '';
+    year = typeof body.year === 'number' ? body.year : null;
+    whatsappPhone = typeof body.whatsappPhone === 'string' ? body.whatsappPhone.trim() : null;
     if (
       !branch
       || year === null
@@ -171,10 +179,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Could not save the registration.' }, { status: 500 });
   }
 
-  await supabase
+  const { error: otpUseError } = await supabase
     .from('workshop_registration_otps')
     .update({ used_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq('identity_key', identityKey);
+  if (otpUseError) console.error('Workshop registration OTP could not be marked used:', otpUseError);
 
-  return NextResponse.json({ registrationId: registration.id }, { status: 201 });
+  let confirmationEmailSent = true;
+  try {
+    await sendWorkshopRegistrationConfirmation(email, fullName, registration.id);
+  } catch (emailError) {
+    confirmationEmailSent = false;
+    console.error('Workshop registration confirmation email failed:', emailError);
+  }
+
+  return NextResponse.json({ registrationId: registration.id, confirmationEmailSent }, { status: 201 });
 }

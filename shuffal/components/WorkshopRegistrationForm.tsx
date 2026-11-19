@@ -50,6 +50,7 @@ export default function WorkshopRegistrationForm() {
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
   const [registeredId, setRegisteredId] = useState('');
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const otpRequestInFlight = useRef(false);
 
   useEffect(() => {
@@ -193,6 +194,7 @@ export default function WorkshopRegistrationForm() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not submit registration.');
       setRegisteredId(payload.registrationId);
+      setConfirmationEmailSent(payload.confirmationEmailSent === true);
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Could not submit registration.' });
     } finally {
@@ -208,6 +210,11 @@ export default function WorkshopRegistrationForm() {
           <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Thank you</p>
           <h1 className="mt-3 text-2xl font-bold">Thank you from CSE Society</h1>
           <p className="mt-4 text-sm text-slate-300">Reference: <strong className="text-white">{registeredId}</strong></p>
+          <p role={confirmationEmailSent ? 'status' : 'alert'} className={`mt-3 text-sm ${confirmationEmailSent ? 'text-emerald-200' : 'text-amber-200'}`}>
+            {confirmationEmailSent
+              ? `A confirmation email was sent to ${maskedEmail}.`
+              : 'Your registration is saved, but we could not send the confirmation email. Please contact the core team.'}
+          </p>
           <p className="mt-4 text-sm leading-6 text-slate-300">Please bring your ID card and report at 8:30 AM on 24 November.</p>
           <p className="mt-3 text-sm leading-6 text-slate-300">For any doubt, connect with the core team CSE at <a href="mailto:csesociety.iert@gmail.com" className="text-teal-300 underline">csesociety.iert@gmail.com</a> or <a href="tel:+918273993303" className="text-teal-300 underline">+91 8273993303</a>.</p>
           <section className="mt-7 rounded-2xl border border-amber-300/25 bg-gradient-to-br from-amber-950/50 via-slate-900/80 to-slate-950/80 p-5 text-left sm:p-6">

@@ -165,6 +165,36 @@ export async function sendWorkshopOtp(email: string, name: string, otp: string):
   });
 }
 
+export async function sendWorkshopRegistrationConfirmation(
+  email: string,
+  name: string,
+  registrationId: string,
+): Promise<void> {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || '587');
+  const user = process.env.SMTP_USER;
+  const password = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM || user;
+  if (!host || !Number.isInteger(port) || !user || !password || !from) {
+    throw new Error('SMTP settings are not configured');
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass: password },
+  });
+  const eventDetails = 'Technical Workshop & Meetup on 24 November 2026. Please report at 8:30 AM for the 9:00 AM start at PPT Hall, IERT Prayagraj.';
+  await transporter.sendMail({
+    from,
+    to: email,
+    subject: 'Workshop registration confirmation — CSE Society IERT',
+    text: `Hello ${name}, your registration for the Technical Workshop & Meetup has been received. Your reference number is ${registrationId}. ${eventDetails} Please keep this email for your records.`,
+    html: `<p>Hello ${escapeHtml(name)},</p><p>Your registration for the <strong>Technical Workshop &amp; Meetup</strong> has been received.</p><p>Registration reference: <strong>${escapeHtml(registrationId)}</strong></p><p>${eventDetails}</p><p>Please keep this email for your records.</p>`,
+  });
+}
+
 export async function sendEventRegistrationNotice(
   email: string,
   name: string,
