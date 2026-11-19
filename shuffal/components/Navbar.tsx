@@ -104,13 +104,13 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
             </svg>
           </button>
           <div className="flex items-center gap-3">
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-sky-200/25 bg-gradient-to-br from-slate-950 to-[#123653] p-1 shadow-[0_0_14px_rgba(125,211,252,0.12)]">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-sky-200/30 bg-gradient-to-br from-slate-100 to-sky-100 p-1 shadow-[0_0_12px_rgba(125,211,252,0.12)]">
               <Image
                 src="/logo.png"
                 alt="CSE Society Logo"
                 fill
                 sizes="48px"
-                className="object-contain p-1 brightness-110 drop-shadow-[0_0_3px_rgba(125,211,252,0.2)]"
+                className="object-contain p-1"
               />
             </div>
             <div>

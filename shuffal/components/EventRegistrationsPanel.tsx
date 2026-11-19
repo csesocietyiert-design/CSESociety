@@ -197,12 +197,17 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
       ].some((value) => value?.toLowerCase().includes(normalizedSearch)))
       .sort((first, second) =>
         (first.participant_type === 'member' ? 0 : 1) - (second.participant_type === 'member' ? 0 : 1)
-        || first.created_at.localeCompare(second.created_at));
+        || first.full_name.localeCompare(second.full_name, undefined, { sensitivity: 'base' }));
   }, [filter, registrations, search]);
 
   const visibleWorkshopRegistrations = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
-    return workshopRegistrations
+    const categoryOrder: Record<WorkshopRegistration['participant_category'], number> = {
+      society: 0,
+      iert: 1,
+      iit_madras: 2,
+    };
+    return [...workshopRegistrations]
       .filter((row) => filter === 'all' || row.participant_category === filter)
       .filter((row) => !normalizedSearch || [
         row.full_name,
@@ -212,7 +217,10 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
         row.email,
         row.whatsapp_phone,
         row.payment_transaction_id,
-      ].some((value) => value?.toLowerCase().includes(normalizedSearch)));
+      ].some((value) => value?.toLowerCase().includes(normalizedSearch)))
+      .sort((first, second) =>
+        categoryOrder[first.participant_category] - categoryOrder[second.participant_category]
+        || first.full_name.localeCompare(second.full_name, undefined, { sensitivity: 'base' }));
   }, [filter, search, workshopRegistrations]);
 
   const summary = useMemo(() => ({
@@ -526,7 +534,7 @@ export default function EventRegistrationsPanel({ isAdmin }: { isAdmin: boolean 
             {selectedEventType === 'workshop' ? <>
               <option value="all">All participants</option>
               <option value="society">Society members</option>
-              <option value="iert">IERT participants</option>
+              <option value="iert">Non-members · IERT</option>
               <option value="iit_madras">IIT Madras participants</option>
             </> : <>
               <option value="all">Members + non-members</option>
