@@ -227,6 +227,23 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
     }
   };
 
+  const handleShareTechnicalWorkshopFeedback = async () => {
+    const url = `${window.location.origin}/forms/${TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID}`;
+    setError('');
+    setNotice('');
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Technical Workshop Feedback | CSE Society', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setNotice('Feedback form link copied to clipboard.');
+      }
+    } catch (shareError) {
+      if (shareError instanceof Error && shareError.name === 'AbortError') return;
+      setError('Could not share the feedback form link. Check your browser clipboard permissions.');
+    }
+  };
+
   return (
     <main className={publicPage ? 'w-full flex-1 bg-[#0b2740]' : 'mx-auto max-w-7xl space-y-6 pb-8 pt-4 text-white sm:pt-6'}>
       <div className={publicPage ? 'mx-auto w-full max-w-6xl space-y-6 px-4 pb-8 pt-8 text-white sm:px-8 sm:pb-12 sm:pt-10' : 'space-y-6'}>
@@ -366,7 +383,12 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
               <h2 className="mt-1 text-xl font-bold">Technical Workshop Feedback</h2>
             </div>
           </div>
-          {isAdmin && <TechnicalWorkshopFeedbackPdfExport />}
+          <div className="flex shrink-0 items-center gap-2">
+            <button type="button" onClick={() => void handleShareTechnicalWorkshopFeedback()} aria-label="Share technical workshop feedback form" title="Share feedback form" className="grid h-10 w-10 place-items-center rounded-lg border border-[#52738c] text-sky-100 transition hover:border-sky-300 hover:bg-sky-300/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300">
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" strokeWidth="2" /><circle cx="6" cy="12" r="3" strokeWidth="2" /><circle cx="18" cy="19" r="3" strokeWidth="2" /><path strokeWidth="2" d="m8.7 10.7 6.6-4.4m-6.6 9 6.6 4.4" /></svg>
+            </button>
+            {isAdmin && <TechnicalWorkshopFeedbackPdfExport />}
+          </div>
         </div>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">Collect verified member feedback to help CSE Society improve future workshops. Members verify with their Society ID and registered email.</p>
         <Link href={`/forms/${TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID}`} className="mt-5 inline-flex min-h-11 items-center justify-center self-start rounded-lg bg-sky-300 px-5 py-2.5 text-sm font-semibold text-[#071b2b] transition hover:bg-sky-200">
@@ -404,16 +426,24 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
               <h3 className="mt-2 text-lg font-semibold text-slate-400">{EVENT_REGISTRATION.title}</h3>
               <p className="mt-4 text-sm">Registration is closed.</p>
             </article>
-            <article className="flex flex-col rounded-xl border border-sky-300/25 bg-gradient-to-br from-[#123653] to-[#071b2b] p-5 text-white">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-1.5">
-                <Image src="/logo-compact.png" alt="CSE Society logo" width={302} height={317} className="h-full w-full object-contain" />
+            <article className="group flex h-full min-h-[300px] flex-col rounded-xl border border-sky-300/25 bg-gradient-to-br from-[#123653] to-[#071b2b] p-5 text-white shadow-lg shadow-black/10 transition hover:border-sky-200/50 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-1.5">
+                  <Image src="/logo-compact.png" alt="CSE Society logo" width={302} height={317} className="h-full w-full object-contain" />
+                </div>
+                <button type="button" onClick={() => void handleShareTechnicalWorkshopFeedback()} aria-label="Share technical workshop feedback form" title="Share feedback form" className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#52738c] text-sky-100 opacity-100 transition hover:border-sky-300 hover:bg-sky-300/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                  <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" strokeWidth="2" /><circle cx="6" cy="12" r="3" strokeWidth="2" /><circle cx="18" cy="19" r="3" strokeWidth="2" /><path strokeWidth="2" d="m8.7 10.7 6.6-4.4m-6.6 9 6.6 4.4" /></svg>
+                </button>
               </div>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-sky-200">CSE Society members</p>
-              <h3 className="mt-1 text-lg font-semibold">Technical Workshop Feedback</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-300">Share your experience and suggestions. Society ID verification is required.</p>
-              <Link href={`/forms/${TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID}`} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-sky-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-200">
-                Give feedback
-              </Link>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-sky-200">CSE Society members</p>
+              <h3 className="mt-2 text-xl font-bold tracking-tight">Technical Workshop Feedback</h3>
+              <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">Share what you learned, rate the workshop, and suggest improvements for future CSE Society events.</p>
+              <div className="mt-5 border-t border-white/10 pt-4">
+                <p className="text-xs text-slate-400">Verified Society ID and registered email required</p>
+                <Link href={`/forms/${TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID}`} className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-sky-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-200">
+                  Give feedback <span aria-hidden="true" className="ml-2">→</span>
+                </Link>
+              </div>
             </article>
           </div>
         ) : loading ? (
