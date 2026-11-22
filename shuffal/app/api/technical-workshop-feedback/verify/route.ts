@@ -7,6 +7,7 @@ import {
   hashEventOtp,
   maskEmail,
   secureStringEquals,
+  TECHNICAL_WORKSHOP_FEEDBACK_EVENT_KEY,
 } from '@/lib/technical-workshop-feedback-server';
 
 export async function POST(request: Request) {
@@ -83,6 +84,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Could not verify the code. Please try again.' }, { status: 503 });
     }
     return NextResponse.json({ error: 'The code is invalid or expired.' }, { status: 400 });
+  }
+
+  const { data: existingFeedback, error: existingFeedbackError } = await supabase
+    .from('technical_workshop_feedback')
+    .select('id')
+    .eq('event_key', TECHNICAL_WORKSHOP_FEEDBACK_EVENT_KEY)
+    .ilike('society_id', canonicalSocietyId)
+    .maybeSingle();
+  if (existingFeedbackError) {
+    console.error('Existing technical workshop feedback lookup failed:', existingFeedbackError);
+    return NextResponse.json({ error: 'Could not check previous feedback submissions.' }, { status: 503 });
+  }
+  if (existingFeedback) {
+    return NextResponse.json({ error: 'Feedback has already been submitted for this Society ID.' }, { status: 409 });
   }
 
   const token = createVerificationToken();

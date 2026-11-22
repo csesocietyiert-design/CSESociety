@@ -85,6 +85,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Your verification has expired. Verify your Society ID again.' }, { status: 403 });
   }
 
+  const { data: existingFeedback, error: existingFeedbackError } = await supabase
+    .from('technical_workshop_feedback')
+    .select('id')
+    .eq('event_key', TECHNICAL_WORKSHOP_FEEDBACK_EVENT_KEY)
+    .ilike('society_id', canonicalSocietyId)
+    .maybeSingle();
+  if (existingFeedbackError) {
+    console.error('Existing technical workshop feedback lookup failed:', existingFeedbackError);
+    return NextResponse.json({ error: 'Could not check previous feedback submissions.' }, { status: 503 });
+  }
+  if (existingFeedback) {
+    return NextResponse.json({ error: 'Feedback has already been submitted for this Society ID.' }, { status: 409 });
+  }
+
   const now = new Date().toISOString();
   const { data: consumedOtp, error: consumeError } = await supabase
     .from('technical_workshop_feedback_otps')

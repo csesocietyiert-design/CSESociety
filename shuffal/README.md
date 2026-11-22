@@ -44,9 +44,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 ## Technical Workshop Feedback
 
 - The public feedback form is available at `/forms/8f5e8c74bf479e99707eab861397fa7e` and is linked from the Forms section.
-- Only verified CSE Society members can submit. Members verify their Society ID with a one-time code sent to their registered email; one response is accepted per member.
+- Only verified CSE Society members can submit. Members verify their Society ID with a one-time code sent to their registered email; each Society ID can submit once.
 - Verified admins can download all submitted responses as a PDF from the feedback form card in `/dashboard/forms`.
 - Apply `supabase/migrations/044_create_technical_workshop_feedback.sql` in Supabase before enabling submissions. It creates private OTP and feedback tables protected by row-level security.
+- Apply `supabase/migrations/045_enforce_feedback_once_per_society_id.sql` after migration 044 to enforce one response per Society ID.
 - Configure the existing `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, and `EVENT_OTP_PEPPER` deployment variables for verification emails.
 
 ## Learn More
