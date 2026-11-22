@@ -12,6 +12,7 @@ import {
   WORKSHOP_REGISTRATION,
 } from '@/lib/workshop-registration';
 import { FORM_CREATOR_ROLES, isFormExpired, normalizeFormRole, type RegistrationForm } from '@/lib/forms';
+import { TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID } from '@/lib/technical-workshop-feedback';
 import type { User } from '@/lib/store';
 
 interface RegistrationFormsPanelProps {
@@ -353,6 +354,22 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
           </div>
       </article>}
 
+      {!publicPage && <article className="flex flex-col overflow-hidden rounded-2xl border border-sky-300/25 bg-gradient-to-br from-[#123653] via-[#0d2942] to-[#071b2b] p-5 text-white shadow-lg shadow-black/10 sm:p-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-2">
+            <Image src="/logo-compact.png" alt="CSE Society logo" width={302} height={317} className="h-full w-full object-contain" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-200">CSE Society members</p>
+            <h2 className="mt-1 text-xl font-bold">Technical Workshop Feedback</h2>
+          </div>
+        </div>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">Collect verified member feedback to help CSE Society improve future workshops. Members verify with their Society ID and registered email.</p>
+        <Link href={`/forms/${TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID}`} className="mt-5 inline-flex min-h-11 items-center justify-center self-start rounded-lg bg-sky-300 px-5 py-2.5 text-sm font-semibold text-[#071b2b] transition hover:bg-sky-200">
+          Open feedback form
+        </Link>
+      </article>}
+
       <section>
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-xl font-semibold">All forms</h2>
@@ -382,6 +399,17 @@ export default function RegistrationFormsPanel({ user = null, publicPage = false
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Closed</p>
               <h3 className="mt-2 text-lg font-semibold text-slate-400">{EVENT_REGISTRATION.title}</h3>
               <p className="mt-4 text-sm">Registration is closed.</p>
+            </article>
+            <article className="flex flex-col rounded-xl border border-sky-300/25 bg-gradient-to-br from-[#123653] to-[#071b2b] p-5 text-white">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 p-1.5">
+                <Image src="/logo-compact.png" alt="CSE Society logo" width={302} height={317} className="h-full w-full object-contain" />
+              </div>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-sky-200">CSE Society members</p>
+              <h3 className="mt-1 text-lg font-semibold">Technical Workshop Feedback</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">Share your experience and suggestions. Society ID verification is required.</p>
+              <Link href={`/forms/${TECHNICAL_WORKSHOP_FEEDBACK_FORM_ID}`} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-sky-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-200">
+                Give feedback
+              </Link>
             </article>
           </div>
         ) : loading ? (

@@ -41,6 +41,13 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 - Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, and `EVENT_OTP_PEPPER` in the deployment environment. Do not commit credentials. For Gmail, use an app password, not the account password.
 - Confirmation email is sent after a registration is saved. Entry-pass delivery is coordinated by the event team; the roster includes email and WhatsApp contact links.
 
+## Technical Workshop Feedback
+
+- The public feedback form is available at `/forms/sdgfuyyuwgefguygwefuyyeirufgethih` and is linked from the Forms section.
+- Only verified CSE Society members can submit. Members verify their Society ID with a one-time code sent to their registered email; one response is accepted per member.
+- Apply `supabase/migrations/044_create_technical_workshop_feedback.sql` in Supabase before enabling submissions. It creates private OTP and feedback tables protected by row-level security.
+- Configure the existing `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, and `EVENT_OTP_PEPPER` deployment variables for verification emails.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
