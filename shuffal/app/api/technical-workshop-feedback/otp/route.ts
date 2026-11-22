@@ -6,6 +6,7 @@ import {
   getFeedbackIdentityKey,
   hashEventOtp,
   sendTechnicalWorkshopFeedbackOtp,
+  TECHNICAL_WORKSHOP_FEEDBACK_EVENT_KEY,
 } from '@/lib/technical-workshop-feedback-server';
 
 const genericResponse = () => NextResponse.json({
@@ -49,6 +50,23 @@ export async function POST(request: Request) {
   if (!member || member.is_verified !== true || !member.email) return genericResponse();
 
   const canonicalSocietyId = String(member.cse_id).toUpperCase();
+  const { data: existingFeedback, error: existingFeedbackError } = await supabase
+    .from('technical_workshop_feedback')
+    .select('id')
+    .eq('event_key', TECHNICAL_WORKSHOP_FEEDBACK_EVENT_KEY)
+    .ilike('society_id', canonicalSocietyId)
+    .maybeSingle();
+  if (existingFeedbackError) {
+    console.error('Existing technical workshop feedback lookup failed before OTP:', existingFeedbackError);
+    return NextResponse.json({ error: 'Could not check previous feedback submissions.' }, { status: 503 });
+  }
+  if (existingFeedback) {
+    return NextResponse.json({
+      alreadySubmitted: true,
+      message: 'Your feedback has already been recorded successfully. This form can only be submitted once per CSE Society ID.',
+    });
+  }
+
   const identityKey = getFeedbackIdentityKey(canonicalSocietyId);
   const now = new Date();
   const { data: previous, error: previousError } = await supabase

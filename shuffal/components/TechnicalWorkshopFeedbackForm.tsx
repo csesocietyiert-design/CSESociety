@@ -36,6 +36,7 @@ export default function TechnicalWorkshopFeedbackForm() {
   const [societyId, setSocietyId] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
   const [member, setMember] = useState<VerifiedMember | null>(null);
   const [ratings, setRatings] = useState<Ratings>(initialRatings);
@@ -49,6 +50,7 @@ export default function TechnicalWorkshopFeedbackForm() {
     setSocietyId(value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7));
     setOtp('');
     setOtpSent(false);
+    setAlreadySubmitted(false);
     setVerificationToken('');
     setMember(null);
     setMessage(null);
@@ -65,6 +67,13 @@ export default function TechnicalWorkshopFeedbackForm() {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not send verification code.');
+      if (payload.alreadySubmitted === true) {
+        setOtp('');
+        setOtpSent(false);
+        setAlreadySubmitted(true);
+        setMessage(null);
+        return;
+      }
       setOtpSent(true);
       setMessage({ type: 'info', text: payload.message });
     } catch (error) {
@@ -167,7 +176,13 @@ export default function TechnicalWorkshopFeedbackForm() {
                 <span className="rounded-full border border-slate-600 px-3 py-1 text-xs text-slate-400">Email OTP</span>
               </div>
 
-              {!verificationToken ? (
+              {alreadySubmitted ? (
+                <div role="status" className="mt-4 rounded-lg border border-emerald-400/25 bg-emerald-400/5 p-4">
+                  <p className="text-sm font-semibold text-emerald-200">This form is already filled.</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-300">Your feedback was recorded successfully. This Society ID cannot submit another response.</p>
+                  <button type="button" onClick={() => updateSocietyId('')} className="mt-3 text-sm text-slate-300 underline underline-offset-4 hover:text-white">Check another Society ID</button>
+                </div>
+              ) : !verificationToken ? (
                 <div className="mt-4 space-y-4">
                   <label className="block text-sm text-slate-300" htmlFor="society-id">7-character CSE Society ID
                     <input
