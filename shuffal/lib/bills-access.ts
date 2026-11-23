@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { getSessionUserId } from '@/lib/session';
 
 const billsCookieName = 'cse_bills_access';
-const billsAccessDurationSeconds = 60 * 60 * 2;
+const fundsCookieName = 'cse_funds_access';
+const accessDurationSeconds = 60 * 60 * 2;
 
 function getSigningSecret() {
   const secret = process.env.AUTH_SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -17,20 +18,20 @@ function sign(value: string) {
   return createHmac('sha256', getSigningSecret()).update(value).digest('base64url');
 }
 
-export function createBillsAccessCookie() {
-  const expiresAt = Math.floor(Date.now() / 1000) + billsAccessDurationSeconds;
+function createAccessCookie(cookieName: string) {
+  const expiresAt = Math.floor(Date.now() / 1000) + accessDurationSeconds;
   const value = String(expiresAt);
   const token = `${value}.${sign(value)}`;
-  return `${billsCookieName}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${billsAccessDurationSeconds}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+  return `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${accessDurationSeconds}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
 }
 
-export function hasBillsAccess(request: Request) {
+function hasAccess(request: Request, cookieName: string) {
   const cookieHeader = request.headers.get('cookie') || '';
   const token = cookieHeader
     .split(';')
     .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith(`${billsCookieName}=`))
-    ?.slice(billsCookieName.length + 1);
+    .find((cookie) => cookie.startsWith(`${cookieName}=`))
+    ?.slice(cookieName.length + 1);
   if (!token) return false;
 
   const [expiresAt, signature] = token.split('.');
@@ -39,6 +40,22 @@ export function hasBillsAccess(request: Request) {
   const expected = Buffer.from(sign(expiresAt));
   const actual = Buffer.from(signature);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+export function createBillsAccessCookie() {
+  return createAccessCookie(billsCookieName);
+}
+
+export function hasBillsAccess(request: Request) {
+  return hasAccess(request, billsCookieName);
+}
+
+export function createFundsAccessCookie() {
+  return createAccessCookie(fundsCookieName);
+}
+
+export function hasFundsAccess(request: Request) {
+  return hasAccess(request, fundsCookieName);
 }
 
 export function secureBillsPasswordEquals(first: string, second: string) {

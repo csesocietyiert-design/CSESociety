@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { canManageFinanceEntries, canViewPendingFinanceEntries } from '@/lib/finance-access';
 import { getSessionUserId } from '@/lib/session';
+import { hasFundsAccess } from '@/lib/bills-access';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -44,6 +45,7 @@ function errorMessage(error: unknown) {
 
 export async function GET(request: Request) {
   try {
+    if (!hasFundsAccess(request)) return Response.json({ error: 'Password verification is required.' }, { status: 401 });
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
@@ -75,6 +77,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    if (!hasFundsAccess(request)) return Response.json({ error: 'Password verification is required.' }, { status: 401 });
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
@@ -116,6 +119,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    if (!hasFundsAccess(request)) return Response.json({ error: 'Password verification is required.' }, { status: 401 });
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
@@ -148,6 +152,7 @@ export async function DELETE(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    if (!hasFundsAccess(request)) return Response.json({ error: 'Password verification is required.' }, { status: 401 });
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
