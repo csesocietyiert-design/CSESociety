@@ -121,7 +121,10 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
       body: JSON.stringify({ id }),
     });
     if (response.ok) setEntries((current) => current.filter((entry) => entry.id !== id));
-    else setError('Could not remove fund entry');
+    else {
+      const payload = await response.json().catch(() => ({}));
+      setError(payload.error || 'Could not remove fund entry');
+    }
   };
 
   const approveEntry = async (id: string) => {
@@ -188,7 +191,7 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
       </div>}
 
       {canManage && <form onSubmit={handleSubmit} className="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 to-slate-900/70 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">Finance controls</p><h2 className="mt-2 text-xl font-semibold">Add fund entry</h2></div>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">Treasurer &amp; secretary controls</p><h2 className="mt-2 text-xl font-semibold">Submit fund entry for admin approval</h2></div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <select required value={form.entryType} onChange={(event) => setForm({ ...form, entryType: event.target.value as FinanceForm['entryType'] })} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white outline-none focus:border-emerald-400" aria-label="Entry type">
             <option value="expense">Expense</option>
@@ -214,8 +217,65 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
       </section>
 
       <section className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
-        <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Ledger</p><h2 className="mt-2 text-xl font-semibold">Recent fund activity</h2></div>{canManage && <div className="text-xs text-slate-400">Admin/Treasurer access</div>}</div>
-        <div className="mt-5 space-y-3">{loading ? <p className="text-sm text-slate-500">Loading fund activity...</p> : entries.length === 0 ? <p className="text-sm text-slate-500">No fund entries yet.</p> : entries.map((entry) => <div key={entry.id} className="rounded-lg border border-slate-700/50 bg-slate-900/60 p-4"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><div className="flex items-center gap-2"><span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${entry.entry_type === 'income' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`}>{entry.entry_type}</span><span className="text-xs text-slate-400">{new Date(entry.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div><h3 className="mt-2 text-lg font-semibold text-white">{entry.title}</h3>{entry.event_name && <p className="mt-1 text-sm text-slate-400">Event: {entry.event_name}</p>}{entry.description && <p className="mt-1 text-sm text-slate-400">{entry.description}</p>}</div><div className="text-left sm:text-right"><p className={`text-xl font-semibold ${entry.entry_type === 'income' ? 'text-emerald-300' : 'text-rose-300'}`}>{entry.entry_type === 'income' ? '+' : '-'}{currency.format(Number(entry.amount))}</p>{entry.approval_status === 'pending' ? <p className="mt-1 text-xs uppercase tracking-[0.12em] text-amber-300">Pending</p> : <p className="mt-1 text-xs uppercase tracking-[0.12em] text-emerald-300">Approved</p>}</div></div>{canApprove && entry.approval_status === 'pending' && <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => approveEntry(entry.id)} className="rounded-md bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400">Approve</button>{editingId !== entry.id ? <button type="button" onClick={() => { setEditingId(entry.id); setEditingAmount(String(entry.amount)); }} className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:border-slate-500">Edit amount</button> : <div className="flex items-center gap-2"><input aria-label={`Edit amount for ${entry.title}`} value={editingAmount} onChange={(event) => setEditingAmount(event.target.value)} className="w-32 rounded-md border border-slate-600 bg-slate-800 px-2 py-2 text-sm text-white outline-none focus:border-emerald-400" type="number" min="0.01" step="0.01" /><button type="button" onClick={() => saveAmount(entry.id)} className="rounded-md bg-sky-500 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-sky-400">Save</button><button type="button" onClick={() => { setEditingId(null); setEditingAmount(''); }} className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-300 hover:border-slate-500">Cancel</button></div>} </div>}{canManage && entry.approval_status === 'pending' && <div className="mt-4"><button type="button" onClick={() => removeEntry(entry.id)} className="rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:border-rose-500/60">Remove</button></div>}</div>)}</div>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">Ledger</p>
+            <h2 className="mt-2 text-xl font-semibold">Recent fund activity</h2>
+          </div>
+          {canManage && <div className="text-xs text-slate-400">Pending entries are visible to admins, treasurers, and secretaries</div>}
+        </div>
+        <div className="mt-5 space-y-3">
+          {loading ? <p className="text-sm text-slate-500">Loading fund activity...</p> : entries.length === 0 ? (
+            <p className="text-sm text-slate-500">No fund entries yet.</p>
+          ) : entries.map((entry) => (
+            <div key={entry.id} className="rounded-lg border border-slate-700/50 bg-slate-900/60 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${entry.entry_type === 'income' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`}>{entry.entry_type}</span>
+                    <span className="text-xs text-slate-400">{new Date(entry.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <h3 className="mt-2 text-lg font-semibold text-white">{entry.title}</h3>
+                  {entry.event_name && <p className="mt-1 text-sm text-slate-400">Event: {entry.event_name}</p>}
+                  {entry.description && <p className="mt-1 text-sm text-slate-400">{entry.description}</p>}
+                  {entry.bill_link && <a href={entry.bill_link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-medium text-sky-300 underline underline-offset-4 hover:text-white">View submitted bill</a>}
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className={`text-xl font-semibold ${entry.entry_type === 'income' ? 'text-emerald-300' : 'text-rose-300'}`}>
+                    {entry.entry_type === 'income' ? '+' : '-'}{currency.format(Number(entry.amount))}
+                  </p>
+                  {entry.approval_status === 'pending'
+                    ? <p className="mt-1 text-xs uppercase tracking-[0.12em] text-amber-300">Pending approval</p>
+                    : <p className="mt-1 text-xs uppercase tracking-[0.12em] text-emerald-300">Approved</p>}
+                </div>
+              </div>
+              {canApprove && entry.approval_status === 'pending' && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => approveEntry(entry.id)} className="rounded-md bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400">Approve</button>
+                  {editingId !== entry.id ? (
+                    <button type="button" onClick={() => { setEditingId(entry.id); setEditingAmount(String(entry.amount)); }} className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:border-slate-500">Edit amount</button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input aria-label={`Edit amount for ${entry.title}`} value={editingAmount} onChange={(event) => setEditingAmount(event.target.value)} className="w-32 rounded-md border border-slate-600 bg-slate-800 px-2 py-2 text-sm text-white outline-none focus:border-emerald-400" type="number" min="0.01" step="0.01" />
+                      <button type="button" onClick={() => saveAmount(entry.id)} className="rounded-md bg-sky-500 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-sky-400">Save</button>
+                      <button type="button" onClick={() => { setEditingId(null); setEditingAmount(''); }} className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-300 hover:border-slate-500">Cancel</button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {canManage && entry.approval_status === 'pending' && (
+                <div className="mt-4">
+                  <button type="button" onClick={() => removeEntry(entry.id)} className="rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:border-rose-500/60">Remove pending entry</button>
+                </div>
+              )}
+              {canApprove && entry.approval_status === 'approved' && (
+                <div className="mt-4">
+                  <button type="button" onClick={() => removeEntry(entry.id)} className="rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:border-rose-500/60">Delete approved entry</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

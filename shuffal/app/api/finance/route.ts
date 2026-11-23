@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { canManageFinanceEntries, canViewPendingFinanceEntries } from '@/lib/finance-access';
 import { getSessionUserId } from '@/lib/session';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -46,11 +47,15 @@ export async function GET(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    const { data, error } = await requester.supabase
+    let entriesQuery = requester.supabase
       .from('finance_entries')
-      .select('id, entry_type, title, amount, event_name, entry_date, description, details, bill_link, created_by, approval_status, approved_by, approved_at, created_at')
+      .select(`id, entry_type, title, amount, event_name, entry_date, description, details, ${requester.user.role === 'member' ? '' : 'bill_link, '}created_by, approval_status, approved_by, approved_at, created_at`)
       .order('entry_date', { ascending: false })
       .order('created_at', { ascending: false });
+    if (!canViewPendingFinanceEntries(requester.user.role)) {
+      entriesQuery = entriesQuery.eq('approval_status', 'approved');
+    }
+    const { data, error } = await entriesQuery;
     if (error) throw error;
     const { data: settings, error: settingsError } = await requester.supabase
       .from('finance_settings')
@@ -59,7 +64,7 @@ export async function GET(request: Request) {
       .maybeSingle();
     if (settingsError) throw settingsError;
     const totalAmount = Number(settings?.total_amount ?? 58200);
-    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
+    const canManage = canManageFinanceEntries(requester.user.role);
     return Response.json({ entries: data || [], totalAmount, canManage });
   } catch (error) {
     console.error('Finance read error:', error);
@@ -73,8 +78,8 @@ export async function POST(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
-    if (!canManage) return Response.json({ error: 'Only the treasurer or admin can update society funds' }, { status: 403 });
+    const canManage = canManageFinanceEntries(requester.user.role);
+    if (!canManage) return Response.json({ error: 'Only the treasurer, secretaries, or admin can submit fund entries' }, { status: 403 });
 
     const body = await request.json();
     const entryType = body?.entryType === 'income' || body?.entryType === 'expense' ? body.entryType : null;
@@ -114,16 +119,26 @@ export async function DELETE(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
-    if (!canManage) return Response.json({ error: 'Only the treasurer or admin can remove fund entries' }, { status: 403 });
+    const canManage = canManageFinanceEntries(requester.user.role);
+    if (!canManage) return Response.json({ error: 'Only the treasurer, secretaries, or admin can remove fund entries' }, { status: 403 });
     const { id } = await request.json();
     if (typeof id !== 'string' || !id) return Response.json({ error: 'Entry ID is required' }, { status: 400 });
     const { data: entry, error: entryError } = await requester.supabase.from('finance_entries').select('approval_status').eq('id', id).maybeSingle();
     if (entryError) throw entryError;
     if (!entry) return Response.json({ error: 'Fund entry not found' }, { status: 404 });
-    if (entry.approval_status === 'approved') return Response.json({ error: 'Approved fund entries cannot be deleted' }, { status: 409 });
-    const { error } = await requester.supabase.from('finance_entries').delete().eq('id', id).eq('approval_status', 'pending');
+    if (entry.approval_status === 'approved' && requester.user.role !== 'admin') {
+      return Response.json({ error: 'Only an admin can delete an approved fund entry' }, { status: 403 });
+    }
+    const deletableStatuses = requester.user.role === 'admin' ? ['pending', 'approved'] : ['pending'];
+    const { data: deletedEntry, error } = await requester.supabase
+      .from('finance_entries')
+      .delete()
+      .eq('id', id)
+      .in('approval_status', deletableStatuses)
+      .select('id')
+      .maybeSingle();
     if (error) throw error;
+    if (!deletedEntry) return Response.json({ error: 'Fund entry changed and could not be deleted' }, { status: 409 });
     return Response.json({ ok: true });
   } catch (error) {
     console.error('Finance delete error:', error);
@@ -136,10 +151,13 @@ export async function PATCH(request: Request) {
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
-    const canManage = requester.user.role === 'treasurer' || requester.user.role === 'admin';
+    const canManage = canManageFinanceEntries(requester.user.role);
     if (!canManage) return Response.json({ error: 'Only the treasurer or admin can manage fund entries' }, { status: 403 });
     const { id, amount, action } = await request.json();
     if (action === 'set_total_amount') {
+      if (!['admin', 'treasurer'].includes(requester.user.role)) {
+        return Response.json({ error: 'Only the treasurer or admin can change the total fund amount' }, { status: 403 });
+      }
       const totalAmount = Number(amount);
       if (!Number.isFinite(totalAmount) || totalAmount < 0) return Response.json({ error: 'The total amount cannot be negative' }, { status: 400 });
       const { data, error } = await requester.supabase

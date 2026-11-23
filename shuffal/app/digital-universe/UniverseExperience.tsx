@@ -393,6 +393,9 @@ export default function UniverseExperience() {
           <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
             Dashboard
           </Link>
+          <Link href="/bills" onClick={() => setMenuOpen(false)}>
+            Funds
+          </Link>
         </nav>
       </header>
 

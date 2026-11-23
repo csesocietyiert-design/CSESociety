@@ -42,7 +42,7 @@ export default function Sidebar({ open, setOpen, user }: SidebarProps) {
     { label: 'Resources', href: '/dashboard/resources', icon: 'bar-chart', show: true },
     { label: 'Forms', href: '/dashboard/forms', icon: 'calendar', show: true },
     { label: 'Event Registrations', href: '/dashboard/event-registrations', icon: 'users', show: canManageEventRegistrations },
-    { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: isTreasurer || isFacultyAdmin },
+    { label: 'Funds', href: '/dashboard/finance', icon: 'bar-chart', show: user.role !== 'member' },
     { label: 'Reports', href: '/dashboard/reports', icon: 'bar-chart', show: isFacultyAdmin || isExecutive || isSecretary || isYearRepresentative },
     { label: 'My Year', href: '/dashboard/members', icon: 'user', show: isYearRepresentative },
     { label: 'Profile', href: '/dashboard/profile', icon: 'user', show: true },

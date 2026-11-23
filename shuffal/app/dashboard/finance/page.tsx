@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import FinancePanel from '@/components/FinancePanel';
+import { canManageFinanceEntries } from '@/lib/finance-access';
 import { useAuthStore } from '@/lib/store';
 
 export default function FinancePage() {
@@ -23,5 +24,5 @@ export default function FinancePage() {
   }
 
   const role = user.role.toLowerCase();
-  return <LayoutWrapper user={user}><FinancePanel canManage={role === 'treasurer' || role === 'admin'} canApprove={role === 'admin'} /></LayoutWrapper>;
+  return <LayoutWrapper user={user}><FinancePanel canManage={canManageFinanceEntries(role)} canApprove={role === 'admin'} /></LayoutWrapper>;
 }
