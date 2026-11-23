@@ -971,9 +971,9 @@
 .teamCardImage {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center 24%;
-  transition: transform 450ms ease, filter 450ms ease;
+  transition: filter 450ms ease;
 }
 
 .teamCardBase {
@@ -1046,7 +1046,6 @@
 .teamCard:hover .teamCardImage,
 .teamCard:focus .teamCardImage,
 .teamCardExpanded .teamCardImage {
-  transform: scale(1.06);
   filter: brightness(0.62);
 }
 
