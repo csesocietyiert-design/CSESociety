@@ -13,6 +13,18 @@ type PendingEvent = {
   created_at: string;
 };
 
+type PendingBill = {
+  id: string;
+  entry_type: 'income' | 'expense';
+  title: string;
+  amount: number;
+  event_name?: string | null;
+  entry_date: string;
+  details?: string | null;
+  bill_link?: string | null;
+  created_at: string;
+};
+
 export default function PendingApprovalsPage({ user }: any) {
   const { pendingUsers, loading, removePendingUser } = usePendingApprovals();
   const [verifying, setVerifying] = useState<string | null>(null);
@@ -32,6 +44,8 @@ export default function PendingApprovalsPage({ user }: any) {
   const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
   const [eventApprovalAction, setEventApprovalAction] = useState<string | null>(null);
   const [eventApprovalConfirm, setEventApprovalConfirm] = useState<{ eventId: string; title: string; decision: 'approved' | 'rejected' } | null>(null);
+  const [pendingBills, setPendingBills] = useState<PendingBill[]>([]);
+  const [billApprovalAction, setBillApprovalAction] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPasswordRequests = async () => {
@@ -57,6 +71,15 @@ export default function PendingApprovalsPage({ user }: any) {
     if (user?.role === 'admin') loadPendingEvents();
   }, [user?.role]);
 
+  useEffect(() => {
+    const loadPendingBills = async () => {
+      const response = await fetch('/api/admin/bill-approvals');
+      const payload = await response.json();
+      if (response.ok) setPendingBills(payload.entries || []);
+    };
+    if (user?.role === 'admin') loadPendingBills();
+  }, [user?.role]);
+
   const reviewEvent = async (eventId: string, decision: 'approved' | 'rejected') => {
     setEventApprovalAction(eventId);
     try {
@@ -79,6 +102,21 @@ export default function PendingApprovalsPage({ user }: any) {
     if (!eventApprovalConfirm) return;
     await reviewEvent(eventApprovalConfirm.eventId, eventApprovalConfirm.decision);
     setEventApprovalConfirm(null);
+  };
+
+  const reviewBill = async (entryId: string, decision: 'approved' | 'rejected') => {
+    if (!window.confirm(decision === 'approved' ? 'Approve and publish this bill entry?' : 'Reject and remove this bill entry?')) return;
+    setBillApprovalAction(entryId);
+    try {
+      const response = await fetch('/api/admin/bill-approvals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entryId, decision }),
+      });
+      if (response.ok) setPendingBills((entries) => entries.filter((entry) => entry.id !== entryId));
+    } finally {
+      setBillApprovalAction(null);
+    }
   };
 
   const reviewPasswordRequest = async (requestId: string, action: 'approve' | 'reject') => {
@@ -195,6 +233,38 @@ export default function PendingApprovalsPage({ user }: any) {
           <div className="mt-6 flex gap-3"><button type="button" onClick={confirmEventReview} disabled={eventApprovalAction === eventApprovalConfirm.eventId} className="flex-1 bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">Confirm</button><button type="button" onClick={() => setEventApprovalConfirm(null)} className="flex-1 border border-slate-600 px-4 py-2 text-sm text-slate-300">Cancel</button></div>
         </div>
       </div>}
+
+      {user?.role === 'admin' && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Fund Bill Approvals</h2>
+              <p className="mt-1 text-sm text-slate-400">Review treasurer submissions before bills are published.</p>
+            </div>
+            <span className="border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-300">{pendingBills.length} Pending</span>
+          </div>
+          {pendingBills.length === 0 ? (
+            <div className="border border-slate-700/50 bg-slate-900/40 p-5 text-sm text-slate-400">No fund bills are waiting for approval.</div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {pendingBills.map((entry) => (
+                <article key={entry.id} className="border border-slate-700/70 bg-slate-900/50 p-5">
+                  <p className="text-xs uppercase tracking-wider text-amber-300">{entry.entry_type} · {entry.event_name || 'General fund'}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">{entry.title}</h3>
+                  {entry.details && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-300">{entry.details}</p>}
+                  <p className="mt-3 text-sm font-semibold text-white">₹{Number(entry.amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</p>
+                  {entry.bill_link && <a href={entry.bill_link} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm font-medium text-sky-300 underline underline-offset-4">View submitted bill</a>}
+                  <p className="mt-3 text-xs text-slate-500">Submitted {new Date(entry.created_at).toLocaleString('en-IN')}</p>
+                  <div className="mt-4 flex gap-3">
+                    <button type="button" onClick={() => reviewBill(entry.id, 'approved')} disabled={billApprovalAction === entry.id} className="flex-1 bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">Approve</button>
+                    <button type="button" onClick={() => reviewBill(entry.id, 'rejected')} disabled={billApprovalAction === entry.id} className="flex-1 border border-rose-400/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:border-rose-300 disabled:opacity-50">Reject</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

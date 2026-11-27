@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createBillsSupabase, hasBillsAccess, isBillsRequesterMember } from '@/lib/bills-access';
+import { createBillsSupabase } from '@/lib/bills-access';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    if (await isBillsRequesterMember(request)) {
-      return NextResponse.json({ error: 'Society members cannot view bills.' }, { status: 403 });
-    }
-    if (!hasBillsAccess(request)) {
-      return NextResponse.json({ error: 'Password verification is required.' }, { status: 401 });
-    }
-
     const supabase = createBillsSupabase();
     const { data, error } = await supabase
       .from('finance_entries')
@@ -20,7 +13,16 @@ export async function GET(request: Request) {
       .order('entry_date', { ascending: false });
     if (error) throw error;
 
-    return NextResponse.json({ bills: data || [] }, {
+    const bills = await Promise.all((data || []).map(async (bill) => {
+      if (!bill.bill_link?.startsWith('bills/')) return bill;
+      const { data: signed, error: signedError } = await supabase.storage
+        .from('society-bills')
+        .createSignedUrl(bill.bill_link, 60 * 60);
+      if (signedError) console.error('Could not sign public bill:', signedError);
+      return { ...bill, bill_link: signed?.signedUrl || null };
+    }));
+
+    return NextResponse.json({ bills }, {
       headers: { 'Cache-Control': 'private, no-store' },
     });
   } catch (error) {

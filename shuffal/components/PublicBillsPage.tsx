@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type BillRecord = {
   id: string;
@@ -20,30 +20,8 @@ const currency = new Intl.NumberFormat('en-IN', {
 
 export default function PublicBillsPage() {
   const [bills, setBills] = useState<BillRecord[]>([]);
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [unlocked, setUnlocked] = useState(false);
-  const [forbidden, setForbidden] = useState(false);
   const [error, setError] = useState('');
-
-  const loadBills = async () => {
-    const response = await fetch('/api/bills', { cache: 'no-store' });
-    const payload = await response.json();
-    if (response.status === 403) {
-      setForbidden(true);
-      setUnlocked(false);
-      return;
-    }
-    if (response.status === 401) {
-      setUnlocked(false);
-      return;
-    }
-    if (!response.ok) throw new Error(payload.error || 'Could not load bills.');
-    setBills(payload.bills || []);
-    setUnlocked(true);
-    setForbidden(false);
-  };
 
   useEffect(() => {
     let active = true;
@@ -51,14 +29,8 @@ export default function PublicBillsPage() {
       .then(async (response) => {
         const payload = await response.json();
         if (!active) return;
-        if (response.status === 403) {
-          setForbidden(true);
-          return;
-        }
-        if (response.status === 401) return;
         if (!response.ok) throw new Error(payload.error || 'Could not load bills.');
         setBills(payload.bills || []);
-        setUnlocked(true);
       })
       .catch((loadError: unknown) => {
         if (active) setError(loadError instanceof Error ? loadError.message : 'Could not load bills.');
@@ -69,78 +41,15 @@ export default function PublicBillsPage() {
     return () => { active = false; };
   }, []);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitting(true);
-    setError('');
-    try {
-      const response = await fetch('/api/bills/access', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      const payload = await response.json();
-      if (!response.ok) {
-        if (response.status === 403) setForbidden(true);
-        throw new Error(payload.error || 'Could not verify access.');
-      }
-      await loadBills();
-      setPassword('');
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Could not verify access.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   if (loading) {
-    return <p role="status" className="py-8 text-center text-slate-400">Checking bills access...</p>;
-  }
-
-  if (forbidden) {
-    return (
-      <p role="alert" className="rounded-xl border border-rose-400/30 bg-rose-950/30 p-6 text-center text-rose-200">
-        Society members cannot access this bills page.
-      </p>
-    );
-  }
-
-  if (!unlocked) {
-    return (
-      <section className="mx-auto max-w-lg rounded-2xl border border-[#36546b] bg-[#071b2b] p-6 shadow-xl sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Protected documents</p>
-        <h2 className="mt-2 text-2xl font-bold text-white">Verify to view bills</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-300">Enter the access password to view approved society expense bills. Member accounts are not permitted.</p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <label className="block text-sm font-medium text-slate-200">
-            Access password
-            <input
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="mt-2 min-h-11 w-full rounded-lg border border-[#36546b] bg-[#0b2740] px-3 text-white outline-none transition focus:border-sky-300 focus:ring-2 focus:ring-sky-300/20"
-            />
-          </label>
-          {error && <p role="alert" className="text-sm text-rose-200">{error}</p>}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="min-h-11 w-full rounded-lg bg-sky-500 px-4 py-2 font-semibold text-slate-950 transition hover:bg-sky-300 disabled:cursor-wait disabled:opacity-60"
-          >
-            {submitting ? 'Verifying...' : 'Verify and view bills'}
-          </button>
-        </form>
-      </section>
-    );
+    return <p role="status" className="py-8 text-center text-slate-400">Loading approved bills...</p>;
   }
 
   return (
     <section aria-labelledby="bills-heading">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#25445b] pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Verified access</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">Public records</p>
           <h2 id="bills-heading" className="mt-1 text-2xl font-bold text-white">Approved Expense Bills</h2>
         </div>
         <span className="text-sm text-slate-400">{bills.length} bills</span>

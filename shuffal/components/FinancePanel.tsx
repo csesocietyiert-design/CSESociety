@@ -50,7 +50,9 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
   const [editingAmount, setEditingAmount] = useState('');
   const [showTotalEditor, setShowTotalEditor] = useState(false);
   const [error, setError] = useState('');
+  const [billFile, setBillFile] = useState<File | null>(null);
   const totalAmountClicks = useRef<number[]>([]);
+  const billFileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -97,15 +99,33 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
     setSaving(true);
     setError('');
     try {
+      let body: BodyInit;
+      if (billFile) {
+        const formData = new FormData();
+        formData.set('entryType', form.entryType);
+        formData.set('title', form.title);
+        formData.set('amount', form.amount);
+        formData.set('eventName', form.eventName);
+        formData.set('entryDate', form.entryDate);
+        formData.set('description', form.description);
+        formData.set('details', form.details);
+        formData.set('billLink', form.billLink);
+        formData.set('file', billFile);
+        body = formData;
+      } else {
+        body = JSON.stringify(form);
+      }
       const response = await fetch('/api/finance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        headers: billFile ? undefined : { 'Content-Type': 'application/json' },
+        body,
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'Could not save fund entry');
       setEntries((current) => [payload.entry, ...current]);
       setForm(initialForm);
+      setBillFile(null);
+      if (billFileInput.current) billFileInput.current.value = '';
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Could not save fund entry');
     } finally {
@@ -191,7 +211,11 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
       </div>}
 
       {canManage && <form onSubmit={handleSubmit} className="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-600/15 to-slate-900/70 p-6 shadow-lg shadow-black/10 backdrop-blur-md">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">Treasurer &amp; secretary controls</p><h2 className="mt-2 text-xl font-semibold">Submit fund entry for admin approval</h2></div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">{canApprove ? 'Admin controls' : 'Treasurer & secretary controls'}</p>
+          <h2 className="mt-2 text-xl font-semibold">{canApprove ? 'Add and publish fund entry' : 'Submit fund entry for admin approval'}</h2>
+          <p className="mt-1 text-sm text-slate-400">{canApprove ? 'Entries and bills uploaded by an admin are published immediately.' : 'Your entry and bill remain pending until an admin approves them.'}</p>
+        </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <select required value={form.entryType} onChange={(event) => setForm({ ...form, entryType: event.target.value as FinanceForm['entryType'] })} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white outline-none focus:border-emerald-400" aria-label="Entry type">
             <option value="expense">Expense</option>
@@ -203,7 +227,17 @@ export default function FinancePanel({ canManage, canApprove }: { canManage: boo
           <input required type="date" value={form.entryDate} onChange={(event) => setForm({ ...form, entryDate: event.target.value })} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white outline-none focus:border-emerald-400" />
           <input value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Short note (optional)" className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white placeholder:text-slate-500 outline-none focus:border-emerald-400" />
           <textarea value={form.details} onChange={(event) => setForm({ ...form, details: event.target.value })} placeholder="About / information" rows={2} className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white placeholder:text-slate-500 outline-none focus:border-emerald-400 sm:col-span-2 lg:col-span-2" />
-          <input type="url" value={form.billLink} onChange={(event) => setForm({ ...form, billLink: event.target.value })} placeholder="Google Drive bill link (optional)" className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white placeholder:text-slate-500 outline-none focus:border-emerald-400" />
+          <label className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-white sm:col-span-2 lg:col-span-1">
+            <span className="block text-xs text-slate-400">Upload bill (PDF, JPG, PNG; max 5 MB)</span>
+            <input
+              ref={billFileInput}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              onChange={(event) => setBillFile(event.target.files?.[0] || null)}
+              className="mt-1 block w-full text-xs text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-sky-500 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-950"
+            />
+          </label>
+          <input type="url" value={form.billLink} onChange={(event) => setForm({ ...form, billLink: event.target.value })} placeholder="Or Google Drive bill link (optional)" className="rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-white placeholder:text-slate-500 outline-none focus:border-emerald-400" />
         </div>
         {error && <p className="mt-4 text-sm text-rose-300">{error}</p>}
         <button disabled={saving} type="submit" className="mt-5 rounded-lg bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 disabled:opacity-50">{saving ? 'Saving...' : 'Save fund entry'}</button>

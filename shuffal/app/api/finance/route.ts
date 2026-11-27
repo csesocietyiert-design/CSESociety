@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { canManageFinanceEntries, canViewPendingFinanceEntries } from '@/lib/finance-access';
 import { getSessionUserId } from '@/lib/session';
@@ -9,6 +10,19 @@ function getClient() {
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+}
+
+const maxBillSize = 5 * 1024 * 1024;
+const billBucket = 'society-bills';
+
+async function signEntryBillLinks(supabase: ReturnType<typeof getClient>, entries: Array<Record<string, unknown>>) {
+  return Promise.all(entries.map(async (entry) => {
+    const billLink = typeof entry.bill_link === 'string' ? entry.bill_link : '';
+    if (!billLink.startsWith('bills/')) return entry;
+    const { data, error } = await supabase.storage.from(billBucket).createSignedUrl(billLink, 60 * 60);
+    if (error) console.error('Could not sign finance bill:', error);
+    return { ...entry, bill_link: data?.signedUrl || null };
+  }));
 }
 
 async function getRequester(request: Request) {
@@ -67,7 +81,8 @@ export async function GET(request: Request) {
     if (settingsError) throw settingsError;
     const totalAmount = Number(settings?.total_amount ?? 58200);
     const canManage = canManageFinanceEntries(requester.user.role);
-    return Response.json({ entries: data || [], totalAmount, canManage });
+    const entries = await signEntryBillLinks(requester.supabase, (data || []) as unknown as Array<Record<string, unknown>>);
+    return Response.json({ entries, totalAmount, canManage });
   } catch (error) {
     console.error('Finance read error:', error);
     const message = errorMessage(error);
@@ -76,28 +91,77 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  let uploadedPath: string | undefined;
+  let supabase: ReturnType<typeof getClient> | undefined;
   try {
     if (!hasFundsAccess(request)) return Response.json({ error: 'Password verification is required.' }, { status: 401 });
     if (!supabaseUrl || !serviceRoleKey) return Response.json({ error: 'Supabase not configured' }, { status: 500 });
     const requester = await getRequester(request);
     if ('error' in requester) return requester.error;
+    supabase = requester.supabase;
     const canManage = canManageFinanceEntries(requester.user.role);
     if (!canManage) return Response.json({ error: 'Only the treasurer, secretaries, or admin can submit fund entries' }, { status: 403 });
 
-    const body = await request.json();
-    const entryType = body?.entryType === 'income' || body?.entryType === 'expense' ? body.entryType : null;
-    const title = typeof body?.title === 'string' ? body.title.trim() : '';
-    const amount = Number(body?.amount);
-    const eventName = typeof body?.eventName === 'string' ? body.eventName.trim() : '';
-    const entryDate = typeof body?.entryDate === 'string' ? body.entryDate : '';
-    const description = typeof body?.description === 'string' ? body.description.trim() : '';
-    const details = typeof body?.details === 'string' ? body.details.trim() : '';
-    const billLink = typeof body?.billLink === 'string' ? body.billLink.trim() : '';
+    let entryType: string | null;
+    let title: string;
+    let amount: number;
+    let eventName: string;
+    let entryDate: string;
+    let description: string;
+    let details: string;
+    let billLink: string;
+    let billFile: File | null = null;
+
+    if (request.headers.get('content-type')?.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      const typeValue = formData.get('entryType');
+      entryType = typeValue === 'income' || typeValue === 'expense' ? typeValue : null;
+      title = String(formData.get('title') || '').trim();
+      amount = Number(formData.get('amount'));
+      eventName = String(formData.get('eventName') || '').trim();
+      entryDate = String(formData.get('entryDate') || '');
+      description = String(formData.get('description') || '').trim();
+      details = String(formData.get('details') || '').trim();
+      billLink = String(formData.get('billLink') || '').trim();
+      const fileValue = formData.get('file');
+      billFile = fileValue instanceof File ? fileValue : null;
+    } else {
+      const body = await request.json();
+      entryType = body?.entryType === 'income' || body?.entryType === 'expense' ? body.entryType : null;
+      title = typeof body?.title === 'string' ? body.title.trim() : '';
+      amount = Number(body?.amount);
+      eventName = typeof body?.eventName === 'string' ? body.eventName.trim() : '';
+      entryDate = typeof body?.entryDate === 'string' ? body.entryDate : '';
+      description = typeof body?.description === 'string' ? body.description.trim() : '';
+      details = typeof body?.details === 'string' ? body.details.trim() : '';
+      billLink = typeof body?.billLink === 'string' ? body.billLink.trim() : '';
+    }
 
     if (!entryType || !title || !Number.isFinite(amount) || amount <= 0 || !entryDate) {
       return Response.json({ error: 'Type, title, positive amount, and date are required' }, { status: 400 });
     }
 
+    if (billFile) {
+      if (billFile.size === 0 || billFile.size > maxBillSize) {
+        return Response.json({ error: 'Choose a bill smaller than 5 MB' }, { status: 400 });
+      }
+      const allowedTypes = new Set(['application/pdf', 'image/jpeg', 'image/png']);
+      if (billFile.type && !allowedTypes.has(billFile.type)) {
+        return Response.json({ error: 'The bill must be a PDF, JPG, or PNG file' }, { status: 400 });
+      }
+      const extension = billFile.type === 'application/pdf' ? 'pdf'
+        : billFile.type === 'image/png' ? 'png'
+          : 'jpg';
+      uploadedPath = `bills/${randomUUID()}.${extension}`;
+      const fileBytes = new Uint8Array(await billFile.arrayBuffer());
+      const { error: uploadError } = await supabase.storage
+        .from(billBucket)
+        .upload(uploadedPath, fileBytes, { contentType: billFile.type || (extension === 'pdf' ? 'application/pdf' : `image/${extension}`), upsert: false });
+      if (uploadError) throw uploadError;
+      billLink = uploadedPath;
+    }
+
+    const directApproval = requester.user.role === 'admin';
     const { data, error } = await requester.supabase.from('finance_entries').insert({
       entry_type: entryType,
       title,
@@ -108,10 +172,21 @@ export async function POST(request: Request) {
       details: details || null,
       bill_link: billLink || null,
       created_by: requester.user.id,
+      approval_status: directApproval ? 'approved' : 'pending',
+      approved_by: directApproval ? requester.user.id : null,
+      approved_at: directApproval ? new Date().toISOString() : null,
     }).select('*').single();
-    if (error) throw error;
-    return Response.json({ entry: data }, { status: 201 });
+    if (error) {
+      if (uploadedPath) await supabase.storage.from(billBucket).remove([uploadedPath]);
+      throw error;
+    }
+    uploadedPath = undefined;
+    const signedEntries = await signEntryBillLinks(requester.supabase, [data as unknown as Record<string, unknown>]);
+    return Response.json({ entry: signedEntries[0] }, { status: 201 });
   } catch (error) {
+    if (supabase && uploadedPath) {
+      await supabase.storage.from(billBucket).remove([uploadedPath]).catch(() => undefined);
+    }
     console.error('Finance create error:', error);
     return Response.json({ error: errorMessage(error) }, { status: 500 });
   }
@@ -127,7 +202,11 @@ export async function DELETE(request: Request) {
     if (!canManage) return Response.json({ error: 'Only the treasurer, secretaries, or admin can remove fund entries' }, { status: 403 });
     const { id } = await request.json();
     if (typeof id !== 'string' || !id) return Response.json({ error: 'Entry ID is required' }, { status: 400 });
-    const { data: entry, error: entryError } = await requester.supabase.from('finance_entries').select('approval_status').eq('id', id).maybeSingle();
+    const { data: entry, error: entryError } = await requester.supabase
+      .from('finance_entries')
+      .select('approval_status, bill_link')
+      .eq('id', id)
+      .maybeSingle();
     if (entryError) throw entryError;
     if (!entry) return Response.json({ error: 'Fund entry not found' }, { status: 404 });
     if (entry.approval_status === 'approved' && requester.user.role !== 'admin') {
@@ -143,6 +222,12 @@ export async function DELETE(request: Request) {
       .maybeSingle();
     if (error) throw error;
     if (!deletedEntry) return Response.json({ error: 'Fund entry changed and could not be deleted' }, { status: 409 });
+    if (typeof entry.bill_link === 'string' && entry.bill_link.startsWith('bills/')) {
+      const { error: cleanupError } = await requester.supabase.storage
+        .from(billBucket)
+        .remove([entry.bill_link]);
+      if (cleanupError) console.error('Could not remove the deleted bill file:', cleanupError);
+    }
     return Response.json({ ok: true });
   } catch (error) {
     console.error('Finance delete error:', error);
